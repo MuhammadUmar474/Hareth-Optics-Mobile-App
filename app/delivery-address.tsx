@@ -1,0 +1,392 @@
+import Typography from "@/components/ui/custom-typography";
+import Input from "@/components/ui/input";
+import { COLORS } from "@/constants/colors";
+import { SavedAddress, savedAddresses } from "@/constants/data";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { scale, verticalScale } from "react-native-size-matters";
+
+const DeliveryAddress = () => {
+  const router = useRouter();
+  const [addresses, setAddresses] = useState<SavedAddress[]>(savedAddresses);
+  const [streetAddress, setStreetAddress] = useState<string>("");
+  const [aptSuite, setAptSuite] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [state, setState] = useState<string>("");
+  const [zipCode, setZipCode] = useState<string>("");
+  const [setAsDefault, setSetAsDefault] = useState<boolean>(false);
+
+  const handleSelectAddress = (id: number) => {
+    setAddresses((prev) =>
+      prev.map((addr) => {
+        if (addr.id === id) {
+          return { ...addr, isSelected: !addr.isSelected };
+        }
+        return { ...addr, isSelected: false };
+      })
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+        </TouchableOpacity>
+        <Typography
+          title="Delivery address"
+          fontSize={scale(18)}
+          fontFamily="Poppins-Bold"
+          color={COLORS.black}
+          style={styles.headerTitle}
+        />
+        <View style={styles.headerButton} />
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Saved Addresses Section */}
+        <View style={styles.section}>
+          <Typography
+            title="Saved addresses"
+            fontSize={scale(18)}
+            fontFamily="Poppins-Bold"
+            color={COLORS.black}
+            style={styles.sectionTitle}
+          />
+
+          <View style={styles.addressList}>
+            {addresses.map((address) => (
+              <TouchableOpacity
+                key={address.id}
+                style={[
+                  styles.addressCard,
+                  address.isSelected && styles.addressCardSelected,
+                ]}
+                onPress={() => handleSelectAddress(address.id)}
+              >
+                <View style={styles.addressContent}>
+                  <View style={styles.iconContainer}>
+                    {address.iconLibrary === "ionicons" ? (
+                      <Ionicons
+                        name={address.iconName as any}
+                        size={22}
+                        color={COLORS.primary}
+                      />
+                    ) : (
+                      <MaterialCommunityIcons
+                        name={
+                          address.iconName as keyof typeof MaterialCommunityIcons.glyphMap
+                        }
+                        size={22}
+                        color={COLORS.primary}
+                      />
+                    )}
+                  </View>
+
+                  <View style={styles.addressInfo}>
+                    <Typography
+                      title={address.label}
+                      fontSize={scale(16)}
+                      fontFamily="Poppins-Bold"
+                      color={COLORS.black}
+                      style={styles.addressLabel}
+                    />
+                    <Typography
+                      title={`${address.address},`}
+                      fontSize={scale(13)}
+                      color={COLORS.grey29}
+                      fontFamily="Roboto-Regular"
+                      style={styles.addressText}
+                    />
+                    <Typography
+                      title={`${address.city}, ${address.state} ${address.zipCode}`}
+                      fontSize={scale(13)}
+                      color={COLORS.grey29}
+                      fontFamily="Roboto-Regular"
+                      style={styles.addressText}
+                    />
+                  </View>
+
+                  <View
+                    style={[
+                      styles.radioButton,
+                      address.isSelected && styles.radioButtonActive,
+                    ]}
+                  >
+                    {address.isSelected && (
+                      <View style={styles.radioButtonSelected} />
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Add New Address Section */}
+        <View style={styles.section}>
+          <Typography
+            title="Add a new address"
+            fontSize={scale(18)}
+            fontFamily="Poppins-Bold"
+            color={COLORS.black}
+            style={styles.sectionTitle}
+          />
+
+          <View style={styles.formContainer}>
+            <Input
+              placeholder="Street address"
+              value={streetAddress}
+              onChangeText={setStreetAddress}
+              containerStyle={styles.inputContainer}
+              inputContainerStyle={styles.inputField}
+              placeholderTextColor={COLORS.grey10}
+            />
+
+            <Input
+              placeholder="Apt, suite, etc. (optional)"
+              value={aptSuite}
+              onChangeText={setAptSuite}
+              containerStyle={styles.inputContainer}
+              inputContainerStyle={styles.inputField}
+              placeholderTextColor={COLORS.grey10}
+            />
+
+            <View style={styles.inputRow}>
+              <Input
+                placeholder="City"
+                value={city}
+                onChangeText={setCity}
+                containerStyle={[styles.inputContainer, styles.inputHalf]}
+                inputContainerStyle={styles.inputField}
+                placeholderTextColor={COLORS.grey10}
+              />
+              <Input
+                placeholder="State"
+                value={state}
+                onChangeText={setState}
+                containerStyle={[styles.inputContainer, styles.inputHalf]}
+                inputContainerStyle={styles.inputField}
+                placeholderTextColor={COLORS.grey10}
+              />
+            </View>
+
+            <Input
+              placeholder="Zip code"
+              value={zipCode}
+              onChangeText={setZipCode}
+              keyboardType="numeric"
+              containerStyle={styles.inputContainer}
+              inputContainerStyle={styles.inputField}
+              placeholderTextColor={COLORS.grey10}
+            />
+
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity onPress={() => setSetAsDefault(!setAsDefault)}>
+                <View style={styles.checkbox}>
+                  {setAsDefault && (
+                    <Feather
+                      name="check"
+                      size={16}
+                      color={COLORS.primary}
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              <Typography
+                title="Set as default address"
+                fontSize={scale(14)}
+                color={COLORS.grey29}
+                fontFamily="Roboto-Regular"
+              />
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Bottom Button */}
+      <View style={styles.bottomSection}>
+        <TouchableOpacity 
+          style={styles.continueButton}
+          onPress={() => router.push("/delivery")}
+        >
+          <Typography
+            title="Continue"
+            fontSize={scale(16)}
+            color={COLORS.white}
+            fontFamily="Poppins-Bold"
+            style={styles.continueButtonText}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+export default DeliveryAddress;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white6,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: scale(6),
+    paddingTop: verticalScale(10),
+    paddingBottom: verticalScale(10),
+    backgroundColor: COLORS.white,
+  },
+  headerButton: {
+    width: scale(40),
+    height: scale(40),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontWeight: "600",
+  },
+  scrollContent: {
+    paddingTop: verticalScale(16),
+    paddingBottom: verticalScale(120),
+  },
+  section: {
+    marginBottom: verticalScale(32),
+  },
+  sectionTitle: {
+    paddingHorizontal: scale(16),
+    marginBottom: verticalScale(16),
+    fontWeight: "600",
+  },
+  addressList: {
+    gap: scale(16),
+    paddingHorizontal: scale(16),
+  },
+  addressCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: scale(12),
+    borderWidth: 1,
+    borderColor: COLORS.white,
+    padding: scale(16),
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  addressCardSelected: {
+    borderColor: COLORS.primary,
+  },
+  addressContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: scale(12),
+  },
+  iconContainer: {
+    width: scale(44),
+    height: scale(44),
+    borderRadius: scale(10),
+    backgroundColor: COLORS.skyBlue,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addressInfo: {
+    flex: 1,
+    gap: verticalScale(2),
+  },
+  addressLabel: {
+    fontWeight: "600",
+    marginBottom: verticalScale(4),
+  },
+  addressText: {
+    lineHeight: scale(18),
+  },
+  radioButton: {
+    width: scale(20),
+    height: scale(20),
+    borderRadius: scale(11),
+    borderWidth: 2,
+    borderColor: COLORS.grey10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: verticalScale(2),
+  },
+  radioButtonActive: {
+    borderWidth: 7,
+    borderColor: COLORS.primary,
+  },
+  radioButtonSelected: {
+    width: scale(6),
+    height: scale(6),
+    borderRadius: scale(6),
+    backgroundColor: COLORS.white,
+  },
+  formContainer: {
+    paddingHorizontal: scale(16),
+    gap: verticalScale(8),
+  },
+  inputContainer: {
+    marginBottom: 0,
+  },
+  inputField: {
+    backgroundColor: COLORS.white,
+    borderRadius: scale(12),
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(14),
+    borderWidth: 1,
+    borderColor: COLORS.grey4,
+  },
+  inputRow: {
+    flexDirection: "row",
+    gap: scale(16),
+  },
+  inputHalf: {
+    flex: 1,
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: scale(12),
+  },
+  checkbox: {
+    width: scale(18),
+    height: scale(18),
+    borderRadius: scale(4),
+    borderWidth: 1,
+    borderColor: COLORS.grey29,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bottomSection: {
+    paddingTop: verticalScale(16),
+  },
+  continueButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: verticalScale(16),
+    borderRadius: scale(12),
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: scale(16),
+    marginBottom: verticalScale(26),
+  },
+  continueButtonText: {
+    fontWeight: "600",
+  },
+});

@@ -1,0 +1,128 @@
+import { COLORS } from "@/constants/colors";
+import { OurPromise } from "@/constants/data";
+import { FontAwesome, FontAwesome5, Fontisto } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import { scale, verticalScale } from "react-native-size-matters";
+import Typography from "../ui/custom-typography";
+
+interface OurPromiseProps {
+  promises: OurPromise[];
+  title?: string;
+}
+
+const OurPromiseComponent: React.FC<OurPromiseProps> = ({
+  promises,
+  title,
+}) => {
+  const renderIcon = (promise: OurPromise) => {
+    const iconSize = scale(24);
+    const iconColor = COLORS.primary;
+
+    switch (promise.iconLibrary) {
+      case "fontisto":
+        return (
+          <Fontisto
+            name={promise.iconName as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+      case "fontawesome":
+        return (
+          <FontAwesome
+            name={promise.iconName as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+      case "fontawesome5":
+        return (
+          <FontAwesome5
+            name={promise.iconName as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Typography
+        title={title || "Hareth Optics Promise"}
+        fontSize={scale(17)}
+        color={COLORS.secondary}
+        fontFamily="Roboto-Bold"
+        style={styles.title}
+      />
+
+      <View style={styles.promiseBox}>
+        {promises.map((promise, index) => (
+          <View key={promise.id} style={styles.promiseItem}>
+            <View style={styles.iconContainer}>{renderIcon(promise)}</View>
+            <Typography
+              title={promise.name}
+              fontSize={scale(10)}
+              color={COLORS.secondary}
+              fontFamily="Roboto-Bold"
+              style={styles.promiseText}
+            />
+            {index < promises.length - 1 && <View style={styles.divider} />}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: scale(14),
+    paddingVertical: verticalScale(16),
+  },
+  promiseBox: {
+    flexDirection: "row",
+    backgroundColor: COLORS.white,
+    borderRadius: scale(12),
+    padding: scale(16),
+    justifyContent: "space-between",
+    alignItems: "center",
+    shadowColor: COLORS.grey29,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.grey4,
+  },
+  promiseItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  iconContainer: {
+    marginBottom: verticalScale(8),
+  },
+  title: {
+    fontWeight: "600",
+    marginBottom: verticalScale(12),
+    marginTop: verticalScale(-6),
+  },
+  promiseText: {
+    textAlign: "center",
+    lineHeight: scale(14),
+  },
+  divider: {
+    position: "absolute",
+    right: 0,
+    height: "90%",
+    width: 1,
+    backgroundColor: COLORS.grey4,
+  },
+});
+
+export default OurPromiseComponent;

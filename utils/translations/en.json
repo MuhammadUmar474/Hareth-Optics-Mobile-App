@@ -1,0 +1,34 @@
+{
+    "common": {
+      "profile": "Profile",
+      "settingsAndServices": "Settings & Services",
+      "trackOrder": "Track Order",
+      "loginOrSignup": "Login or Signup",
+      "hello": "Hello!",
+      "loginPrompt": "Login to view orders, perscriptions, and mange address",
+      "language": "Language",
+      "english": "English",
+      "arabic": "Arabic"
+    },
+    "profile": {
+      "menu": {
+        "trackOrder": "Track Order",
+        "gold": "Hareth Gold Membership",
+        "giftBalance": "View Gift Card Balance",
+        "savedPayments": "Saved Payment Methods",
+        "addressBook": "Address Book",
+        "accountInfo": "Account Info",
+        "prescriptions": "My Prescriptions",
+        "submitEyePower": "Submit Eye Power",
+        "eyeTestHome": "Eye Test at Home",
+        "storeLocator": "Store Locator",
+        "referEarn": "Refer & Earn",
+        "helpCenter": "Help Center",
+        "contactUs": "Contact Us",
+        "join": "Join",
+        "Hareth Gold Membership": "Hareth Gold Membership",
+        "Validity show here when logged in": "Validity show here when logged in"
+      }
+    }
+  }
+  

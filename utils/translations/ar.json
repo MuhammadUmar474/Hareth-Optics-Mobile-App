@@ -1,0 +1,34 @@
+{
+    "common": {
+      "profile": "الملف الشخصي",
+      "settingsAndServices": "الإعدادات والخدمات",
+      "trackOrder": "تتبع الطلب",
+      "loginOrSignup": "تسجيل الدخول أو التسجيل",
+      "hello": "مرحباً!",
+      "loginPrompt": "سجّل الدخول لعرض الطلبات والوصفات وإدارة العناوين",
+      "language": "اللغة",
+      "english": "الإنجليزية",
+      "arabic": "العربية"
+    },
+    "profile": {
+      "menu": {
+        "trackOrder": "تتبع الطلب",
+        "gold": "عضوية حارث الذهبية",
+        "giftBalance": "رصيد بطاقة الهدايا",
+        "savedPayments": "طرق الدفع المحفوظة",
+        "addressBook": "دفتر العناوين",
+        "accountInfo": "معلومات الحساب",
+        "prescriptions": "وصفاتي الطبية",
+        "submitEyePower": "إرسال قياس النظر",
+        "eyeTestHome": "فحص النظر في المنزل",
+        "storeLocator": "مواقع المتاجر",
+        "referEarn": "أدعُ واربح",
+        "helpCenter": "مركز المساعدة",
+        "contactUs": "اتصل بنا",
+        "join": "انضم",
+        "Hareth Gold Membership": "عضوية حارث الذهبية",
+        "Validity show here when logged in": "تاريخ الانتهاء هنا عند الدخول"
+      }
+    }
+  }
+  
