@@ -29,55 +29,67 @@ interface PrescriptionCardProps {
 const Row: React.FC<{ label: string; value?: string }> = ({ label, value }) => (
   <View style={styles.row}>
     <Typography title={label} fontSize={SIZES.caption} color={COLORS.grey22} />
-    <Typography title={value ?? "-"} fontSize={SIZES.caption} color={COLORS.secondary} style={{ fontWeight: "600" }} />
+    <Typography
+      title={value ?? "-"}
+      fontSize={SIZES.caption}
+      color={COLORS.secondary}
+      style={{ fontWeight: "600" }}
+    />
   </View>
 );
 
-const EyeBlock: React.FC<{ title: string; s?: string; c?: string; a?: string }> = ({ title, s, c, a }) => (
+const EyeBlock: React.FC<{ title: string; s?: string }> = ({ title, s }) => (
   <View style={styles.eyeBlock}>
-    <Typography title={title} fontSize={SIZES.body} color={COLORS.secondary} style={{ fontWeight: "700" }} />
-    <Row label="S" value={s} />
-    <Row label="C" value={c} />
-    <Row label="A" value={a} />
+    <Typography
+      title={title}
+      fontSize={SIZES.body}
+      color={COLORS.secondary}
+      style={{ fontWeight: "700" }}
+    />
+    <Row label="SPH" value={s} />
   </View>
 );
 
-const PrescriptionCard: React.FC<PrescriptionCardProps> = ({ item, onView, onShare, onDelete }) => {
+const PrescriptionCard: React.FC<PrescriptionCardProps> = ({
+  item,
+  onView,
+  onShare,
+  onDelete,
+}) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Typography title={item.name} fontSize={SIZES.title} color={COLORS.secondary} style={{ fontWeight: "700" }} />
-        <Typography title={new Date(item.date).toDateString()} fontSize={SIZES.caption} color={COLORS.grayText} />
+        <Typography
+          title={item.name}
+          fontSize={SIZES.title}
+          color={COLORS.secondary}
+          style={{ fontWeight: "700" }}
+        />
+        <Typography
+          title={new Date(item.date).toDateString()}
+          fontSize={SIZES.caption}
+          color={COLORS.grayText}
+        />
       </View>
 
       <View style={styles.grid}>
-        <EyeBlock title="Right (OD)" s={item.rightSphere} c={item.rightCylinder} a={item.rightAxis} />
-        <EyeBlock title="Left (OS)" s={item.leftSphere} c={item.leftCylinder} a={item.leftAxis} />
-      </View>
-
-      <View style={styles.metaRow}>
-        {item.pd ? (
-          <View style={styles.pill}>
-            <Typography title={`PD: ${item.pd}`} fontSize={SIZES.caption} color={COLORS.primary} style={{ fontWeight: "700" }} />
-          </View>
-        ) : null}
-        {item.notes ? (
-          <Typography title={item.notes} fontSize={SIZES.caption} color={COLORS.grayText} numberOfLines={1} style={{ flex: 1 }} />
-        ) : null}
+        <EyeBlock title="SPH Right" s={item.rightSphere} />
+        <EyeBlock title="SPH Left" s={item.leftSphere} />
       </View>
 
       <View style={styles.actionsRow}>
-        <TouchableOpacity style={[styles.actionBtn, styles.primaryBtn]} onPress={() => onView?.(item)} activeOpacity={0.8}>
-          <Ionicons name="eye" size={16} color={COLORS.white} />
-          <Typography title="View" fontSize={SIZES.caption} color={COLORS.white} style={{ marginLeft: 6, fontWeight: "700" }} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.secondaryBtn]} onPress={() => onShare?.(item)} activeOpacity={0.8}>
-          <Ionicons name="share-social" size={16} color={COLORS.primary} />
-          <Typography title="Share" fontSize={SIZES.caption} color={COLORS.primary} style={{ marginLeft: 6, fontWeight: "700" }} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.dangerBtn]} onPress={() => onDelete?.(item)} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.dangerBtn]}
+          onPress={() => onDelete?.(item)}
+          activeOpacity={0.8}
+        >
           <Ionicons name="trash" size={16} color={COLORS.white} />
-          <Typography title="Delete" fontSize={SIZES.caption} color={COLORS.white} style={{ marginLeft: 6, fontWeight: "700" }} />
+          <Typography
+            title="Delete"
+            fontSize={SIZES.caption}
+            color={COLORS.white}
+            style={{ marginLeft: 6, fontWeight: "700" }}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -148,5 +160,3 @@ const styles = StyleSheet.create({
   secondaryBtn: { backgroundColor: COLORS.primary10 },
   dangerBtn: { backgroundColor: COLORS.danger },
 });
-
-

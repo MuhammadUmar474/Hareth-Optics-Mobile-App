@@ -10,6 +10,7 @@ import {
   Animated,
   Dimensions,
   FlatList,
+  ImageBackground,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -147,23 +148,48 @@ const BestSelling: React.FC = () => {
       />
 
       <View style={styles.viewAllButtons}>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/(explore)")}>
-          <Typography
-            title="View All Bestselling Eyeglasses"
-            fontSize={scale(14)}
-            color={COLORS.white}
-            fontFamily="Roboto-Bold"
-            style={styles.viewAllButton}
-          />
+        <TouchableOpacity 
+          style={styles.viewAllButtonContainer}
+          onPress={() => router.push("/(tabs)/(explore)")}
+        >
+          <ImageBackground
+            source={require("@/assets/images/sale.jpg")}
+            style={styles.viewAllButtonBackground}
+            imageStyle={styles.viewAllButtonImageStyle}
+            resizeMode="cover"
+          >
+            <View style={styles.viewAllButtonOverlay}>
+              <Typography
+                title="Bestselling Eyeglasses"
+                fontSize={scale(16)}
+                color={COLORS.white}
+                fontFamily="Roboto-Bold"
+                style={styles.viewAllButtonText}
+              />
+            </View>
+          </ImageBackground>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/(explore)")}>
-          <Typography
-            title="View All Bestselling Sunglasses"
-            fontSize={scale(14)}
-            color={COLORS.white}
-            fontFamily="Roboto-Bold"
-            style={styles.viewAllButton}
-          />
+        
+        <TouchableOpacity 
+          style={styles.viewAllButtonContainer}
+          onPress={() => router.push("/(tabs)/(explore)")}
+        >
+          <ImageBackground
+            source={require("@/assets/images/lenses.jpg")}
+            style={styles.viewAllButtonBackground}
+            imageStyle={styles.viewAllButtonImageStyle}
+            resizeMode="cover"
+          >
+            <View style={styles.viewAllButtonOverlay}>
+              <Typography
+                title="Bestselling Sunglasses"
+                fontSize={scale(16)}
+                color={COLORS.white}
+                fontFamily="Roboto-Bold"
+                style={styles.viewAllButtonText}
+              />
+            </View>
+          </ImageBackground>
         </TouchableOpacity>
       </View>
     </View>
@@ -270,19 +296,37 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     marginTop: verticalScale(4),
   },
-  viewAllButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: verticalScale(12),
-    borderRadius: scale(10),
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    fontWeight: "500",
-  },
   viewAllButtons: {
-    gap: scale(8),
+    flexDirection: "row",
+    gap: scale(12),
     marginHorizontal: scale(16),
     marginTop: verticalScale(16),
+  },
+  viewAllButtonContainer: {
+    flex: 1,
+    height: verticalScale(200),
+    borderRadius: scale(12),
+    overflow: "hidden",
+  },
+  viewAllButtonBackground: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  viewAllButtonImageStyle: {
+    borderRadius: scale(12),
+  },
+  viewAllButtonOverlay: {
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: scale(12),
+    marginHorizontal: scale(8),
+    paddingVertical: verticalScale(32),
+    marginBottom: verticalScale(8),
+  },
+  viewAllButtonText: {
+    textAlign: "center",
   },
 });
 
