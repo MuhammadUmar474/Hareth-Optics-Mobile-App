@@ -17,7 +17,6 @@ const AuthLayout = (): React.JSX.Element => {
       />
       <Stack.Screen
         name="login"
-        options={{ presentation: "formSheet", gestureEnabled: true }} // <-- This makes it a modal
       />
     </Stack>
   );

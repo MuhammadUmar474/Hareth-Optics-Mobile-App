@@ -9,7 +9,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import * as Yup from "yup";
 
@@ -88,23 +88,33 @@ const Login = () => {
     router.push("/(tabs)/(a-home)");
   };
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("@/assets/images/hareth-icon.png")}
-        style={styles.logo}
-        contentFit="contain"
-      />
-      <Typography
-        title="Welcome Back"
-        fontSize={SIZES.h3}
-        style={styles.title}
-      />
-      <Typography
-        title="Sign in to your account to continue"
-        fontSize={SIZES.body}
-        style={styles.subtitle}
-      />
-      <View style={styles.formContainer}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
+      >
+        <Image
+          source={require("@/assets/images/hareth-icon.png")}
+          style={styles.logo}
+          contentFit="contain"
+        />
+        <Typography
+          title="Welcome Back"
+          fontSize={SIZES.h3}
+          style={styles.title}
+        />
+        <Typography
+          title="Sign in to your account to continue"
+          fontSize={SIZES.body}
+          style={styles.subtitle}
+        />
+        <View style={styles.formContainer}>
         <View style={styles.segmentContainer}>
           <TouchableOpacity
             activeOpacity={0.9}
@@ -289,8 +299,9 @@ const Login = () => {
             router.replace("/(auth)/sign-up");
           }}
         />
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -300,6 +311,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContainer: {
+    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(100),
   },
   title: {
     marginBottom: 5,

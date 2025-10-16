@@ -4,53 +4,48 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
-import { router } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 const HelpCenter: React.FC = () => {
-  const [query, setQuery] = useState("");
+  const [query] = useState("");
 
-  const topics = useMemo(
+  const questions = useMemo(
     () => [
       {
-        label: "Orders",
-        icon: "local-shipping" as const,
-        route: "/(tabs)/(Profile)/orders",
+        question: "How long does delivery take?",
+        answer:
+          "Standard delivery takes 3-5 business days. Express delivery is available for 1-2 business days.",
       },
       {
-        label: "Payments",
-        icon: "payment" as const,
-        route: "/(tabs)/(Profile)/saved-payment-methods",
+        question: "Can I return prescription lenses?",
+        answer:
+          "Yes, you can return prescription lenses within 30 days of purchase if they are in original condition.",
       },
       {
-        label: "Prescriptions",
-        icon: "medical-services" as const,
-        route: "/(tabs)/(Profile)/my-prescriptions",
+        question: "Do you ship internationally?",
+        answer:
+          "Currently we only ship within Kuwait. International shipping will be available soon.",
       },
       {
-        label: "Returns",
-        icon: "assignment-return" as const,
-        route: "/(tabs)/(Profile)/orders",
+        question: "What payment methods do you accept?",
+        answer:
+          "We accept Visa, Mastercard, KNET, Apple Pay, and Tabby for your convenience.",
       },
       {
-        label: "Other",
-        icon: "help-outline" as const,
-        route: "/(tabs)/(Profile)/help-center",
+        question: "How do I submit my prescription?",
+        answer:
+          "You can upload your prescription during checkout or send it to us via email after placing your order.",
       },
     ],
     []
   );
 
-  const filteredTopics = useMemo(() => {
-    if (!query.trim()) return topics;
+  const filteredQuestions = useMemo(() => {
+    if (!query.trim()) return questions;
     const q = query.toLowerCase();
-    return topics.filter((t) => t.label.toLowerCase().includes(q));
-  }, [query, topics]);
-
-  const handleTopicPress = useCallback((route: string) => {
-    router.push(route as any);
-  }, []);
+    return questions.filter((item) => item.question.toLowerCase().includes(q));
+  }, [query, questions]);
 
   return (
     <View style={styles.container}>
@@ -61,21 +56,19 @@ const HelpCenter: React.FC = () => {
       >
         <View style={styles.sectionHeader}>
           <Typography
-            title="Help Topics"
+            title="Frequently Asked Questions"
             fontSize={SIZES.h2}
             style={styles.sectionTitle}
           />
         </View>
 
-        <View style={styles.grid}>
-          {filteredTopics.map((t, idx) => (
-            <View key={`${t.label}-${idx}`} style={styles.gridItem}>
-              <HelpTopicCard
-                label={t.label}
-                iconName={t.icon}
-                onPress={() => handleTopicPress(t.route)}
-              />
-            </View>
+        <View style={styles.questionsContainer}>
+          {filteredQuestions.map((item, idx) => (
+            <HelpTopicCard
+              key={`${item.question}-${idx}`}
+              question={item.question}
+              answer={item.answer}
+            />
           ))}
         </View>
 
@@ -119,16 +112,8 @@ const styles = StyleSheet.create({
   searchWrapper: { marginTop: SIZES.padding },
   sectionHeader: { marginTop: SIZES.padding * 1.5 },
   sectionTitle: { fontWeight: "700" },
-  grid: {
+  questionsContainer: {
     marginTop: SIZES.padding,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginHorizontal: -SIZES.base,
-  },
-  gridItem: {
-    width: "50%",
-    paddingHorizontal: SIZES.base,
-    marginBottom: SIZES.base,
   },
   contactCard: {
     marginTop: SIZES.padding * 2,

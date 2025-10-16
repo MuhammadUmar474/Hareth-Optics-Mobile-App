@@ -1,11 +1,11 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
-    Animated,
-    ImageBackground,
-    ImageSourcePropType,
-    StyleSheet,
-    View,
+  Animated,
+  ImageBackground,
+  ImageSourcePropType,
+  StyleSheet,
+  View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 
@@ -62,15 +62,27 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
     router.push("/(tabs)/(explore)");
   };
 
+  const isEvenIndex = index % 2 === 0;
+
   return (
     <Animated.View
       style={{
         opacity: opacityAnim,
         transform: [{ scale: scaleAnim }],
+        flexDirection: isEvenIndex ? "row" : "row-reverse",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
       }}
     >
       <Button
-        style={styles.categoryCard}
+        style={[
+          styles.categoryCard,
+          {
+            marginRight: isEvenIndex ? scale(8) : 0,
+            marginLeft: isEvenIndex ? 0 : scale(8),
+          },
+        ]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -79,14 +91,14 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
           <View style={styles.categoryTextSection}>
             <Typography
               title={title}
-              fontSize={moderateScale(18)}
+              fontSize={moderateScale(16)}
               color={COLORS.secondary}
               fontFamily="Inter-Bold"
               style={styles.categoryTitle}
             />
             <Typography
               title={subtitle}
-              fontSize={moderateScale(14)}
+              fontSize={moderateScale(12)}
               color={COLORS.black}
               fontFamily="Inter-Regular"
               style={styles.categorySubtitle}
@@ -94,20 +106,27 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
             {price && (
               <Typography
                 title={price}
-                fontSize={moderateScale(16)}
+                fontSize={moderateScale(15)}
                 color={COLORS.primary}
                 fontFamily="Inter-SemiBold"
                 style={styles.priceText}
               />
             )}
           </View>
-          <ImageBackground
-            source={image}
-            style={styles.categoryImageContainer}
-            imageStyle={styles.categoryImageStyle}
-          />
         </View>
       </Button>
+      <ImageBackground
+        source={image}
+        style={[
+          styles.categoryImageContainer,
+          {
+            marginLeft: isEvenIndex ? scale(6) : 0,
+            marginRight: isEvenIndex ? 0 : scale(6),
+          },
+        ]}
+        imageStyle={styles.categoryImageStyle}
+        resizeMode="cover"
+      />
     </Animated.View>
   );
 };
@@ -115,23 +134,23 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
 const styles = StyleSheet.create({
   categoryCard: {
     marginVertical: verticalScale(8),
-    borderRadius: scale(16),
+    borderRadius: scale(14),
     backgroundColor: COLORS.white,
-    borderTopColor: COLORS.primary,
-    borderTopWidth: verticalScale(4),
     ...COLORS.shadow,
     shadowColor: COLORS.primary,
+    width: "48%",
+    height: verticalScale(120),
   },
   categoryCardContent: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
-    paddingHorizontal: scale(5),
+    justifyContent: "center",
     paddingVertical: verticalScale(16),
-    minHeight: verticalScale(96),
+    height: verticalScale(120),
+    alignSelf: "flex-start",
   },
   categoryTextSection: {
-    flex: 1,
-    paddingRight: scale(16),
+    justifyContent: "center",
   },
   categoryTitle: {
     marginBottom: verticalScale(4),
@@ -144,10 +163,11 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(4),
   },
   categoryImageContainer: {
-    width: scale(90),
-    height: verticalScale(64),
-    borderRadius: scale(8),
+    flex: 1,
+    height: verticalScale(120),
+    borderRadius: scale(14),
     overflow: "hidden",
+    backgroundColor: "blue",
   },
   categoryImageStyle: {
     borderRadius: scale(8),
