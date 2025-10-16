@@ -1,11 +1,12 @@
 import { COLORS } from "@/constants/colors";
 import { suggestionCategories } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -23,7 +24,7 @@ const StickyHeader = () => {
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
   const [isVisible, setIsVisible] = useState(false);
-
+  const { isRtl,t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
     setSelectedCategories((prev) =>
       prev.includes(categoryId)
@@ -31,11 +32,52 @@ const StickyHeader = () => {
         : [...prev, categoryId]
     );
   };
-
+  const dynamicStyles = useMemo(
+    () => StyleSheet.create({
+      profileContainer: {
+        flexDirection: isRtl ? "row-reverse" : "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: scale(10),
+      },
+      headerContainer: {
+        flexDirection: isRtl ? "row-reverse" : "row",
+        alignItems: "center",
+        justifyContent: "space-between" as const,
+        paddingHorizontal: scale(8),
+        paddingVertical: verticalScale(8),
+        gap: scale(10),
+      },
+      locationContainer: {
+        flexDirection: isRtl ? "row-reverse" : "row",
+        alignItems: "flex-end",
+      },
+      headerIcons: {
+        flexDirection: isRtl ? "row-reverse" : "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: scale(12),
+      },
+      rightIconContainer: {
+        flexDirection: isRtl ? "row-reverse" : "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: scale(10),
+      },
+      suggestionContainer: {
+        flexDirection: isRtl ? "row-reverse" : "row",
+        paddingHorizontal: scale(8),
+        paddingVertical: verticalScale(8),
+        gap: scale(8),
+        alignItems: "center",
+      },
+    }),
+    [isRtl]
+  );
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <View style={styles.profileContainer}>
+      <View style={dynamicStyles.headerContainer}>
+        <View style={dynamicStyles.profileContainer}>
           <TouchableOpacity onPress={() => router.push("/(tabs)/(profile)")}>
             <Image
               source={require("@/assets/images/home/profile.png")}
@@ -43,12 +85,12 @@ const StickyHeader = () => {
             />
           </TouchableOpacity>
           <View style={styles.profileTextContainer}>
-            <Text style={styles.profileText}>Get Faster Delivery</Text>
+            <Text style={styles.profileText}>{t("home.getFasterDel")}</Text>
             <TouchableOpacity
-              style={styles.locationContainer}
+              style={dynamicStyles.locationContainer}
               onPress={() => setIsVisible(true)}
             >
-              <Text style={styles.locationText}>Select Location</Text>
+              <Text style={styles.locationText}>{t("home.selectLocation")}</Text>
               <Ionicons
                 name="chevron-down"
                 size={13}
@@ -57,7 +99,7 @@ const StickyHeader = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.headerIcons}>
+        <View style={dynamicStyles.headerIcons}>
           <TouchableOpacity
             style={styles.icon}
             onPress={() => router.push("/wishlist")}
@@ -88,14 +130,14 @@ const StickyHeader = () => {
       </View>
 
       <Input
-        placeholder="What you are looking for?"
+        placeholder={t("home.lookingFor")}
         containerStyle={styles.inputContainer}
         inputContainerStyle={styles.inputContainerStyle}
         leftAccessory={
           <Feather name="search" size={20} color={COLORS.primary} />
         }
         rightAccessory={
-          <View style={styles.rightIconContainer}>
+          <View style={dynamicStyles.rightIconContainer}>
             <TouchableOpacity
               onPress={() => {
                 router.navigate("/(tabs)/(a-home)/scan-product");
@@ -123,7 +165,7 @@ const StickyHeader = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.suggestionContainer}
+        contentContainerStyle={dynamicStyles.suggestionContainer}
         style={styles.suggestionScrollView}
       >
         {suggestionCategories.map((category) => (
@@ -173,20 +215,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: COLORS.grey4,
   },
-  profileContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: scale(10),
-  },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(8),
-    paddingVertical: verticalScale(8),
-    gap: scale(10),
-  },
   profileImage: {
     width: scale(30),
     height: verticalScale(30),
@@ -194,16 +222,6 @@ const styles = StyleSheet.create({
   },
   profileTextContainer: {
     gap: scale(4),
-  },
-  locationContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  headerIcons: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: scale(12),
   },
   icon: {
     width: scale(30),
@@ -218,12 +236,6 @@ const styles = StyleSheet.create({
   rightIcon: {
     width: scale(16),
     height: scale(16),
-  },
-  rightIconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: scale(10),
   },
   profileText: {
     fontSize: scale(12),
@@ -256,13 +268,7 @@ const styles = StyleSheet.create({
   suggestionScrollView: {
     maxHeight: verticalScale(50),
   },
-  suggestionContainer: {
-    flexDirection: "row",
-    paddingHorizontal: scale(8),
-    paddingVertical: verticalScale(8),
-    gap: scale(8),
-    alignItems: "center",
-  },
+
   suggestionTab: {
     marginVertical: verticalScale(2),
   },
