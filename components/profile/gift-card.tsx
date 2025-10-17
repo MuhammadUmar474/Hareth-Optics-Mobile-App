@@ -1,5 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -7,12 +8,13 @@ import Typography from "../ui/custom-typography";
 import GiftRow from "./gift-row";
 
 const GiftCard = () => {
+  const { isRtl } = useLocal();
   return (
     <View style={styles.container}>
       <Typography
         title="Wallet & Gift Card"
         fontSize={SIZES.desc}
-        style={{ fontWeight: "bold", marginBottom: SIZES.base }}
+        style={ { fontWeight: "bold", marginBottom: SIZES.base,textAlign: isRtl?"right" :"left"}}
       />
       <GiftRow
         label1="View Gift Card balance"
