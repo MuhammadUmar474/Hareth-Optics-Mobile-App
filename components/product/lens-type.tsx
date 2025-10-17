@@ -2,6 +2,7 @@ import Typography from "@/components/ui/custom-typography";
 import Input from "@/components/ui/input";
 import { COLORS } from "@/constants/colors";
 import { LensTypeOption, lensTypeOptions } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
@@ -12,13 +13,13 @@ const LensType: React.FC = () => {
   const [sphereLeft, setSphereLeft] = useState<string>("");
   const [cylinderRight, setCylinderRight] = useState<string>("");
   const [cylinderLeft, setCylinderLeft] = useState<string>("");
-
+  const {t}=useLocal(); 
   return (
     <View style={styles.container}>
       {/* Lens Type Section */}
       <View style={styles.section}>
         <Typography
-          title="Lens Type"
+          title={t("eyeglassesDetails.lensType")}
           fontSize={scale(16)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -36,7 +37,7 @@ const LensType: React.FC = () => {
               onPress={() => setSelectedLensType(option.id)}
             >
               <Typography
-                title={option.name}
+                title={"t(`${option.name}`)"}
                 fontSize={scale(15)}
                 color={
                   selectedLensType === option.id ? COLORS.black : COLORS.black
@@ -63,7 +64,7 @@ const LensType: React.FC = () => {
       {/* Enter Your Prescription Section */}
       <View style={styles.prescriptionSection}>
         <Typography
-          title="Enter Your Prescription"
+          title={`t("eyeglassesDetails.enterYourPrescription")`}
           fontSize={scale(16)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -73,7 +74,7 @@ const LensType: React.FC = () => {
         <View style={styles.inputRow}>
           <View style={styles.inputColumn}>
             <Typography
-              title="Sphere (Right)"
+              title={`t("eyeglassesDetails.sphereRight")`}
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
@@ -93,7 +94,7 @@ const LensType: React.FC = () => {
 
           <View style={styles.inputColumn}>
             <Typography
-              title="Sphere (Left)"
+              title={`t("eyeglassesDetails.sphereLeft")`}
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"

@@ -2,9 +2,8 @@ import { COLORS } from "@/constants/colors";
 import { useAuthGuard } from "@/utils/auth";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, LayoutChangeEvent, Platform, StyleSheet, View } from "react-native";
+import { LayoutChangeEvent, Platform, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -86,7 +85,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   };
 
   const iconMap = icon as Record<string, IconRenderer>;
-
+  const { checkAuthAndNavigate } = useAuthGuard();
   return (
     <View onLayout={onTabBarLayout} style={styles.tabbar}>
       <Animated.View
@@ -118,25 +117,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
             navigation.navigate(route.name);
             return;
           }
-      
-          if (!isAuthenticated) {
-            Alert.alert(
-              "Authentication Required",
-              "Please login to access this feature",
-              [
-                {
-                  text: "Cancel",
-                  style: "cancel",
-                },
-                {
-                  text: "Login",
-                  onPress: () => router.push('/(auth)/login'),
-                },
-              ]
-            );
-            return;
-          }
-      
+          checkAuthAndNavigate("/(auth)/login","Please login to access this feature")
           tabPostionX.value = withSpring(getTabOffset(index), {
             duration: 350,
           });

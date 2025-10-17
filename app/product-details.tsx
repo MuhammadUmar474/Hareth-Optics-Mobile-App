@@ -3,6 +3,7 @@ import VirtualTryOn from "@/components/product/virtual-try-on";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { FrameColor, FrameSize, productDetailData } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -27,7 +28,7 @@ const ProductDetails = () => {
   const [selectedColor, setSelectedColor] = useState<number>(1);
   const [selectedSize, setSelectedSize] = useState<number>(1);
   const [isFavorited, setIsFavorited] = useState(false);
-
+  const {t}=useLocal();
   const product = productDetailData;
 
   const handleScroll = (event: any) => {
@@ -61,7 +62,7 @@ const ProductDetails = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Eyeglasses Details"
+          title={t("home.eyeGlasses")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -147,7 +148,7 @@ const ProductDetails = () => {
           {/* Frame Color Section */}
           <View style={styles.section}>
             <Typography
-              title="Frame Color"
+              title={t("eyeglassesDetails.frameColor")}
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
@@ -178,7 +179,7 @@ const ProductDetails = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Typography
-                title="Frame Size"
+                title={t("eyeglassesDetails.frameSize")}
                 fontSize={scale(16)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
@@ -194,7 +195,7 @@ const ProductDetails = () => {
                   color={COLORS.primary}
                 />
                 <Typography
-                  title="Size Guide"
+                  title={t("eyeglassesDetails.sizeGuide")}
                   fontSize={scale(12)}
                   color={COLORS.primary}
                   fontFamily="Roboto-Bold"
@@ -236,7 +237,7 @@ const ProductDetails = () => {
       <View style={styles.bottomSection}>
         <View style={styles.totalPriceContainer}>
           <Typography
-            title="Total Price"
+            title={t("purchases.totalPrice")}
             fontSize={scale(14)}
             fontFamily="Poppins-Bold"
             color={COLORS.grey33}
@@ -263,7 +264,7 @@ const ProductDetails = () => {
           >
             <Ionicons name="cart-outline" size={20} color={COLORS.white} />
             <Typography
-              title="Add to Cart"
+              title={t("purchases.addtoCart")}
               fontSize={scale(14)}
               color={COLORS.white}
               fontFamily="Roboto-Bold"

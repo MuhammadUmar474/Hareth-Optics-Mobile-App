@@ -17,7 +17,7 @@ import {
 } from "@/constants/data";
 import { useAuthGuard } from "@/utils/auth";
 import { Ionicons } from "@expo/vector-icons";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView, useVideoPlayer } from "expo-video";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
@@ -45,6 +45,8 @@ const HomeScreen = () => {
   });
 
   const onProductPress = () => {
+    console.log("kskskks");
+    
     checkAuthAndNavigate(`/(tabs)/(explore)`, "Please login to explore products");
   };
 
