@@ -15,8 +15,8 @@ import {
   paymentMethodTypes,
   storeBenefits
 } from "@/constants/data";
+import { useAuthGuard } from "@/utils/auth";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -24,6 +24,7 @@ import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 
 const HomeScreen = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const { checkAuthAndNavigate } = useAuthGuard();
 
   const player = useVideoPlayer(
     "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
@@ -44,7 +45,7 @@ const HomeScreen = () => {
   });
 
   const onProductPress = () => {
-    router.push(`/(tabs)/(explore)`);
+    checkAuthAndNavigate(`/(tabs)/(explore)`, "Please login to explore products");
   };
 
   return (

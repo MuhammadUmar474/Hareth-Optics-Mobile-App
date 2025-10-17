@@ -148,7 +148,7 @@ const BestSelling: React.FC = () => {
       />
 
       <View style={styles.viewAllButtons}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.viewAllButtonContainer}
           onPress={() => router.push("/(tabs)/(explore)")}
         >
@@ -169,8 +169,8 @@ const BestSelling: React.FC = () => {
             </View>
           </ImageBackground>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.viewAllButtonContainer}
           onPress={() => router.push("/(tabs)/(explore)")}
         >
