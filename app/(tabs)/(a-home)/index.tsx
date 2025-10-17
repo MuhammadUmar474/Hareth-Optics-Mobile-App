@@ -16,11 +16,10 @@ import {
   storeBenefits,
 } from "@/constants/data";
 import { handleLargerText } from "@/constants/helper";
-import { homeApi, MenuItem } from "@/services/home/homeApi";
+import { MenuItem, homeApi } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView, useVideoPlayer } from "expo-video";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -90,7 +89,7 @@ const HomeScreen = () => {
   });
 
   const onProductPress = () => {
-    router.navigate("/(tabs)/(explore)");
+    checkAuthAndNavigate(`/(tabs)/(explore)`, "Please login to explore products");
   };
 
   const fetchProducts = async (loadMore = false) => {

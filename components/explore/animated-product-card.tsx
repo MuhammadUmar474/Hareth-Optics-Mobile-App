@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,7 +23,7 @@ export const AnimatedProductCard = ({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [imageLoaded, setImageLoaded] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
-
+  const {t}=useLocal();
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
@@ -147,7 +148,7 @@ export const AnimatedProductCard = ({
             onPress={handleAddToCart}
           >
             <Typography
-              title="Add to Cart"
+              title={t("purchases.addtoCart")}
               fontSize={moderateScale(14)}
               color={COLORS.white}
               fontFamily="Inter-SemiBold"

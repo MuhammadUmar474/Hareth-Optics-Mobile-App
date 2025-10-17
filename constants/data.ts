@@ -559,18 +559,18 @@ export interface LensTypeOption {
 export const lensTypeOptions: LensTypeOption[] = [
   {
     id: 1,
-    name: "Single Vision",
-    description: "For distance or reading",
+    name: "eyeglassesDetails.singleVision",
+    description: "eyeglassesDetails.forDistance",
   },
   {
     id: 2,
-    name: "Bifocal",
-    description: "Distance and reading",
+    name: "eyeglassesDetails.bifocal",
+    description: "eyeglassesDetails.distanceReading",
   },
   {
     id: 3,
-    name: "Progressive",
-    description: "All-in-one vision",
+    name: "eyeglassesDetails.progressive",
+    description: "eyeglassesDetails.allInOne",
   },
 ];
 
