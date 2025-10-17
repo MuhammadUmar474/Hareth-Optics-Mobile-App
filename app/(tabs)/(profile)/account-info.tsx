@@ -4,6 +4,8 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useAuthStore } from "@/store/shopifyStore";
+import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   Alert,
@@ -12,6 +14,7 @@ import {
   ScrollView,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 interface FormValues {
   name: string;
@@ -32,6 +35,7 @@ const AccountInfo: React.FC = () => {
     phone: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const { logout } = useAuthStore();
 
   const canSave = useMemo(() => {
     return (
@@ -60,6 +64,33 @@ const AccountInfo: React.FC = () => {
   const handleSave = () => {
     if (!validate()) return;
     Alert.alert("Saved", "Your account details have been updated.");
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: () => {
+            logout();
+            Toast.show({
+              type: "success",
+              text1: "Logged Out",
+              text2: "You have been successfully logged out",
+              position: "top",
+            });
+            router.replace("/(auth)/login");
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -122,7 +153,27 @@ const AccountInfo: React.FC = () => {
               fontFamily="Inter-Bold"
             />
           </Button>
+
+          <Button
+            color="secondary"
+            onPress={handleLogout}
+            style={{ 
+              marginTop: SIZES.padding, 
+              borderRadius: 10, 
+              height: 45,
+              backgroundColor: COLORS.red || "#dc3545",
+              borderWidth: 1,
+              borderColor: COLORS.red || "#dc3545"
+            }}
+          >
+            <Typography
+              title="Logout"
+              color={COLORS.white}
+              fontFamily="Inter-Bold"
+            />
+          </Button>
         </ScrollView>
+        <Toast />
       </KeyboardAvoidingView>
     </View>
   );

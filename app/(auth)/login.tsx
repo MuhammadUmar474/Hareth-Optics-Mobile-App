@@ -3,6 +3,7 @@ import CustomTextInput from "@/components/ui/custom-text-input";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useAuthStore } from "@/store/shopifyStore";
 import { AuthMode, LoginFormValues } from "@/types/auth";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -11,6 +12,7 @@ import { Formik } from "formik";
 import React from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
+import Toast from "react-native-toast-message";
 import * as Yup from "yup";
 
 const emailLoginSchema = Yup.object().shape({
@@ -56,6 +58,13 @@ const whatsappLoginSchema = Yup.object().shape({
 
 const Login = () => {
   const [mode, setMode] = React.useState<AuthMode>("email");
+  const { login, loading, error, clearError } = useAuthStore();
+
+  React.useEffect(() => {
+    if (error) {
+      clearError();
+    }
+  }, [mode, error, clearError]);
 
   const getValidationSchema = () => {
     switch (mode) {
@@ -70,7 +79,7 @@ const Login = () => {
     }
   };
 
-  const getInitialValues = () => {
+  const getInitialValues = (): LoginFormValues => {
     switch (mode) {
       case "email":
         return { email: "", password: "" };
@@ -83,9 +92,52 @@ const Login = () => {
     }
   };
 
-  const onSubmit = (values: LoginFormValues) => {
-    console.log("Login values:", values);
-    router.push("/(tabs)/(a-home)");
+  const onSubmit = async (values: LoginFormValues) => {
+
+    if (mode !== "email") {
+      Toast.show({
+        type: "error",
+        text1: "Login Error",
+        text2: "Only email login is supported with Shopify API",
+        position: "top",
+      });
+      return;
+    }
+
+    if (!values.email) {
+      Toast.show({
+        type: "error",
+        text1: "Login Error",
+        text2: "Email is required",
+        position: "top",
+      });
+      return;
+    }
+
+    try {
+      await login({
+        email: values.email,
+        password: values.password,
+      });
+
+      Toast.show({
+        type: "success",
+        text1: "Login Successful",
+        text2: "Welcome back!",
+        position: "top",
+      });
+      
+      router.push("/(tabs)/(a-home)");
+    } catch (err) {
+      console.error("❌ Login error caught in component:", err);
+      const errorMessage = err instanceof Error ? err.message : "Please check your credentials and try again";
+      Toast.show({
+        type: "error",
+        text1: "Login Failed",
+        text2: errorMessage,
+        position: "top",
+      });
+    }
   };
   return (
     <KeyboardAvoidingView 
@@ -182,7 +234,7 @@ const Login = () => {
           </TouchableOpacity>
         </View>
 
-        <Formik
+        <Formik<LoginFormValues>
           initialValues={getInitialValues()}
           validationSchema={getValidationSchema()}
           onSubmit={onSubmit}
@@ -220,7 +272,7 @@ const Login = () => {
                   iconName="phone"
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
-                  value={values.phone}
+                  value={values.phone || ""}
                   onChangeText={handleChange("phone")}
                   onBlur={handleBlur("phone")}
                   error={
@@ -235,7 +287,7 @@ const Login = () => {
                   iconName="phone"
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
-                  value={values.whatsapp}
+                  value={values.whatsapp || ""}
                   onChangeText={handleChange("whatsapp")}
                   onBlur={handleBlur("whatsapp")}
                   error={
@@ -261,14 +313,25 @@ const Login = () => {
                 }
               />
 
+              {error && (
+                <View style={styles.errorContainer}>
+                  <Typography
+                    title={error}
+                    fontSize={SIZES.body}
+                    color={COLORS.red}
+                    style={styles.errorText}
+                  />
+                </View>
+              )}
+
               <Button
                 color="primary"
                 style={{ marginTop: 30, borderRadius: 10, height: 45 }}
                 onPress={() => handleSubmit()}
-                disabled={!isValid}
+                disabled={!isValid || loading}
               >
                 <Typography
-                  title="Login"
+                  title={loading ? "Logging in..." : "Login"}
                   fontSize={SIZES.body}
                   style={{ fontWeight: "700" }}
                   color={COLORS.white}
@@ -301,6 +364,7 @@ const Login = () => {
         />
         </View>
       </ScrollView>
+      <Toast />
     </KeyboardAvoidingView>
   );
 };
@@ -383,5 +447,16 @@ const styles = StyleSheet.create({
     height: verticalScale(50),
     alignSelf: "center",
     marginTop: verticalScale(16),
+  },
+  errorContainer: {
+    backgroundColor: COLORS.red + "10",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.red + "30",
+  },
+  errorText: {
+    textAlign: "center",
   },
 });

@@ -2,6 +2,7 @@ import { COLORS } from "@/constants/colors";
 import { suggestionCategories } from "@/constants/data";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useAuthGuard } from "@/utils/auth";
 import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -23,6 +24,7 @@ const StickyHeader = () => {
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
   const [isVisible, setIsVisible] = useState(false);
+  const { checkAuthAndNavigate } = useAuthGuard();
 
   const handleCategoryPress = (categoryId: number) => {
     setSelectedCategories((prev) =>
@@ -36,7 +38,7 @@ const StickyHeader = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.profileContainer}>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/(profile)")}>
+          <TouchableOpacity onPress={() => checkAuthAndNavigate("/(tabs)/(profile)", "Please login to view your profile")}>
             <Image
               source={require("@/assets/images/home/profile.png")}
               style={styles.profileImage}
@@ -60,7 +62,7 @@ const StickyHeader = () => {
         <View style={styles.headerIcons}>
           <TouchableOpacity
             style={styles.icon}
-            onPress={() => router.push("/wishlist")}
+            onPress={() => checkAuthAndNavigate("/wishlist", "Please login to view your wishlist")}
           >
             <FontAwesome6 name="heart" size={20} color={COLORS.black} />
             {wishlistCount > 0 ? (
@@ -73,7 +75,7 @@ const StickyHeader = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.icon}
-            onPress={() => router.push("/shopping-cart")}
+            onPress={() => checkAuthAndNavigate("/shopping-cart", "Please login to view your cart")}
           >
             <Ionicons name="cart-outline" size={22} color={COLORS.black} />
             {cartCount > 0 ? (
