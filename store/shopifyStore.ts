@@ -9,6 +9,7 @@ import {
   LoginCredentials,
   SignupCredentials,
 } from "../types/auth";
+import { useWishlistStore } from "./wishlistStore";
 
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -101,7 +102,9 @@ export const useAuthStore = create<AuthStore>()(
               error: null,
             });
 
-            // Schedule automatic token refresh
+            // Set current user in wishlist store
+            useWishlistStore.getState().setCurrentUser(credentials.email);
+
             scheduleTokenRefresh(expiresAt);
 
             try {
@@ -228,6 +231,9 @@ export const useAuthStore = create<AuthStore>()(
             loading: false,
             error: null,
           });
+
+          // Clear wishlist user
+          useWishlistStore.getState().setCurrentUser(null);
         }
       },
 

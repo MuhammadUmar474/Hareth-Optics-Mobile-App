@@ -35,11 +35,7 @@ const ProfileCard = () => {
         style={[styles.row, { flexDirection: rtl ? "row-reverse" : "row" }]}
       >
         <Image
-          source={
-            isAuthenticated
-              ? require("@/assets/images/premium.jpg")
-              : require("@/assets/images/home/profile.png")
-          }
+          source={require("@/assets/images/home/profile.png")}
           style={styles.image}
           contentFit="cover"
         />
