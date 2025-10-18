@@ -194,23 +194,28 @@ class HomeApi {
    */
   async getProductsByCollection(
     handle: string,
-    first: number = 20
+    first: number = 20,
+    after?: string // add `after` cursor for pagination
   ): Promise<ProductsByCollectionResponse> {
     const query = `
-      query GetProductsByCollection($handle: String!, $first: Int = 20) {
+      query GetProductsByCollection($handle: String!, $first: Int = 20, $after: String) {
         collection(handle: $handle) {
           id
           title
           handle
           description
           image { url altText }
-          products(first: $first) {
+          products(first: $first, after: $after) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
             edges {
+              cursor
               node {
                 id
                 title
                 handle
-                description
                 productType
                 vendor
                 availableForSale
@@ -254,10 +259,11 @@ class HomeApi {
         }
       }
     `;
-
+  
     return await this.executeQuery<ProductsByCollectionResponse>(query, {
       handle,
       first,
+      after, // pass cursor
     });
   }
 

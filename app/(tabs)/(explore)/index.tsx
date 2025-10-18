@@ -24,6 +24,8 @@ const Explore = () => {
   const [searchQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [products, setProducts] = useState<ExploreProduct[]>([]);
+  const [endCursor, setEndCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -38,43 +40,46 @@ const Explore = () => {
     }).start();
   }, []);
 
-  // Fetch products based on selected filter
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
+  const fetchProducts = async (loadMore = false) => {
+    setLoading(true);
+    setError(null);
 
-      try {
+    try {
+      const selected = categoryOptions.find((c) => c.title === selectedFilter);
+      const handle = selected?.handle ?? "";
+
+      const { collection } = await homeApi.getProductsByCollection(
+        handle,
+        20,
+        loadMore ? endCursor ?? undefined : undefined
+      );
+
+      const edges = collection?.products.edges ?? [];
+
+      const mapped: ExploreProduct[] = edges.map(({ node }) => ({
+        id: node.id,
+        name: handleLargerText(node.title, 20),
+        price: node.priceRange.minVariantPrice.amount,
+        image:
+          node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
+        category: node.productType || selectedFilter,
+      }));
+
       
-          const selected = categoryOptions.find(
-            (c) => c.title === selectedFilter
-          );
-          const handle = selected?.handle ?? "";
-          console.log("handlehandlehandle",handle);
-          const { collection } = await homeApi.getProductsByCollection(handle, 20);
-          console.log("collectioncollectioncollection",JSON.stringify(collection));
-          const mapped: ExploreProduct[] = (collection?.products.edges ?? []).map(
-            ({ node }) => ({
-              id: node.id,
-              name: handleLargerText(node.title, 20),
-              price: node.priceRange.minVariantPrice.amount,
-              image:
-                node.featuredImage?.url ||
-                node.images?.edges?.[0]?.node?.url ||
-                "",
-              category: node.productType || selectedFilter,
-            })
-          );
-          setProducts(mapped);
-        
-      } catch (e: any) {
-        setError(e?.message || "Failed to load products");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchProducts();
+      // If loading more, append to current list
+      setProducts((prev) => (loadMore ? [...prev, ...mapped] : mapped));
+
+      setEndCursor(collection?.products.pageInfo.endCursor ?? null);
+      setHasNextPage(collection?.products.pageInfo.hasNextPage ?? false);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchProducts(false); // initial load
   }, [selectedFilter]);
 
   const toggleFavorite = (id: string) => {
@@ -91,8 +96,8 @@ const Explore = () => {
 
   const handleCategoryPress = (categoryId: number) => {
     const categoryTitle =
-      categoryOptions.find((category) => category.id === categoryId)?.title || "All";
-  
+      categoryOptions.find((category) => category.id === categoryId)?.title ||
+      "All";
 
     setSelectedCategories([categoryId]);
     setSelectedFilter(categoryTitle);
@@ -175,7 +180,15 @@ const Explore = () => {
           columnWrapperStyle={styles.productRow}
           contentContainerStyle={styles.productsContainer}
           showsVerticalScrollIndicator={false}
-          key={selectedFilter} // forces FlatList to reset when filter changes
+          onEndReachedThreshold={0.5}
+          onEndReached={() => {
+            if (hasNextPage && !loading) {
+              fetchProducts(true); // load more
+            }
+          }}
+          ListFooterComponent={
+            loading ? <View style={{ padding: 20 }} /> : null
+          }
         />
       </Animated.View>
     </View>
