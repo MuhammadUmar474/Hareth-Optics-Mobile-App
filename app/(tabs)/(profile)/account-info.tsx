@@ -4,6 +4,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { useAuthStore } from "@/store/shopifyStore";
 import { Formik } from "formik";
 import React, { useEffect } from "react";
@@ -43,6 +44,15 @@ const accountInfoSchema = Yup.object().shape({
 const AccountInfo: React.FC = () => {
   const { customerDetails, fetchCustomerDetails, updateCustomer } = useAuthStore();
   const toast = useToast();
+  const{t}=useLocal()
+
+  const [values, setValues] = useState<FormValues>({
+    name: "",
+    email: "",
+    phone: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const { logout } = useAuthStore();
 
   // Get initial values from customer details
   const getInitialValues = (): FormValues => {
@@ -106,10 +116,9 @@ const AccountInfo: React.FC = () => {
       });
     }
   };
-
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="Account Info" />
+      <Header title={t("profile.menu.accountInfo")} />
       <KeyboardAvoidingView
         behavior={Platform.select({ ios: "padding", android: undefined })}
         style={{ flex: 1 }}

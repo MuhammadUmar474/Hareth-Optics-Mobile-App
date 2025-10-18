@@ -16,6 +16,7 @@ import {
   storeBenefits,
 } from "@/constants/data";
 import { handleLargerText } from "@/constants/helper";
+import { useLocal } from "@/hooks/use-lang";
 import { MenuItem, homeApi } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,6 +43,7 @@ type ExploreProduct = {
 };
 
 const HomeScreen = () => {
+  const{t}=useLocal()
   const [isPlaying, setIsPlaying] = useState(false);
   const [mainCategories, setMainCategories] = useState<MenuItem[]>([]);
   const [handle, setHandle] = useState<string>("");

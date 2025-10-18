@@ -1,5 +1,6 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/shopifyStore";
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -22,6 +23,7 @@ const Wishlist = () => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const { wishlistItems, removeFromWishlist, setCurrentUser } = useWishlistStore();
+  const{t}=useLocal()
   const addToCart = useCartStore((state) => state.addToCart);
 
   useEffect(() => {
@@ -57,7 +59,7 @@ const Wishlist = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title="Wishlist"
+            title={t("wishlist.wishlist")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -76,14 +78,14 @@ const Wishlist = () => {
           </View>
 
           <Typography
-            title="Elevate Your Style"
+            title={t("wishlist.elevateStyle")}
             fontSize={scale(24)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
             style={styles.emptyWishlistTitle}
           />
           <Typography
-            title="Team up with your perfect pair of glasses and make a statement."
+            title={t("wishlist.elevatDescription")}
             fontSize={scale(14)}
             fontFamily="Roboto-Regular"
             color={COLORS.grey29}
@@ -105,7 +107,7 @@ const Wishlist = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Wishlist"
+          title={t("wishlist.wishlist")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -155,7 +157,7 @@ const Wishlist = () => {
                 onPress={() => handleAddToCart(item)}
               >
                 <Typography
-                  title="Add to Cart"
+                  title={t("purchases.addtoCart")}
                   fontSize={scale(12)}
                   color={COLORS.white}
                   fontFamily="Roboto-Bold"

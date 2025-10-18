@@ -1,6 +1,7 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { DeliveryOption, deliveryOptions } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -12,7 +13,9 @@ import {
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
-const Delivery = () => {
+const Delivery = () => {  
+  const { t } = useLocal()
+
   const router = useRouter();
   const [options, setOptions] = useState<DeliveryOption[]>(deliveryOptions);
 

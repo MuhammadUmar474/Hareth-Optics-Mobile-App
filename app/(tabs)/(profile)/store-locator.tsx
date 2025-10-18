@@ -4,11 +4,13 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useMemo, useState } from "react";
 import { FlatList, View } from "react-native";
 
 const StoreLocator: React.FC = () => {
   const [search, setSearch] = useState("");
+  const{t}=useLocal()
 
   const stores: StoreItem[] = [
     {
@@ -50,7 +52,7 @@ const StoreLocator: React.FC = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="Store Locator" />
+      <Header title={t("profile.menu.storeLocator")} />
       <View style={{ padding: SIZES.padding, paddingBottom: 0 }}>
         <CustomTextInput
           iconName="search"

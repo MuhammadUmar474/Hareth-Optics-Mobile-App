@@ -1,5 +1,6 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -15,6 +16,7 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const ShoppingCart = () => {
+  const{t}=useLocal()
   const router = useRouter();
   const { cartItems, removeFromCart, updateQuantity: updateCartQuantity } = useCartStore();
   const [promoCode, setPromoCode] = useState<string>("");
@@ -52,7 +54,7 @@ const ShoppingCart = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title="Cart"
+            title={t("purchases.cart")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -68,14 +70,14 @@ const ShoppingCart = () => {
             contentFit="contain"
           />
           <Typography
-            title="Your Cart is Waiting to Shine"
+            title={t("purchases.yourCartTitle")}
             fontSize={scale(20)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
             style={styles.emptyCartTitle}
           />
           <Typography
-            title="Don't leave your vision on hold — discover the perfect frame, lenses, and styles to match your look."
+            title={t("purchases.yourCartDescription")}
             fontSize={scale(14)}
             fontFamily="Roboto-Regular"
             color={COLORS.grey29}
@@ -97,7 +99,7 @@ const ShoppingCart = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Shopping Cart"
+          title={"Shopping Cart"}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -185,14 +187,14 @@ const ShoppingCart = () => {
         <View style={styles.promoContainer}>
           <TextInput
             style={styles.promoInput}
-            placeholder="Enter Promo Code"
+            placeholder={t("purchases.enterPromoCode")}
             placeholderTextColor={COLORS.grey10}
             value={promoCode}
             onChangeText={setPromoCode}
           />
           <TouchableOpacity style={styles.applyButton}>
             <Typography
-              title="Apply"
+              title={t("home.apply")}
               fontSize={scale(14)}
               fontFamily="Roboto-Bold"
               color={COLORS.primary}
@@ -205,7 +207,7 @@ const ShoppingCart = () => {
         <View style={styles.summaryContainer}>
           <View style={styles.summaryRow}>
             <Typography
-              title="Subtotal"
+              title={t("purchases.subtotal")}
               fontSize={scale(15)}
               fontFamily="Roboto-Regular"
               color={COLORS.grey29}
@@ -223,7 +225,7 @@ const ShoppingCart = () => {
 
           <View style={styles.summaryRow}>
             <Typography
-              title="Shipping"
+              title={t("purchases.shipping")}
               fontSize={scale(15)}
               fontFamily="Roboto-Regular"
               color={COLORS.grey29}
@@ -241,7 +243,7 @@ const ShoppingCart = () => {
 
           <View style={styles.summaryRow}>
             <Typography
-              title="Estimated Tax"
+              title={t("purchases.estimatedTax")}
               fontSize={scale(15)}
               fontFamily="Roboto-Regular"
               color={COLORS.grey29}
@@ -259,7 +261,7 @@ const ShoppingCart = () => {
 
           <View style={styles.summaryRow}>
             <Typography
-              title="Total"
+              title={t("purchases.total")}
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
@@ -282,7 +284,7 @@ const ShoppingCart = () => {
             onPress={() => router.push("/delivery-address")}
           >
             <Typography
-              title="Proceed to Checkout"
+              title={t("purchases.proceedToCheckout")}
               fontSize={scale(16)}
               color={COLORS.white}
               fontFamily="Poppins-Bold"

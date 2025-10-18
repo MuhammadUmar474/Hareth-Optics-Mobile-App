@@ -1,6 +1,7 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { orderConfirmationData } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -8,6 +9,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
 const OrderConfirmation = () => {
+  const {t}=useLocal()
   const router = useRouter();
   const orderData = orderConfirmationData;
 
@@ -22,7 +24,7 @@ const OrderConfirmation = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Order Confirmation"
+          title={t("orderDetail.orderConfirmation")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -44,7 +46,7 @@ const OrderConfirmation = () => {
           </View>
 
           <Typography
-            title="Order Received!"
+            title={t("orderDetail.orderReceived")}
             fontSize={scale(24)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -64,7 +66,7 @@ const OrderConfirmation = () => {
         <View style={styles.orderDetailsSection}>
           <View style={styles.detailsCard}>
             <Typography
-              title="Order Details"
+              title={t("orderDetail.orderDetails")}
               fontSize={scale(18)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
@@ -75,7 +77,7 @@ const OrderConfirmation = () => {
 
             <View style={styles.detailRow}>
               <Typography
-                title="Order Number"
+                title={t("orderDetail.orderNumber")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
@@ -93,7 +95,7 @@ const OrderConfirmation = () => {
 
             <View style={styles.detailRow}>
               <Typography
-                title="Estimated Delivery"
+                title={t("purchases.estimatedDelivery")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
@@ -114,7 +116,7 @@ const OrderConfirmation = () => {
       <View style={styles.bottomSection}>
         <TouchableOpacity style={styles.trackOrderButton} onPress={() => router.push("/track-order")}>
           <Typography
-            title="Track Order"
+            title={t("common.trackOrder")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"
@@ -124,7 +126,7 @@ const OrderConfirmation = () => {
 
         <TouchableOpacity style={styles.continueShoppingButton} onPress={() => router.push("/(tabs)/(a-home)")}>
           <Typography
-            title="Continue Shopping"
+            title={t("purchases.continueShopping")}
             fontSize={scale(16)}
             color={COLORS.primary}
             fontFamily="Poppins-Bold"

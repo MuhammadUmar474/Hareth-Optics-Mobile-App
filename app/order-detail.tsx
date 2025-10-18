@@ -3,6 +3,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { styles } from "@/styles/order/order-detail";
 import { orderDetails, OrderStatus } from "@/utils/data";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +18,7 @@ interface OrderStatus {
 }
 
 const OrderDetails = () => {
+ const{t}=useLocal()
   const orderStatuses: OrderStatus[] = OrderStatus;
 
   const renderOrderStatus = (status: OrderStatus, index: number) => {
@@ -59,7 +61,7 @@ const OrderDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Order Details" />
+      <Header title={t("orderDetail.orderDetails")} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
