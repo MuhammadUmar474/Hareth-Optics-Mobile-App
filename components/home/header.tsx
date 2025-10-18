@@ -3,7 +3,6 @@ import { suggestionCategories } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
-import { useAuthGuard } from "@/utils/auth";
 import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -25,7 +24,6 @@ const StickyHeader = () => {
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
   const [isVisible, setIsVisible] = useState(false);
-  const { checkAuthAndNavigate } = useAuthGuard();
 
   const { isRtl,t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
@@ -105,7 +103,7 @@ const StickyHeader = () => {
         <View style={dynamicStyles.headerIcons}>
           <TouchableOpacity
             style={styles.icon}
-            onPress={() => checkAuthAndNavigate("/wishlist", "Please login to view your wishlist")}
+            onPress={() => router.navigate("/wishlist")}
           >
             <FontAwesome6 name="heart" size={20} color={COLORS.black} />
             {wishlistCount > 0 ? (
@@ -118,7 +116,7 @@ const StickyHeader = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.icon}
-            onPress={() => checkAuthAndNavigate("/shopping-cart", "Please login to view your cart")}
+            onPress={() => router.navigate("/shopping-cart")}
           >
             <Ionicons name="cart-outline" size={22} color={COLORS.black} />
             {cartCount > 0 ? (

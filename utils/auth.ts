@@ -14,10 +14,16 @@ export const useAuth = () => {
   };
 };
 
-export const logoutUser = () => {
+export const logoutUser = async () => {
   const { logout } = useAuthStore.getState();
-  logout();
+  await logout();
 };
+
+export const refreshUserToken = async () => {
+  const { refreshToken } = useAuthStore.getState();
+  await refreshToken();
+};
+
 
 export const useAuthGuard = () => {
   const { isAuthenticated } = useAuthStore();

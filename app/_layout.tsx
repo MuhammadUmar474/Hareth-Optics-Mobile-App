@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { StatusBar, View } from "react-native";
 import "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import { ToastProvider } from "react-native-toast-notifications";
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
@@ -19,32 +19,33 @@ export default function RootLayout() {
   }, [language]);
 
   return (
-    <AuthProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <StatusBar />
-        <View style={{ backgroundColor: COLORS.white, height: insets.top }} />
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="product-details" options={{ headerShown: false }} />
-          <Stack.Screen name="size-guide" options={{ headerShown: false }} />
-          <Stack.Screen name="shopping-cart" options={{ headerShown: false }} />
-          <Stack.Screen name="wishlist" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="delivery-address"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="delivery" options={{ headerShown: false }} />
-          <Stack.Screen name="payment" options={{ headerShown: false }} />
-          <Stack.Screen name="order-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="order-summary" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="order-confirmation"
-            options={{ headerShown: false }}
-          />
-        </Stack>
-        <Toast />
-      </ThemeProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <StatusBar />
+          <View style={{ backgroundColor: COLORS.white, height: insets.top }} />
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="product-details" options={{ headerShown: false }} />
+            <Stack.Screen name="size-guide" options={{ headerShown: false }} />
+            <Stack.Screen name="shopping-cart" options={{ headerShown: false }} />
+            <Stack.Screen name="wishlist" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="delivery-address"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="delivery" options={{ headerShown: false }} />
+            <Stack.Screen name="payment" options={{ headerShown: false }} />
+            <Stack.Screen name="order-detail" options={{ headerShown: false }} />
+            <Stack.Screen name="order-summary" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="order-confirmation"
+              options={{ headerShown: false }}
+            />
+          </Stack>
+        </ThemeProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }

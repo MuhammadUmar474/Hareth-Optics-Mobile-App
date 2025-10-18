@@ -21,26 +21,6 @@ const Profile = () => {
 
   const localizedSettings = useMemo(
     () => [
-      // {
-      //   title: t("profile.menu.trackOrder"),
-      //   iconName: "truck",
-      //   link: "/track-order",
-      // },
-      // {
-      //   title: t("profile.menu.gold"),
-      //   iconName: "star",
-      //   link: "/hareth-gold-membership",
-      // },
-      // {
-      //   title: t("profile.menu.giftBalance"),
-      //   iconName: "gift",
-      //   link: "/view-gift-card-balance",
-      // },
-      // {
-      //   title: t("profile.menu.savedPayments"),
-      //   iconName: "credit-card",
-      //   link: "/saved-payment-methods",
-      // },
       {
         title: t("profile.menu.addressBook"),
         iconName: "bookmark",

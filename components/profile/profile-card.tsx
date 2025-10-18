@@ -1,9 +1,11 @@
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 import { useLangStore } from "@/store/langStore";
+import { useAuthStore } from "@/store/shopifyStore";
+import { logoutUser } from "@/utils/auth";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 import Button from "../ui/custom-button";
@@ -13,13 +15,31 @@ const ProfileCard = () => {
   const { t } = useTranslation();
   const lang = useLangStore((state) => state.language);
   const rtl = lang === "ar";
+  const { isAuthenticated, user, customerDetails, loading } = useAuthStore();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("❌ Logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View
         style={[styles.row, { flexDirection: rtl ? "row-reverse" : "row" }]}
       >
         <Image
-          source={require("@/assets/images/premium.jpg")}
+          source={
+            isAuthenticated
+              ? require("@/assets/images/premium.jpg")
+              : require("@/assets/images/home/profile.png")
+          }
           style={styles.image}
           contentFit="cover"
         />
@@ -32,45 +52,110 @@ const ProfileCard = () => {
             },
           ]}
         >
-          <Typography
-            title={t("common.hello")}
-            fontSize={SIZES.padding}
-            style={{
-              fontWeight: "bold",
-              alignSelf: rtl ? "flex-end" : "flex-start",
-            }}
-          />
-          <Typography
-            title={t("common.loginPrompt")}
-            fontSize={SIZES.caption}
-            color={COLORS.grey6}
-            style={{
-              fontWeight: "400",
-            }}
-          />
+          {isAuthenticated && customerDetails ? (
+            <>
+              <Typography
+                title={`${customerDetails.firstName} ${customerDetails.lastName}`}
+                fontSize={SIZES.padding}
+                style={{
+                  fontWeight: "bold",
+                  alignSelf: rtl ? "flex-end" : "flex-start",
+                }}
+              />
+              <Typography
+                title={customerDetails.email}
+                fontSize={SIZES.caption}
+                color={COLORS.grey6}
+                style={{
+                  fontWeight: "400",
+                }}
+              />
+            </>
+          ) : isAuthenticated && user ? (
+            <>
+              <Typography
+                title={
+                  user.email.split("@")[0].charAt(0).toUpperCase() +
+                  user.email.split("@")[0].slice(1)
+                }
+                fontSize={SIZES.padding}
+                style={{
+                  fontWeight: "bold",
+                  alignSelf: rtl ? "flex-end" : "flex-start",
+                }}
+              />
+              <Typography
+                title={user.email}
+                fontSize={SIZES.caption}
+                color={COLORS.grey6}
+                style={{
+                  fontWeight: "400",
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <Typography
+                title={t("common.hello")}
+                fontSize={SIZES.padding}
+                style={{
+                  fontWeight: "bold",
+                  alignSelf: rtl ? "flex-end" : "flex-start",
+                }}
+              />
+              <Typography
+                title={t("common.loginPrompt")}
+                fontSize={SIZES.caption}
+                color={COLORS.grey6}
+                style={{
+                  fontWeight: "400",
+                }}
+              />
+            </>
+          )}
         </View>
       </View>
       <View style={styles.divider} />
-      <View style={[styles.buttonContainer,{flexDirection: rtl ? "row-reverse" : "row"}]}>
-        <Button
-          color="primary"
-          style={[
-            styles.button,
-       
-          ]}
-        >
-          <Typography
-            title={t("common.loginOrSignup")}
-            fontSize={SIZES.desc}
-            color={COLORS.white}
+      <View
+        style={[
+          styles.buttonContainer,
+          { flexDirection: rtl ? "row-reverse" : "row" },
+        ]}
+      >
+        {isAuthenticated ? (
+          <Button
+            color="primary"
+            style={[styles.button]}
+            onPress={handleLogout}
+            disabled={isLoggingOut || loading}
+          >
+            <Typography
+              title={isLoggingOut ? "Logging out..." : "Logout"}
+              fontSize={SIZES.desc}
+              color={COLORS.white}
+              style={{
+                fontWeight: rtl ? "500" : "700",
+              }}
+            />
+          </Button>
+        ) : (
+          <Button
+            color="primary"
+            style={[styles.button]}
             onPress={() => {
               router.push("/(auth)/sign-up");
             }}
-            style={{
-              fontWeight: rtl ? "500" : "700",
-            }}
-          />
-        </Button>
+          >
+            <Typography
+              title={t("common.loginOrSignup")}
+              fontSize={SIZES.desc}
+              color={COLORS.white}
+              style={{
+                fontWeight: rtl ? "500" : "700",
+              }}
+            />
+          </Button>
+        )}
         <Button
           bordered
           style={styles.button}

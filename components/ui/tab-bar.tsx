@@ -1,10 +1,8 @@
 import { COLORS } from "@/constants/colors";
-import { useAuthGuard } from "@/utils/auth";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, LayoutChangeEvent, Platform, StyleSheet, View } from "react-native";
+import { LayoutChangeEvent, Platform, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -20,7 +18,6 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const INDICATOR_SHRINK = 16; // total pixels less than button width
   const indicatorWidth = Math.max(0, buttonWidth - INDICATOR_SHRINK);
   const tabPostionX = useSharedValue(0);
-  const { isAuthenticated } = useAuthGuard();
 
   const getTabOffset = useCallback(
     (i: number) =>
@@ -114,29 +111,6 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
         const isFocused = state.index === index;
 
         const onPress = () => {
-          if (route.name === "(a-home)") {
-            navigation.navigate(route.name);
-            return;
-          }
-      
-          if (!isAuthenticated) {
-            Alert.alert(
-              "Authentication Required",
-              "Please login to access this feature",
-              [
-                {
-                  text: "Cancel",
-                  style: "cancel",
-                },
-                {
-                  text: "Login",
-                  onPress: () => router.push('/(auth)/login'),
-                },
-              ]
-            );
-            return;
-          }
-      
           tabPostionX.value = withSpring(getTabOffset(index), {
             duration: 350,
           });
