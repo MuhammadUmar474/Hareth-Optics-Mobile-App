@@ -1,6 +1,5 @@
 import { COLORS } from "@/constants/colors";
 import { TrendingCardData, trendingCards } from "@/constants/data";
-import { useAuthGuard } from "@/utils/auth";
 import { Feather } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { router } from "expo-router";
@@ -57,8 +56,6 @@ const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
 };
 
 const TrendingNow: React.FC = () => {
-  const { checkAuthAndNavigate } = useAuthGuard();
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -81,7 +78,7 @@ const TrendingNow: React.FC = () => {
           <TrendingCard
             key={card.id}
             data={card}
-            onPress={() => checkAuthAndNavigate(`/product-details`, "Please login to view product details")}
+            onPress={() => router.navigate("/product-details")}
           />
         ))}
       </ScrollView>

@@ -6196,7 +6196,7 @@ __metadata:
     react-native-safe-area-context: "npm:~5.6.0"
     react-native-screens: "npm:~4.16.0"
     react-native-size-matters: "npm:^0.4.2"
-    react-native-toast-message: "npm:^2.2.0"
+    react-native-toast-notifications: "npm:^3.4.0"
     react-native-web: "npm:~0.21.0"
     react-native-worklets: "npm:0.5.1"
     typescript: "npm:~5.9.2"
@@ -8992,13 +8992,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-toast-message@npm:^2.2.0":
-  version: 2.3.3
-  resolution: "react-native-toast-message@npm:2.3.3"
+"react-native-toast-notifications@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "react-native-toast-notifications@npm:3.4.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10/9a61a8f3d4aad8245b87c3018c0d56b5ca9a2e5a500c2c4734e12f4314d2c0648b4bfe4b90a063b482b81efddec5b3cef82864d04261886224abf960230e08b5
+  checksum: 10/4b029617537ffec712c1ba7b3bea62358939f1214c67e54c695ac974fabf779345fc62e50c6fc77f958873a479895c49bb858b84131b89264997c8ac3c981164
   languageName: node
   linkType: hard
 

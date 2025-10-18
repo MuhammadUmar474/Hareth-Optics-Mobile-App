@@ -5,14 +5,21 @@ import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 import { useAuthStore } from "@/store/shopifyStore";
 import { AuthMode, SignupFormValues } from "@/types/auth";
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
 import React from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
-import Toast from "react-native-toast-message";
+import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
 
 const emailValidationSchema = Yup.object().shape({
@@ -71,6 +78,7 @@ const whatsappValidationSchema = Yup.object().shape({
 const SignUp = () => {
   const [mode, setMode] = React.useState<AuthMode>("email");
   const { signup, loading, error, clearError } = useAuthStore();
+  const toast = useToast();
 
   React.useEffect(() => {
     if (error) {
@@ -106,36 +114,30 @@ const SignUp = () => {
 
   const handleSubmit = async (values: SignupFormValues) => {
     if (mode !== "email") {
-      Toast.show({
-        type: "error",
-        text1: "Signup Error",
-        text2: "Only email signup is supported with Shopify API",
-        position: "top",
+      toast.show("Only email signup is supported with Shopify API", {
+        type: "danger",
+        placement: "top",
       });
       return;
     }
 
     if (!values.email) {
-      Toast.show({
-        type: "error",
-        text1: "Signup Error",
-        text2: "Email is required",
-        position: "top",
+      toast.show("Email is required", {
+        type: "danger",
+        placement: "top",
       });
       return;
     }
 
     // Split full name into first and last name
-    const nameParts = values.fullName.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const nameParts = values.fullName.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
 
     if (!firstName) {
-      Toast.show({
-        type: "error",
-        text1: "Signup Error",
-        text2: "Please enter your full name",
-        position: "top",
+      toast.show("Please enter your full name", {
+        type: "danger",
+        placement: "top",
       });
       return;
     }
@@ -148,33 +150,30 @@ const SignUp = () => {
         password: values.password,
         acceptsMarketing: true,
       });
-      
-      Toast.show({
+
+      toast.show("Welcome! You have been automatically logged in.", {
         type: "success",
-        text1: "Account Created",
-        text2: "Welcome! You have been automatically logged in.",
-        position: "top",
+        placement: "top",
       });
-      
+
       router.push("/(tabs)/(a-home)");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Please try again";
-      Toast.show({
-        type: "error",
-        text1: "Signup Failed",
-        text2: errorMessage,
-        position: "top",
+      const errorMessage =
+        err instanceof Error ? err.message : "Please try again";
+      toast.show(errorMessage, {
+        type: "danger",
+        placement: "top",
       });
     }
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -196,31 +195,32 @@ const SignUp = () => {
           style={styles.subtitle}
         />
 
-      <View style={styles.segmentContainer}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => setMode("email")}
-          style={[
-            styles.segment,
-            { borderTopLeftRadius: 5, borderBottomLeftRadius: 5 },
-            mode === "email" && styles.segmentActive,
-          ]}
-        >
-          <Feather
-            name="mail"
-            size={16}
-            color={mode === "email" ? COLORS.white : COLORS.grey22}
-            style={{ marginRight: 8 }}
-          />
-          <Typography
-            title="Email"
-            fontSize={SIZES.body}
-            color={mode === "email" ? COLORS.white : COLORS.grey22}
-            style={{ fontWeight: "600" }}
-          />
-        </TouchableOpacity>
+        <View style={styles.segmentContainer}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => setMode("email")}
+            style={[
+              styles.segment,
+              { borderTopLeftRadius: 5, borderBottomLeftRadius: 5 },
+              mode === "email" && styles.segmentActive,
+            ]}
+          >
+            <Feather
+              name="mail"
+              size={16}
+              color={mode === "email" ? COLORS.white : COLORS.grey22}
+              style={{ marginRight: 8 }}
+            />
+            <Typography
+              title="Email"
+              fontSize={SIZES.body}
+              color={mode === "email" ? COLORS.white : COLORS.grey22}
+              style={{ fontWeight: "600" }}
+            />
+          </TouchableOpacity>
 
-        <TouchableOpacity
+          {/* TODO: Might be need in future */}
+          {/* <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => setMode("phone")}
           style={[styles.segment, mode === "phone" && styles.segmentActive]}
@@ -260,109 +260,133 @@ const SignUp = () => {
             color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
             style={{ fontWeight: "600" }}
           />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.formContainer}>
-        <Formik
-          initialValues={getInitialValues()}
-          validationSchema={getValidationSchema()}
-          onSubmit={handleSubmit}
-          enableReinitialize={true}
-        >
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid }) => (
-            <>
-              <CustomTextInput
-                label="Full Name"
-                placeholder="Enter your name"
-                containerStyle={{ marginBottom: 20 }}
-                height={45}
-                value={values.fullName}
-                onChangeText={handleChange("fullName")}
-                onBlur={handleBlur("fullName")}
-                error={touched.fullName && errors.fullName ? errors.fullName : undefined}
-              />
-
-              {mode === "email" ? (
+        </TouchableOpacity> */}
+        </View>
+        <View style={styles.formContainer}>
+          <Formik
+            initialValues={getInitialValues()}
+            validationSchema={getValidationSchema()}
+            onSubmit={handleSubmit}
+            enableReinitialize={true}
+          >
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              isValid,
+            }) => (
+              <>
                 <CustomTextInput
-                  label="Email"
-                  email
-                  placeholder="Enter your email"
+                  label="Full Name"
+                  placeholder="Enter your name"
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
-                  value={values.email}
-                  onChangeText={handleChange("email")}
-                  onBlur={handleBlur("email")}
-                  error={touched.email && errors.email ? errors.email : undefined}
+                  value={values.fullName}
+                  onChangeText={handleChange("fullName")}
+                  onBlur={handleBlur("fullName")}
+                  error={
+                    touched.fullName && errors.fullName
+                      ? errors.fullName
+                      : undefined
+                  }
                 />
-              ) : mode === "phone" ? (
-                <CustomTextInput
-                  label="Phone"
-                  placeholder="Enter your phone number"
-                  number
-                  iconName="phone"
-                  containerStyle={{ marginBottom: 20 }}
-                  height={45}
-                  value={values.phone}
-                  onChangeText={handleChange("phone")}
-                  onBlur={handleBlur("phone")}
-                  error={touched.phone && errors.phone ? errors.phone : undefined}
-                />
-              ) : (
-                <CustomTextInput
-                  label="WhatsApp Number"
-                  placeholder="Enter your WhatsApp number"
-                  number
-                  iconName="phone"
-                  containerStyle={{ marginBottom: 20 }}
-                  height={45}
-                  value={values.whatsapp}
-                  onChangeText={handleChange("whatsapp")}
-                  onBlur={handleBlur("whatsapp")}
-                  error={touched.whatsapp && errors.whatsapp ? errors.whatsapp : undefined}
-                />
-              )}
 
-              <CustomTextInput
-                label="Password"
-                placeholder="Enter your password"
-                height={45}
-                isSecure
-                value={values.password}
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                error={touched.password && errors.password ? errors.password : undefined}
-              />
-
-              {error && (
-                <View style={styles.errorContainer}>
-                  <Typography
-                    title={error}
-                    fontSize={SIZES.body}
-                    color={COLORS.red}
-                    style={styles.errorText}
+                {mode === "email" ? (
+                  <CustomTextInput
+                    label="Email"
+                    email
+                    placeholder="Enter your email"
+                    containerStyle={{ marginBottom: 20 }}
+                    height={45}
+                    value={values.email}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    error={
+                      touched.email && errors.email ? errors.email : undefined
+                    }
                   />
-                </View>
-              )}
+                ) : mode === "phone" ? (
+                  <CustomTextInput
+                    label="Phone"
+                    placeholder="Enter your phone number"
+                    number
+                    iconName="phone"
+                    containerStyle={{ marginBottom: 20 }}
+                    height={45}
+                    value={values.phone}
+                    onChangeText={handleChange("phone")}
+                    onBlur={handleBlur("phone")}
+                    error={
+                      touched.phone && errors.phone ? errors.phone : undefined
+                    }
+                  />
+                ) : (
+                  <CustomTextInput
+                    label="WhatsApp Number"
+                    placeholder="Enter your WhatsApp number"
+                    number
+                    iconName="phone"
+                    containerStyle={{ marginBottom: 20 }}
+                    height={45}
+                    value={values.whatsapp}
+                    onChangeText={handleChange("whatsapp")}
+                    onBlur={handleBlur("whatsapp")}
+                    error={
+                      touched.whatsapp && errors.whatsapp
+                        ? errors.whatsapp
+                        : undefined
+                    }
+                  />
+                )}
 
-              <Button
-                color="primary"
-                style={{ marginTop: 30, borderRadius: 10, height: 45 }}
-                onPress={() => handleSubmit()}
-                disabled={!isValid || loading}
-              >
-                <Typography
-                  title={loading ? "Creating Account..." : "Create Account"}
-                  fontSize={SIZES.body}
-                  style={{ fontWeight: "700" }}
-                  color={COLORS.white}
+                <CustomTextInput
+                  label="Password"
+                  placeholder="Enter your password"
+                  height={45}
+                  isSecure
+                  value={values.password}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
+                  error={
+                    touched.password && errors.password
+                      ? errors.password
+                      : undefined
+                  }
                 />
-              </Button>
-            </>
-          )}
-        </Formik>
 
-        {/* TODO: Might need in future */}
-        {/* <View style={styles.dividerContainer}>
+                {error && (
+                  <View style={styles.errorContainer}>
+                    <Typography
+                      title={error}
+                      fontSize={SIZES.body}
+                      color={COLORS.red}
+                      style={styles.errorText}
+                    />
+                  </View>
+                )}
+
+                <Button
+                  color="primary"
+                  style={{ marginTop: 30, borderRadius: 10, height: 45 }}
+                  onPress={() => handleSubmit()}
+                  disabled={!isValid || loading}
+                >
+                  <Typography
+                    title={loading ? "Creating Account..." : "Create Account"}
+                    fontSize={SIZES.body}
+                    style={{ fontWeight: "700" }}
+                    color={COLORS.white}
+                  />
+                </Button>
+              </>
+            )}
+          </Formik>
+
+          {/* TODO: Might need in future */}
+          {/* <View style={styles.dividerContainer}>
           <View style={styles.divider} />
           <Typography
             title="Or Continue with"
@@ -375,17 +399,16 @@ const SignUp = () => {
           <AntDesign name="apple" size={24} color="black" />
           <AntDesign name="google" size={24} color="green" />
         </View> */}
-        <Typography
-          title="Already have an account? Login"
-          fontSize={SIZES.body}
-          style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
-          onPress={() => {
-            router.push("/(auth)/login");
-          }}
-        />
+          <Typography
+            title="Already have an account? Login"
+            fontSize={SIZES.body}
+            style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
+            onPress={() => {
+              router.push("/(auth)/login");
+            }}
+          />
         </View>
       </ScrollView>
-      <Toast />
     </KeyboardAvoidingView>
   );
 };

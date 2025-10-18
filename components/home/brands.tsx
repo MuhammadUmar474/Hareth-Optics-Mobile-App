@@ -100,9 +100,9 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {latestProducts.map((card) => (
+        {latestProducts.map((card, index) => (
           <BrandCard
-            key={card.id}
+            key={card.id || `product-${index}`}
             data={card.node}
             onPress={() => router.push(`/(tabs)/(explore)`)}
           />

@@ -5,8 +5,8 @@ import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 import { useAuthStore } from "@/store/shopifyStore";
-import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { Formik } from "formik";
+import React, { useEffect } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,83 +14,97 @@ import {
   ScrollView,
   View,
 } from "react-native";
-import Toast from "react-native-toast-message";
+import { useToast } from "react-native-toast-notifications";
+import * as Yup from "yup";
 
 interface FormValues {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
 }
 
-interface FormErrors {
-  name?: string;
-  email?: string;
-  phone?: string;
-}
+const accountInfoSchema = Yup.object().shape({
+  firstName: Yup.string()
+    .min(2, "First name must be at least 2 characters")
+    .required("First name is required"),
+  lastName: Yup.string()
+    .min(2, "Last name must be at least 2 characters")
+    .required("Last name is required"),
+  email: Yup.string()
+    .email("Please enter a valid email")
+    .required("Email is required"),
+  phone: Yup.string()
+    .matches(/^[0-9+\-\s()]+$/, "Please enter a valid phone number")
+    .min(7, "Phone number must be at least 7 digits")
+    .required("Phone number is required"),
+});
 
 const AccountInfo: React.FC = () => {
-  const [values, setValues] = useState<FormValues>({
-    name: "",
-    email: "",
-    phone: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const { logout } = useAuthStore();
+  const { customerDetails, fetchCustomerDetails, updateCustomer } = useAuthStore();
+  const toast = useToast();
 
-  const canSave = useMemo(() => {
+  // Get initial values from customer details
+  const getInitialValues = (): FormValues => {
+    if (customerDetails) {
+      return {
+        firstName: customerDetails.firstName || "",
+        lastName: customerDetails.lastName || "",
+        email: customerDetails.email || "",
+        phone: customerDetails.phone || "",
+      };
+    }
+    return {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+    };
+  };
+
+  // Fetch customer details when component mounts
+  useEffect(() => {
+    if (!customerDetails) {
+      fetchCustomerDetails().catch((error) => {
+        console.error("Failed to fetch customer details:", error);
+      });
+    }
+  }, [customerDetails, fetchCustomerDetails]);
+
+  // Check if form values have changed from original customer details
+  const hasChanges = (values: FormValues): boolean => {
+    if (!customerDetails) return false;
+    
     return (
-      values.name.trim().length > 1 &&
-      /\S+@\S+\.\S+/.test(values.email) &&
-      values.phone.replace(/\D/g, "").length >= 7
+      values.firstName !== (customerDetails.firstName || "") ||
+      values.lastName !== (customerDetails.lastName || "") ||
+      values.email !== (customerDetails.email || "") ||
+      values.phone !== (customerDetails.phone || "")
     );
-  }, [values]);
-
-  const handleChange = (key: keyof FormValues, value: string) => {
-    setValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const validate = (): boolean => {
-    const nextErrors: FormErrors = {};
-    if (values.name.trim().length < 2)
-      nextErrors.name = "Please enter your full name";
-    if (!/\S+@\S+\.\S+/.test(values.email))
-      nextErrors.email = "Enter a valid email";
-    if (values.phone.replace(/\D/g, "").length < 7)
-      nextErrors.phone = "Enter a valid phone number";
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
+  const handleSave = async (values: FormValues) => {
+    try {
+      if (!hasChanges(values)) {
+        Alert.alert("No Changes", "No changes were made to your account details.");
+        return;
+      }
 
-  const handleSave = () => {
-    if (!validate()) return;
-    Alert.alert("Saved", "Your account details have been updated.");
-  };
+      await updateCustomer({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.phone,
+      });
 
-  const handleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: () => {
-            logout();
-            Toast.show({
-              type: "success",
-              text1: "Logged Out",
-              text2: "You have been successfully logged out",
-              position: "top",
-            });
-            router.replace("/(auth)/login");
-          },
-        },
-      ]
-    );
+      Alert.alert("Success", "Your account details have been updated successfully.");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update account details";
+      toast.show(errorMessage, {
+        type: "danger",
+        placement: "top",
+      });
+    }
   };
 
   return (
@@ -107,73 +121,86 @@ const AccountInfo: React.FC = () => {
           }}
           keyboardShouldPersistTaps="handled"
         >
-          <CustomTextInput
-            label="Name"
-            placeHolder="Jane Doe"
-            value={values.name}
-            onChangeText={(text) => handleChange("name", text)}
-            containerStyle={{ marginBottom: SIZES.padding }}
-            error={errors.name}
-            returnKeyType="next"
-          />
-
-          <CustomTextInput
-            label="Email"
-            email
-            placeHolder="jane.doe@example.com"
-            value={values.email}
-            onChangeText={(text) => handleChange("email", text)}
-            containerStyle={{ marginBottom: SIZES.padding }}
-            error={errors.email}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            returnKeyType="next"
-          />
-
-          <CustomTextInput
-            label="Phone Number"
-            placeHolder="+1 (555) 123-4567"
-            value={values.phone}
-            onChangeText={(text) => handleChange("phone", text)}
-            containerStyle={{ marginBottom: SIZES.padding * 1.5 }}
-            error={errors.phone}
-            keyboardType="phone-pad"
-            returnKeyType="done"
-          />
-
-          <Button
-            color="primary"
-            onPress={handleSave}
-            disabled={!canSave}
-            style={{ marginTop: SIZES.padding, borderRadius: 10, height: 45 }}
+          <Formik<FormValues>
+            initialValues={getInitialValues()}
+            validationSchema={accountInfoSchema}
+            onSubmit={handleSave}
+            enableReinitialize={true}
           >
-            <Typography
-              title="Save Changes"
-              color={COLORS.white}
-              fontFamily="Inter-Bold"
-            />
-          </Button>
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              isValid,
+            }) => (
+              <>
+                <CustomTextInput
+                  label="First Name"
+                  placeHolder="John"
+                  value={values.firstName}
+                  onChangeText={handleChange("firstName")}
+                  onBlur={handleBlur("firstName")}
+                  containerStyle={{ marginBottom: SIZES.padding }}
+                  error={touched.firstName && errors.firstName ? errors.firstName : undefined}
+                  returnKeyType="next"
+                />
 
-          <Button
-            color="secondary"
-            onPress={handleLogout}
-            style={{ 
-              marginTop: SIZES.padding, 
-              borderRadius: 10, 
-              height: 45,
-              backgroundColor: COLORS.red || "#dc3545",
-              borderWidth: 1,
-              borderColor: COLORS.red || "#dc3545"
-            }}
-          >
-            <Typography
-              title="Logout"
-              color={COLORS.white}
-              fontFamily="Inter-Bold"
-            />
-          </Button>
+                <CustomTextInput
+                  label="Last Name"
+                  placeHolder="Doe"
+                  value={values.lastName}
+                  onChangeText={handleChange("lastName")}
+                  onBlur={handleBlur("lastName")}
+                  containerStyle={{ marginBottom: SIZES.padding }}
+                  error={touched.lastName && errors.lastName ? errors.lastName : undefined}
+                  returnKeyType="next"
+                />
+
+                <CustomTextInput
+                  label="Email"
+                  email
+                  placeHolder="john.doe@example.com"
+                  value={values.email}
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
+                  containerStyle={{ marginBottom: SIZES.padding }}
+                  error={touched.email && errors.email ? errors.email : undefined}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  returnKeyType="next"
+                />
+
+                <CustomTextInput
+                  label="Phone Number"
+                  placeHolder="+1 (555) 123-4567"
+                  value={values.phone}
+                  onChangeText={handleChange("phone")}
+                  onBlur={handleBlur("phone")}
+                  containerStyle={{ marginBottom: SIZES.padding * 1.5 }}
+                  error={touched.phone && errors.phone ? errors.phone : undefined}
+                  keyboardType="phone-pad"
+                  returnKeyType="done"
+                />
+
+                <Button
+                  color="primary"
+                  onPress={() => handleSubmit()}
+                  disabled={!isValid}
+                  style={{ marginTop: SIZES.padding, borderRadius: 10, height: 45 }}
+                >
+                  <Typography
+                    title="Save Changes"
+                    color={COLORS.white}
+                    fontFamily="Inter-Bold"
+                  />
+                </Button>
+              </>
+            )}
+          </Formik>
         </ScrollView>
-        <Toast />
       </KeyboardAvoidingView>
     </View>
   );

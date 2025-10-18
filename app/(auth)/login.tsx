@@ -5,14 +5,21 @@ import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 import { useAuthStore } from "@/store/shopifyStore";
 import { AuthMode, LoginFormValues } from "@/types/auth";
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
 import React from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
-import Toast from "react-native-toast-message";
+import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
 
 const emailLoginSchema = Yup.object().shape({
@@ -59,6 +66,7 @@ const whatsappLoginSchema = Yup.object().shape({
 const Login = () => {
   const [mode, setMode] = React.useState<AuthMode>("email");
   const { login, loading, error, clearError } = useAuthStore();
+  const toast = useToast();
 
   React.useEffect(() => {
     if (error) {
@@ -93,23 +101,18 @@ const Login = () => {
   };
 
   const onSubmit = async (values: LoginFormValues) => {
-
     if (mode !== "email") {
-      Toast.show({
-        type: "error",
-        text1: "Login Error",
-        text2: "Only email login is supported with Shopify API",
-        position: "top",
+      toast.show("Only email login is supported with Shopify API", {
+        type: "danger",
+        placement: "top",
       });
       return;
     }
 
     if (!values.email) {
-      Toast.show({
-        type: "error",
-        text1: "Login Error",
-        text2: "Email is required",
-        position: "top",
+      toast.show("Email is required", {
+        type: "danger",
+        placement: "top",
       });
       return;
     }
@@ -120,32 +123,31 @@ const Login = () => {
         password: values.password,
       });
 
-      Toast.show({
+      toast.show("Welcome back!", {
         type: "success",
-        text1: "Login Successful",
-        text2: "Welcome back!",
-        position: "top",
+        placement: "top",
       });
-      
+
       router.push("/(tabs)/(a-home)");
     } catch (err) {
       console.error("❌ Login error caught in component:", err);
-      const errorMessage = err instanceof Error ? err.message : "Please check your credentials and try again";
-      Toast.show({
-        type: "error",
-        text1: "Login Failed",
-        text2: errorMessage,
-        position: "top",
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Please check your credentials and try again";
+      toast.show(errorMessage, {
+        type: "danger",
+        placement: "top",
       });
     }
   };
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -167,31 +169,32 @@ const Login = () => {
           style={styles.subtitle}
         />
         <View style={styles.formContainer}>
-        <View style={styles.segmentContainer}>
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setMode("email")}
-            style={[
-              styles.segment,
-              { borderTopLeftRadius: 5, borderBottomLeftRadius: 5 },
-              mode === "email" && styles.segmentActive,
-            ]}
-          >
-            <Feather
-              name="mail"
-              size={16}
-              color={mode === "email" ? COLORS.white : COLORS.grey22}
-              style={{ marginRight: 8 }}
-            />
-            <Typography
-              title="Email"
-              fontSize={SIZES.body}
-              color={mode === "email" ? COLORS.white : COLORS.grey22}
-              style={{ fontWeight: "600" }}
-            />
-          </TouchableOpacity>
+          <View style={styles.segmentContainer}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => setMode("email")}
+              style={[
+                styles.segment,
+                { borderTopLeftRadius: 5, borderBottomLeftRadius: 5 },
+                mode === "email" && styles.segmentActive,
+              ]}
+            >
+              <Feather
+                name="mail"
+                size={16}
+                color={mode === "email" ? COLORS.white : COLORS.grey22}
+                style={{ marginRight: 8 }}
+              />
+              <Typography
+                title="Email"
+                fontSize={SIZES.body}
+                color={mode === "email" ? COLORS.white : COLORS.grey22}
+                style={{ fontWeight: "600" }}
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity
+            {/* TODO: Might be need in future */}
+            {/* <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => setMode("phone")}
             style={[styles.segment, mode === "phone" && styles.segmentActive]}
@@ -231,117 +234,117 @@ const Login = () => {
               color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
               style={{ fontWeight: "600" }}
             />
-          </TouchableOpacity>
-        </View>
+          </TouchableOpacity> */}
+          </View>
 
-        <Formik<LoginFormValues>
-          initialValues={getInitialValues()}
-          validationSchema={getValidationSchema()}
-          onSubmit={onSubmit}
-          enableReinitialize={true}
-        >
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            values,
-            errors,
-            touched,
-            isValid,
-          }) => (
-            <>
-              {mode === "email" ? (
+          <Formik<LoginFormValues>
+            initialValues={getInitialValues()}
+            validationSchema={getValidationSchema()}
+            onSubmit={onSubmit}
+            enableReinitialize={true}
+          >
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              isValid,
+            }) => (
+              <>
+                {mode === "email" ? (
+                  <CustomTextInput
+                    label="Email"
+                    email
+                    placeholder="Enter your email"
+                    containerStyle={{ marginBottom: 20 }}
+                    height={45}
+                    value={values.email}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    error={
+                      touched.email && errors.email ? errors.email : undefined
+                    }
+                  />
+                ) : mode === "phone" ? (
+                  <CustomTextInput
+                    label="Phone"
+                    placeholder="Enter your phone number"
+                    number
+                    iconName="phone"
+                    containerStyle={{ marginBottom: 20 }}
+                    height={45}
+                    value={values.phone || ""}
+                    onChangeText={handleChange("phone")}
+                    onBlur={handleBlur("phone")}
+                    error={
+                      touched.phone && errors.phone ? errors.phone : undefined
+                    }
+                  />
+                ) : (
+                  <CustomTextInput
+                    label="WhatsApp Number"
+                    placeholder="Enter your WhatsApp number"
+                    number
+                    iconName="phone"
+                    containerStyle={{ marginBottom: 20 }}
+                    height={45}
+                    value={values.whatsapp || ""}
+                    onChangeText={handleChange("whatsapp")}
+                    onBlur={handleBlur("whatsapp")}
+                    error={
+                      touched.whatsapp && errors.whatsapp
+                        ? errors.whatsapp
+                        : undefined
+                    }
+                  />
+                )}
                 <CustomTextInput
-                  label="Email"
-                  email
-                  placeholder="Enter your email"
+                  label="Password"
+                  placeholder="Enter your password"
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
-                  value={values.email}
-                  onChangeText={handleChange("email")}
-                  onBlur={handleBlur("email")}
+                  isSecure
+                  value={values.password}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
                   error={
-                    touched.email && errors.email ? errors.email : undefined
-                  }
-                />
-              ) : mode === "phone" ? (
-                <CustomTextInput
-                  label="Phone"
-                  placeholder="Enter your phone number"
-                  number
-                  iconName="phone"
-                  containerStyle={{ marginBottom: 20 }}
-                  height={45}
-                  value={values.phone || ""}
-                  onChangeText={handleChange("phone")}
-                  onBlur={handleBlur("phone")}
-                  error={
-                    touched.phone && errors.phone ? errors.phone : undefined
-                  }
-                />
-              ) : (
-                <CustomTextInput
-                  label="WhatsApp Number"
-                  placeholder="Enter your WhatsApp number"
-                  number
-                  iconName="phone"
-                  containerStyle={{ marginBottom: 20 }}
-                  height={45}
-                  value={values.whatsapp || ""}
-                  onChangeText={handleChange("whatsapp")}
-                  onBlur={handleBlur("whatsapp")}
-                  error={
-                    touched.whatsapp && errors.whatsapp
-                      ? errors.whatsapp
+                    touched.password && errors.password
+                      ? errors.password
                       : undefined
                   }
                 />
-              )}
-              <CustomTextInput
-                label="Password"
-                placeholder="Enter your password"
-                containerStyle={{ marginBottom: 20 }}
-                height={45}
-                isSecure
-                value={values.password}
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                error={
-                  touched.password && errors.password
-                    ? errors.password
-                    : undefined
-                }
-              />
 
-              {error && (
-                <View style={styles.errorContainer}>
+                {error && (
+                  <View style={styles.errorContainer}>
+                    <Typography
+                      title={error}
+                      fontSize={SIZES.body}
+                      color={COLORS.red}
+                      style={styles.errorText}
+                    />
+                  </View>
+                )}
+
+                <Button
+                  color="primary"
+                  style={{ marginTop: 30, borderRadius: 10, height: 45 }}
+                  onPress={() => handleSubmit()}
+                  disabled={!isValid || loading}
+                >
                   <Typography
-                    title={error}
+                    title={loading ? "Logging in..." : "Login"}
                     fontSize={SIZES.body}
-                    color={COLORS.red}
-                    style={styles.errorText}
+                    style={{ fontWeight: "700" }}
+                    color={COLORS.white}
                   />
-                </View>
-              )}
-
-              <Button
-                color="primary"
-                style={{ marginTop: 30, borderRadius: 10, height: 45 }}
-                onPress={() => handleSubmit()}
-                disabled={!isValid || loading}
-              >
-                <Typography
-                  title={loading ? "Logging in..." : "Login"}
-                  fontSize={SIZES.body}
-                  style={{ fontWeight: "700" }}
-                  color={COLORS.white}
-                />
-              </Button>
-            </>
-          )}
-        </Formik>
-        {/* TODO: Might be need in future */}
-        {/* <View style={styles.dividerContainer}>
+                </Button>
+              </>
+            )}
+          </Formik>
+          {/* TODO: Might be need in future */}
+          {/* <View style={styles.dividerContainer}>
           <View style={styles.divider} />
           <Typography
             title="Or Continue with"
@@ -354,17 +357,26 @@ const Login = () => {
           <AntDesign name="apple" size={24} color="black" />
           <AntDesign name="google" size={24} color="green" />
         </View> */}
-        <Typography
-          title="Don't have an account? Sign up"
-          fontSize={SIZES.body}
-          style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
-          onPress={() => {
-            router.replace("/(auth)/sign-up");
-          }}
-        />
+          <Typography
+            title="Don't have an account? Sign up"
+            fontSize={SIZES.body}
+            style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
+            onPress={() => {
+              router.replace("/(auth)/sign-up");
+            }}
+          />
+
+          <Typography
+            title="Forgot your password?"
+            fontSize={SIZES.body}
+            style={{ fontWeight: "500", alignSelf: "center", marginTop: 10 }}
+            color={COLORS.primary}
+            onPress={() => {
+              router.push("/(auth)/forgot-password");
+            }}
+          />
         </View>
       </ScrollView>
-      <Toast />
     </KeyboardAvoidingView>
   );
 };
