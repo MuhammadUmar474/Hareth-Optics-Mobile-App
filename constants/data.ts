@@ -55,6 +55,7 @@ export interface CategoryOption {
   iconName: string;
   iconLibrary: string;
   isSelected: boolean;
+  handle: string;
 }
 
 export const settingsItems = [
@@ -79,6 +80,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "All",
     iconName: "grid-outline",
     iconLibrary: "ionicons",
+    handle: "eyeglasses",
     isSelected: true,
   },
   {
@@ -86,6 +88,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "Mens",
     iconName: "man-outline",
     iconLibrary: "ionicons",
+    handle: "men-sunglasses",
     isSelected: false,
   },
   {
@@ -93,6 +96,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "Womens",
     iconName: "woman-outline",
     iconLibrary: "ionicons",
+    handle: "women-sunglasses",
     isSelected: false,
   },
   {
@@ -100,6 +104,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "Kids",
     iconName: "happy-outline",
     iconLibrary: "ionicons",
+    handle: "kids",
     isSelected: false,
   },
   {
@@ -107,6 +112,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "Premium",
     iconName: "diamond-outline",
     iconLibrary: "ionicons",
+    handle: "color-contact-lenses",
     isSelected: false,
   },
   {
@@ -114,6 +120,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "Classic",
     iconName: "medal-outline",
     iconLibrary: "ionicons",
+    handle: "clear-contact-lenses",
     isSelected: false,
   },
   {
@@ -121,6 +128,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "On Sale",
     iconName: "pricetag-outline",
     iconLibrary: "ionicons",
+    handle: "monthly-colored-contact-lenses",
     isSelected: false,
   },
   {
@@ -128,6 +136,7 @@ export const categoryOptions: CategoryOption[] = [
     title: "Contact Lens",
     iconName: "eye-outline",
     iconLibrary: "ionicons",
+    handle: "contact-lenses",
     isSelected: false,
   },
 ];

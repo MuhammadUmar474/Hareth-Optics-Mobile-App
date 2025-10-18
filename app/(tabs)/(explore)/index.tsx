@@ -6,17 +6,30 @@ import SuggestionTab from "@/components/home/suggestion-tab";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { categoryOptions } from "@/constants/data";
+import { handleLargerText } from "@/constants/helper";
+import { homeApi } from "@/services/home/homeApi";
 import { styles } from "@/styles/explore/explore";
-import { PRODUCTS } from "@/utils/data";
 import { Feather, Ionicons } from "@expo/vector-icons";
+
+type ExploreProduct = {
+  id: string;
+  name: string;
+  price: string;
+  image: string;
+  category: string;
+};
 
 const Explore = () => {
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [products, setProducts] = useState<ExploreProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Animate header on mount
   useEffect(() => {
     Animated.timing(headerFadeAnim, {
       toValue: 1,
@@ -24,6 +37,45 @@ const Explore = () => {
       useNativeDriver: true,
     }).start();
   }, []);
+
+  // Fetch products based on selected filter
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+      
+          const selected = categoryOptions.find(
+            (c) => c.title === selectedFilter
+          );
+          const handle = selected?.handle ?? "";
+          console.log("handlehandlehandle",handle);
+          const { collection } = await homeApi.getProductsByCollection(handle, 20);
+          console.log("collectioncollectioncollection",JSON.stringify(collection));
+          const mapped: ExploreProduct[] = (collection?.products.edges ?? []).map(
+            ({ node }) => ({
+              id: node.id,
+              name: handleLargerText(node.title, 20),
+              price: node.priceRange.minVariantPrice.amount,
+              image:
+                node.featuredImage?.url ||
+                node.images?.edges?.[0]?.node?.url ||
+                "",
+              category: node.productType || selectedFilter,
+            })
+          );
+          setProducts(mapped);
+        
+      } catch (e: any) {
+        setError(e?.message || "Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [selectedFilter]);
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => {
@@ -38,14 +90,15 @@ const Explore = () => {
   };
 
   const handleCategoryPress = (categoryId: number) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
+    const categoryTitle =
+      categoryOptions.find((category) => category.id === categoryId)?.title || "All";
+  
+
+    setSelectedCategories([categoryId]);
+    setSelectedFilter(categoryTitle);
   };
 
-  const filteredProducts = PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesFilter =
       selectedFilter === "All" || product.category === selectedFilter;
     const matchesSearch = product.name
@@ -58,7 +111,7 @@ const Explore = () => {
     item,
     index,
   }: {
-    item: (typeof PRODUCTS)[0];
+    item: ExploreProduct;
     index: number;
   }) => (
     <AnimatedProductCard
@@ -112,16 +165,17 @@ const Explore = () => {
           />
         ))}
       </ScrollView>
+
       <Animated.View style={[styles.content, { opacity: headerFadeAnim }]}>
         <FlatList
-          data={filteredProducts}
+          data={products}
           renderItem={renderProduct}
           keyExtractor={(item) => item.id}
           numColumns={2}
           columnWrapperStyle={styles.productRow}
           contentContainerStyle={styles.productsContainer}
           showsVerticalScrollIndicator={false}
-          key={selectedFilter}
+          key={selectedFilter} // forces FlatList to reset when filter changes
         />
       </Animated.View>
     </View>
