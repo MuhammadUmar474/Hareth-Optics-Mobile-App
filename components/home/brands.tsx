@@ -1,9 +1,10 @@
 import { COLORS } from "@/constants/colors";
 import { GlassesBrand } from "@/constants/data";
+import { homeApi, MenuItem } from "@/services/home/homeApi";
 import { Feather } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -27,16 +28,17 @@ const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.card}>
       <ImageBackground
-        source={data.image}
+        source={{uri: data.featuredImage.url}}
         style={styles.cardContent}
         imageStyle={styles.cardImage}
+        contentFit="cover"
       >
         <View style={styles.textContainer}>
-          {data.name ? (
+          {data.title ? (
             <Typography
-              title={data.name}
+              title={data.title}
               fontSize={scale(14)}
-              color={COLORS.white}
+              color={COLORS.black}
               style={styles.subtitle}
             />
           ) : null}
@@ -47,10 +49,10 @@ const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
             <Typography
               title="Shop Now"
               fontSize={scale(10)}
-              color={COLORS.black}
+              color={COLORS.white}
               fontFamily="Roboto-Bold"
             />
-            <Feather name="chevron-right" size={14} color={COLORS.black} />
+            <Feather name="chevron-right" size={14} color={COLORS.white} />
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -59,6 +61,18 @@ const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
 };
 
 const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
+
+  const [latestProducts, setLatestProducts] = useState<MenuItem[]>([]);
+
+
+  useEffect(() => {
+    const fetchLatestProducts = async () => {
+      const latestProducts = await homeApi.getLatestProducts();
+      setLatestProducts(latestProducts.products.edges);
+    };
+    fetchLatestProducts();
+  }, []);
+
   return (
     <View style={styles.container}>
       {latest ? (
@@ -86,10 +100,10 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {brands.map((card) => (
+        {latestProducts.map((card) => (
           <BrandCard
             key={card.id}
-            data={card}
+            data={card.node}
             onPress={() => router.push(`/(tabs)/(explore)`)}
           />
         ))}
@@ -159,7 +173,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   shopNowButton: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     gap: scale(4),

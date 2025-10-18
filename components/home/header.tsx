@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
-import { suggestionCategories } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
+import { MenuItem } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useAuthGuard } from "@/utils/auth";
@@ -20,7 +20,7 @@ import LocationModal from "../modals/location-modal";
 import Input from "../ui/input";
 import SuggestionTab from "./suggestion-tab";
 
-const StickyHeader = () => {
+const StickyHeader = ({ categories }: { categories: MenuItem[] }) => {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
@@ -171,35 +171,12 @@ const StickyHeader = () => {
         contentContainerStyle={dynamicStyles.suggestionContainer}
         style={styles.suggestionScrollView}
       >
-        {suggestionCategories.map((category) => (
+        {categories.map((category,index) => (
           <SuggestionTab
             key={category.id}
             title={category.title}
-            lefticon={
-              category.iconLibrary === "ionicons" ? (
-                <Ionicons
-                  name={category.iconName as keyof typeof Ionicons.glyphMap}
-                  size={16}
-                  color={
-                    selectedCategories.includes(category.id)
-                      ? COLORS.white
-                      : COLORS.primary
-                  }
-                />
-              ) : (
-                <Feather
-                  name={category.iconName as keyof typeof Feather.glyphMap}
-                  size={16}
-                  color={
-                    selectedCategories.includes(category.id)
-                      ? COLORS.white
-                      : COLORS.primary
-                  }
-                />
-              )
-            }
-            isSelected={selectedCategories.includes(category.id)}
-            onPress={() => handleCategoryPress(category.id)}
+            isSelected={selectedCategories.includes(index)}
+            onPress={() => handleCategoryPress(index)}
             containerStyle={styles.suggestionTab}
           />
         ))}
