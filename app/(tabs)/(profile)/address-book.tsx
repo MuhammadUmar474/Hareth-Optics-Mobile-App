@@ -7,10 +7,12 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useCallback, useState } from "react";
 import { FlatList, SafeAreaView, View } from "react-native";
 
 const AddressBook: React.FC = () => {
+const{t}=useLocal()
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingAddress, setEditingAddress] = useState<{
     id: string;
@@ -162,10 +164,9 @@ const AddressBook: React.FC = () => {
     ),
     [handleDelete, handleEdit, handleSetDefault]
   );
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="Address Book" />
+      <Header title={t("profile.menu.addressBook")} />
       <FlatList
         contentContainerStyle={{ padding: SIZES.padding, paddingBottom: 88 }}
         data={addresses}

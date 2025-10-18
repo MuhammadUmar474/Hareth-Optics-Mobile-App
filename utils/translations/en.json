@@ -90,7 +90,7 @@
       "discount":"Discount",
       "summerSaleDiscount":"Summer Sale Discount",
       "deliveryMethod":"Delivery Method",
-      "cosTSummary":"Cost Summary",
+      "costSummary":"Cost Summary",
       "estimatedDelivery":"Estimated Delivery",
       "continueShopping":"Continue Shopping"
     },
@@ -109,7 +109,7 @@
       "order":"Order",
       "myOrder":"My Order",
       "orderSummary":"OrderSummary",
-      "taxes":"taxes",
+      "taxes":"Taxes",
       "downloadInvoice":"Download Invoice",
       "ReorderItems":"Reorder Items"
     },

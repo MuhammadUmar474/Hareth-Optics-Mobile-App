@@ -2,6 +2,7 @@ import Typography from "@/components/ui/custom-typography";
 import Input from "@/components/ui/input";
 import { COLORS } from "@/constants/colors";
 import { SavedAddress, savedAddresses } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -14,6 +15,7 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const DeliveryAddress = () => {
+  const { t } = useLocal()
   const router = useRouter();
   const [addresses, setAddresses] = useState<SavedAddress[]>(savedAddresses);
   const [streetAddress, setStreetAddress] = useState<string>("");
@@ -45,7 +47,7 @@ const DeliveryAddress = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Delivery address"
+          title={t("address.orderDetails")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -61,7 +63,7 @@ const DeliveryAddress = () => {
         {/* Saved Addresses Section */}
         <View style={styles.section}>
           <Typography
-            title="Saved addresses"
+            title={t("address.savedAddress")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -140,7 +142,7 @@ const DeliveryAddress = () => {
         {/* Add New Address Section */}
         <View style={styles.section}>
           <Typography
-            title="Add a new address"
+            title={t("address.addNewAddress")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -149,7 +151,7 @@ const DeliveryAddress = () => {
 
           <View style={styles.formContainer}>
             <Input
-              placeholder="Street address"
+              placeholder={t("address.streetAddress")}
               value={streetAddress}
               onChangeText={setStreetAddress}
               containerStyle={styles.inputContainer}
@@ -158,7 +160,7 @@ const DeliveryAddress = () => {
             />
 
             <Input
-              placeholder="Apt, suite, etc. (optional)"
+              placeholder={t("address.suite")}
               value={aptSuite}
               onChangeText={setAptSuite}
               containerStyle={styles.inputContainer}
@@ -168,7 +170,7 @@ const DeliveryAddress = () => {
 
             <View style={styles.inputRow}>
               <Input
-                placeholder="City"
+                placeholder={t("address.city")}
                 value={city}
                 onChangeText={setCity}
                 containerStyle={[styles.inputContainer, styles.inputHalf]}
@@ -176,7 +178,7 @@ const DeliveryAddress = () => {
                 placeholderTextColor={COLORS.grey10}
               />
               <Input
-                placeholder="State"
+                placeholder={t("address.state")}
                 value={state}
                 onChangeText={setState}
                 containerStyle={[styles.inputContainer, styles.inputHalf]}
@@ -186,7 +188,7 @@ const DeliveryAddress = () => {
             </View>
 
             <Input
-              placeholder="Zip code"
+              placeholder={t("address.zipCode")}
               value={zipCode}
               onChangeText={setZipCode}
               keyboardType="numeric"
@@ -209,7 +211,7 @@ const DeliveryAddress = () => {
               </TouchableOpacity>
 
               <Typography
-                title="Set as default address"
+                title={t("address.setdefaultAddress")}
                 fontSize={scale(14)}
                 color={COLORS.grey29}
                 fontFamily="Roboto-Regular"
@@ -221,12 +223,12 @@ const DeliveryAddress = () => {
 
       {/* Bottom Button */}
       <View style={styles.bottomSection}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.continueButton}
           onPress={() => router.push("/delivery")}
         >
           <Typography
-            title="Continue"
+            title={t("address.continue")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"

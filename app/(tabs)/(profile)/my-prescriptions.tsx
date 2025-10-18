@@ -6,12 +6,14 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useCallback, useMemo, useState } from "react";
 import { ScrollView, TextInput, TouchableOpacity, View } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 
 const MyPrescriptions: React.FC = () => {
   const [search, setSearch] = useState("");
+  const{t}=useLocal()
   const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([
     {
       id: "1",
@@ -80,7 +82,7 @@ const MyPrescriptions: React.FC = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="My Prescriptions" />
+      <Header title={t("profile.menu.prescriptions")} />
       <View style={{ padding: SIZES.padding, paddingBottom: 0 }}>
         <CustomTextInput
           iconName="search"

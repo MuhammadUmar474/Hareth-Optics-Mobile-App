@@ -1,6 +1,7 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { OrderItem, orderSummaryData } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -14,6 +15,7 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const OrderSummary = () => {
+  const{t}=useLocal()
   const router = useRouter();
   const orderData = orderSummaryData;
 
@@ -92,7 +94,7 @@ const OrderSummary = () => {
         {/* Discounts Section */}
         <View style={styles.section}>
           <Typography
-            title="Discounts"
+            title={t("purchases.discounts")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -119,7 +121,7 @@ const OrderSummary = () => {
         {/* Delivery Address Section */}
         <View style={styles.section}>
           <Typography
-            title="Delivery Address"
+            title={t("address.deliveryAddress")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -152,7 +154,7 @@ const OrderSummary = () => {
         {/* Delivery Method Section */}
         <View style={styles.section}>
           <Typography
-            title="Delivery Method"
+            title={t("purchases.deliveryMethod")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -179,7 +181,7 @@ const OrderSummary = () => {
         {/* Payment Method Section */}
         <View style={styles.section}>
           <Typography
-            title="Payment Method"
+            title={t("purchases.paymentMethod")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -202,7 +204,7 @@ const OrderSummary = () => {
         {/* Cost Summary Section */}
         <View style={styles.section}>
           <Typography
-            title="Cost Summary"
+            title={t("purchases.costSummary")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -212,7 +214,7 @@ const OrderSummary = () => {
           <View style={styles.costSummaryCard}>
             <View style={styles.costRow}>
               <Typography
-                title="Subtotal"
+                title={t("purchases.subtotal")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
@@ -228,7 +230,7 @@ const OrderSummary = () => {
 
             <View style={styles.costRow}>
               <Typography
-                title="Discount"
+                title={t("purchases.discount")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
@@ -244,7 +246,7 @@ const OrderSummary = () => {
 
             <View style={styles.costRow}>
               <Typography
-                title="Shipping"
+                title={t("purchases.shipping")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
@@ -260,7 +262,7 @@ const OrderSummary = () => {
 
             <View style={styles.costRow}>
               <Typography
-                title="Taxes"
+                title={t("orderDetail.taxes")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
@@ -278,7 +280,7 @@ const OrderSummary = () => {
 
             <View style={styles.totalRow}>
               <Typography
-                title="Total"
+                title={t("purchases.total")}
                 fontSize={scale(16)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
@@ -303,7 +305,7 @@ const OrderSummary = () => {
           onPress={() => router.push("/order-confirmation")}
         >
           <Typography
-            title="Place Order"
+            title={t("orderDetail.placeOrder")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"

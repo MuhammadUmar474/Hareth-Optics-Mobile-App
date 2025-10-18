@@ -2,6 +2,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
@@ -19,6 +20,7 @@ import { moderateScale, scale } from "react-native-size-matters";
 
 const ReferAndEarn: React.FC = () => {
   const referralCode = useMemo(() => "HARETH-REF-458", []);
+ const{t}=useLocal()
   const shareMessage = useMemo(
     () =>
       `Use my Hareth Optics referral code ${referralCode} to get a discount on your first purchase!`,
@@ -64,7 +66,7 @@ const ReferAndEarn: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Refer & Earn" />
+      <Header title={t("profile.menu.referEarn")} />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

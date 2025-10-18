@@ -8,9 +8,11 @@ import Button from "@/components/ui/custom-button";
 import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { styles } from "@/styles/3d-try-on/3d-try-on";
 
 const ScanProduct = () => {
+  const{t}=useLocal()
   const handleScan = () => {
     router.navigate("/(tabs)/(explore)");
   };
@@ -28,7 +30,7 @@ const ScanProduct = () => {
               color={COLORS.grey6}
             />
             <Typography
-              title="Camera view placeholder"
+              title={t("tryOn.cameraPlaceholder")}
               fontSize={15}
               color={COLORS.black2}
               style={styles.placeholderText}

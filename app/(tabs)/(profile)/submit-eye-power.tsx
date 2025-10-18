@@ -4,6 +4,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 
@@ -25,6 +26,7 @@ interface Errors {
 const initialEyeValues: EyePower = { sph: "", cyl: "", axis: "", add: "" };
 
 const SubmitEyePower: React.FC = () => {
+ const {t}=useLocal()
   const [eyes, setEyes] = useState<{ right: EyePower; left: EyePower }>({
     right: { ...initialEyeValues },
     left: { ...initialEyeValues },
@@ -118,7 +120,7 @@ const SubmitEyePower: React.FC = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="Submit Eye Power" />
+      <Header title={t("profile.menu.submitEyePower")} />
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

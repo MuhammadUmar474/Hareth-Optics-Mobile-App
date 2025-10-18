@@ -3,6 +3,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import React, { useCallback } from "react";
 import {
@@ -14,6 +15,7 @@ import {
 } from "react-native";
 
 const ContactUs: React.FC = () => {
+const{t}=useLocal()
   const handleCall = useCallback(() => {
     Linking.openURL("+1234567890");
   }, []);
@@ -29,10 +31,9 @@ const ContactUs: React.FC = () => {
   const openUrl = useCallback((url: string) => {
     Linking.openURL(url);
   }, []);
-
   return (
     <View style={styles.container}>
-      <Header title="Contact Us" />
+      <Header title={t("profile.menu.contactUs")} />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

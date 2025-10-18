@@ -15,6 +15,7 @@ import {
   paymentMethodTypes,
   storeBenefits
 } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { useAuthGuard } from "@/utils/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { VideoView, useVideoPlayer } from "expo-video";
@@ -23,6 +24,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 
 const HomeScreen = () => {
+  const{t}=useLocal()
   const [isPlaying, setIsPlaying] = useState(false);
   const { checkAuthAndNavigate } = useAuthGuard();
 
@@ -69,7 +71,7 @@ const HomeScreen = () => {
 
         <OurPromiseComponent
           promises={ourPromiseData}
-          title="Hareth Optics Promise"
+          title={t("home.harethOptics")}
         />
 
         <BestSelling />
@@ -102,7 +104,7 @@ const HomeScreen = () => {
                   </View>
                 </TouchableOpacity>
                 <Typography
-                  title="FROM THE FACTORY STRAIGHT TO YOU"
+                  title={t("home.fromFactory")}
                   fontSize={moderateScale(14)}
                   color={COLORS.white}
                   style={styles.overlayText}

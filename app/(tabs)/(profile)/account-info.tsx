@@ -4,6 +4,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { useAuthStore } from "@/store/shopifyStore";
 import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -29,6 +30,8 @@ interface FormErrors {
 }
 
 const AccountInfo: React.FC = () => {
+  const{t}=useLocal()
+
   const [values, setValues] = useState<FormValues>({
     name: "",
     email: "",
@@ -92,10 +95,9 @@ const AccountInfo: React.FC = () => {
       ]
     );
   };
-
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="Account Info" />
+      <Header title={t("profile.menu.accountInfo")} />
       <KeyboardAvoidingView
         behavior={Platform.select({ ios: "padding", android: undefined })}
         style={{ flex: 1 }}

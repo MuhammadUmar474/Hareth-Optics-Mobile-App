@@ -1,6 +1,7 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { howToFindYourSize, SizeMeasurement, sizeMeasurements } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { FontAwesome5, FontAwesome6, Ionicons, MaterialCommunityIcons, SimpleLineIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -14,8 +15,8 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const SizeGuide = () => {
+  const { t } = useLocal()
   const router = useRouter();
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -27,7 +28,7 @@ const SizeGuide = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Eyeglasses Size Guide"
+          title={t("eyeglassesDetails.eyeGlassesSizeGuide")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -44,14 +45,14 @@ const SizeGuide = () => {
           {/* Title Section */}
           <View style={styles.titleSection}>
             <Typography
-              title="Understanding Eyeglass Measurements"
+              title={t("eyeglassesDetails.guideTitle")}
               fontSize={scale(22)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
               style={styles.mainTitle}
             />
             <Typography
-              title="Eyeglass sizes are typically represented by three numbers, such as 52-18-140. These numbers correspond to the lens width, bridge width, and temple length, all measured in millimeters."
+              title={t("eyeglassesDetails.guideDecription")}
               fontSize={scale(14)}
               color={COLORS.grey29}
               fontFamily="Roboto-Regular"

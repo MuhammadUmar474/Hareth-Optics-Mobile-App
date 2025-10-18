@@ -5,6 +5,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useMemo, useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 
@@ -14,7 +15,7 @@ const EyeTestAtHome: React.FC = () => {
   const [address, setAddress] = useState("");
   const [date, setDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-
+  const { t } = useLocal()
   const slots = useMemo(
     () => [
       "09:00",
@@ -39,7 +40,7 @@ const EyeTestAtHome: React.FC = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Header title="Eye Test at Home" />
+      <Header title={t("profile.menu.eyeTestHome")}/>
       <ScrollView
         contentContainerStyle={{ padding: SIZES.padding, paddingBottom: 130 }}
         showsVerticalScrollIndicator={false}
