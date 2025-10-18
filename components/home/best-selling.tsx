@@ -1,11 +1,12 @@
 import { COLORS } from "@/constants/colors";
-import { BestSellingProduct, bestSellingProducts } from "@/constants/data";
+import { BestSellingProduct } from "@/constants/data";
+import { executeHomeQuery, MenuItem } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -37,6 +38,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const { isInWishlist } = useWishlistStore();
 
+
+
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.card}>
       <View style={styles.cardContent}>
@@ -55,11 +58,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </Animated.View>
         </TouchableOpacity>
 
-        <Image source={product.image} style={styles.productImage} />
+        <Image source={{uri: product.featuredImage.url}} style={styles.productImage}  contentFit="cover"/>
 
         <View style={styles.infoContainer}>
           <Typography
-            title={product.name}
+            title={product.title}
             fontSize={scale(12)}
             fontFamily="Roboto-Bold"
             color={COLORS.black7}
@@ -68,13 +71,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
           <View style={styles.priceContainer}>
             <Typography
-              title={product.discountedPrice}
+              title={product.priceRange.minVariantPrice.amount+" "+product.priceRange.minVariantPrice.currencyCode}
               fontSize={scale(14)}
               fontFamily="Roboto-Bold"
               color={COLORS.primary}
             />
             <Typography
-              title={product.price}
+              title={product.priceRange.minVariantPrice.amount+" "+product.priceRange.minVariantPrice.currencyCode}
               fontSize={scale(11)}
               color={COLORS.grey10}
               style={styles.originalPrice}
@@ -97,6 +100,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 const BestSelling: React.FC = () => {
   const addToCart = useCartStore((state) => state.addToCart);
   const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>([]);
+
 
   const handleAddToCart = (product: BestSellingProduct) => {
     addToCart({
@@ -116,6 +121,55 @@ const BestSelling: React.FC = () => {
     });
   };
 
+  const handleFetchLatestProducts = async () => {
+    const query = `
+      query GetBestSellingEyeglasses {
+        products(first: 20, sortKey: BEST_SELLING, query: "product_type:eyeglasses") {
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              vendor
+              productType
+              tags
+              totalInventory
+              availableForSale
+              featuredImage { url altText }
+              images(first: 5) { edges { node { url altText } } }
+              variants(first: 10) {
+                edges {
+                  node {
+                    id
+                    title
+                    sku
+                    availableForSale
+                    price { amount currencyCode }
+                    compareAtPrice { amount currencyCode }
+                    selectedOptions { name value }
+                    image { url altText }
+                  }
+                }
+              }
+              priceRange {
+                minVariantPrice { amount currencyCode }
+                maxVariantPrice { amount currencyCode }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await executeHomeQuery<{ products: { edges: any[] } }>(query);
+    setBestSellingProducts(data.products.edges);
+  };
+
+  useEffect(() => {
+    handleFetchLatestProducts();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -132,7 +186,7 @@ const BestSelling: React.FC = () => {
         data={bestSellingProducts}
         renderItem={({ item }) => (
           <ProductCard
-            product={item}
+            product={item.node}
             onPress={() => {
               router.push(`/product-details`);
             }}
@@ -141,7 +195,7 @@ const BestSelling: React.FC = () => {
             isFavorited={isInWishlist(item.id)}
           />
         )}
-        keyExtractor={(item) => item.id.toString()}
+        // keyExtractor={(item) => item.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}

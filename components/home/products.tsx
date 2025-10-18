@@ -1,5 +1,5 @@
 import { COLORS } from "@/constants/colors";
-import { Product, ProductCategory } from "@/constants/data";
+import { MenuItem } from "@/services/home/homeApi";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React from "react";
@@ -13,25 +13,32 @@ import { scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
 
 interface ProductsProps {
-  productCategory: ProductCategory;
-  onProductPress?: (product: Product) => void;
+  productCategory: MenuItem[];
+  onProductPress?: (product: MenuItem) => void;
+  title: string;
 }
 
 const Products: React.FC<ProductsProps> = ({
   productCategory,
   onProductPress,
+  title,
 }) => {
-  const renderProduct = ({ item }: { item: Product }) => {
+
+
+
+  const renderProduct = ({ item }: { item: MenuItem[] }) => {
     return (
       <View>
         <TouchableOpacity
           onPress={() => onProductPress?.(item)}
           activeOpacity={0.8}
         >
-          <Image source={item.image} style={styles.productImage} />
+
+
+       <Image source={{uri:item.resource.image.url}} style={styles.productImage} />
         </TouchableOpacity>
         <Typography
-          title={item.name}
+          title={item.title??""}
           fontSize={scale(11)}
           fontFamily="Roboto-Bold"
           color={COLORS.black}
@@ -45,7 +52,7 @@ const Products: React.FC<ProductsProps> = ({
     <View style={styles.container}>
       <View style={styles.header}>
         <Typography
-          title={productCategory.title}
+          title={title}
           fontSize={scale(17)}
           fontFamily="Poppins-Bold"
           color={COLORS.secondary}
@@ -62,7 +69,7 @@ const Products: React.FC<ProductsProps> = ({
       </View>
 
       <FlatList
-        data={productCategory.products}
+        data={productCategory}
         renderItem={renderProduct}
         keyExtractor={(item) => `${productCategory.id}-${item.id}`}
         horizontal
@@ -98,6 +105,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     textAlign: "center",
+    width: 70,
   },
   headerTitle: {
     fontWeight: "600",
