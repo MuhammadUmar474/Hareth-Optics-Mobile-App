@@ -4,6 +4,7 @@ import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { FrameColor, FrameSize, productDetailData } from "@/constants/data";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistActions } from "@/utils/wishlist";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -22,11 +23,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ProductDetails = () => {
   const router = useRouter();
   const addToCart = useCartStore((state) => state.addToCart);
+  const { toggleWishlist, isInWishlist } = useWishlistActions();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState<number>(1);
   const [selectedSize, setSelectedSize] = useState<number>(1);
-  const [isFavorited, setIsFavorited] = useState(false);
 
   const product = productDetailData;
 
@@ -37,7 +38,12 @@ const ProductDetails = () => {
   };
 
   const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
+    toggleWishlist({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.discountedPrice.replace(/[^0-9.]/g, "")),
+      image: product.images[0],
+    });
   };
 
   const onAddToCart = () => {
@@ -276,7 +282,7 @@ const ProductDetails = () => {
             <AntDesign
               name="heart"
               size={24}
-              color={isFavorited ? COLORS.danger : COLORS.grey33}
+              color={isInWishlist(product.id) ? COLORS.danger : COLORS.grey33}
             />
           </TouchableOpacity>
         </View>

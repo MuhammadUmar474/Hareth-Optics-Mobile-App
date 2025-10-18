@@ -3,6 +3,7 @@ import { useLocal } from "@/hooks/use-lang";
 import { MenuItem } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useWishlistAuth } from "@/utils/wishlist";
 import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -24,6 +25,7 @@ const StickyHeader = ({ categories }: { categories: MenuItem[] }) => {
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
   const [isVisible, setIsVisible] = useState(false);
+  const { checkAuthForWishlistView } = useWishlistAuth();
 
   const { isRtl,t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
@@ -103,7 +105,11 @@ const StickyHeader = ({ categories }: { categories: MenuItem[] }) => {
         <View style={dynamicStyles.headerIcons}>
           <TouchableOpacity
             style={styles.icon}
-            onPress={() => router.navigate("/wishlist")}
+            onPress={() => {
+              if (checkAuthForWishlistView()) {
+                router.navigate("/wishlist");
+              }
+            }}
           >
             <FontAwesome6 name="heart" size={20} color={COLORS.black} />
             {wishlistCount > 0 ? (

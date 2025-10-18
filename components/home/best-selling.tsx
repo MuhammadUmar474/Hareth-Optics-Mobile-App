@@ -2,7 +2,7 @@ import { COLORS } from "@/constants/colors";
 import { BestSellingProduct } from "@/constants/data";
 import { executeHomeQuery, MenuItem } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
-import { useWishlistStore } from "@/store/wishlistStore";
+import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -36,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onToggleWishlist,
   isFavorited,
 }) => {
-  const { isInWishlist } = useWishlistStore();
+  const { isInWishlist } = useWishlistActions();
 
 
 
@@ -99,25 +99,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
 const BestSelling: React.FC = () => {
   const addToCart = useCartStore((state) => state.addToCart);
-  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const { toggleWishlist, isInWishlist } = useWishlistActions();
   const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>([]);
 
 
-  const handleAddToCart = (product: BestSellingProduct) => {
+  const handleAddToCart = (product: any) => {
+    const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
     addToCart({
       id: product.id,
-      name: product.name,
-      price: parseFloat(product.discountedPrice.replace(/[^0-9.]/g, "")),
-      image: product.image,
+      name: product.title,
+      price: price,
+      image: { uri: product.featuredImage?.url },
     });
   };
 
-  const handleToggleWishlist = (product: BestSellingProduct) => {
+  const handleToggleWishlist = (product: any) => {
+    const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
     toggleWishlist({
       id: product.id,
-      name: product.name,
-      price: parseFloat(product.discountedPrice.replace(/[^0-9.]/g, "")),
-      image: product.image,
+      name: product.title,
+      price: price,
+      image: { uri: product.featuredImage?.url },
     });
   };
 
@@ -190,9 +192,9 @@ const BestSelling: React.FC = () => {
             onPress={() => {
               router.push(`/product-details`);
             }}
-            onAddToCart={() => handleAddToCart(item)}
-            onToggleWishlist={() => handleToggleWishlist(item)}
-            isFavorited={isInWishlist(item.id)}
+            onAddToCart={() => handleAddToCart(item.node)}
+            onToggleWishlist={() => handleToggleWishlist(item.node)}
+            isFavorited={isInWishlist(item.node.id)}
           />
         )}
         // keyExtractor={(item) => item.id.toString()}
