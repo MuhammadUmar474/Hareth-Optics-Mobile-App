@@ -7,7 +7,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import Button from "../ui/custom-button";
 import Typography from "../ui/custom-typography";
 
@@ -125,14 +125,18 @@ const ProfileCard = () => {
             onPress={handleLogout}
             disabled={isLoggingOut || loading}
           >
-            <Typography
-              title={isLoggingOut ? "Logging out..." : "Logout"}
-              fontSize={SIZES.desc}
-              color={COLORS.white}
-              style={{
-                fontWeight: rtl ? "500" : "700",
-              }}
-            />
+            {isLoggingOut ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : (
+              <Typography
+                title="Logout"
+                fontSize={SIZES.desc}
+                color={COLORS.white}
+                style={{
+                  fontWeight: rtl ? "500" : "700",
+                }}
+              />
+            )}
           </Button>
         ) : (
           <Button

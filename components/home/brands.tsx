@@ -1,8 +1,9 @@
 import { COLORS } from "@/constants/colors";
 import { GlassesBrand } from "@/constants/data";
 import { homeApi, MenuItem } from "@/services/home/homeApi";
+import { useLoadingStore } from "@/store/loadingStore";
 import { Feather } from "@expo/vector-icons";
-import { ImageBackground } from "expo-image";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -12,12 +13,8 @@ import {
   View,
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
+import { CardSkeleton } from "../skeletons";
 import Typography from "../ui/custom-typography";
-
-interface BrandsProps {
-  brands: GlassesBrand[];
-  latest?: boolean;
-}
 
 interface BrandCardProps {
   data: GlassesBrand;
@@ -27,51 +24,57 @@ interface BrandCardProps {
 const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.card}>
-      <ImageBackground
-        source={{uri: data.featuredImage.url}}
+      <Image
+        source={{ uri: data.featuredImage.url }}
         style={styles.cardContent}
-        imageStyle={styles.cardImage}
         contentFit="cover"
-      >
-        <View style={styles.textContainer}>
-          {data.title ? (
-            <Typography
-              title={data.title}
-              fontSize={scale(14)}
-              color={COLORS.black}
-              style={styles.subtitle}
-            />
-          ) : null}
-          <TouchableOpacity
-            style={styles.shopNowButton}
-            onPress={() => router.push(`/(tabs)/(explore)`)}
-          >
-            <Typography
-              title="Shop Now"
-              fontSize={scale(10)}
-              color={COLORS.white}
-              fontFamily="Roboto-Bold"
-            />
-            <Feather name="chevron-right" size={14} color={COLORS.white} />
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+      />
+      <View style={styles.textContainer}>
+        {data.title ? (
+          <Typography
+            title={data.title}
+            fontSize={scale(14)}
+            color={COLORS.black}
+            style={styles.subtitle}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          />
+        ) : null}
+        <TouchableOpacity
+          style={styles.shopNowButton}
+          onPress={() => router.push(`/(tabs)/(explore)`)}
+        >
+          <Typography
+            title="Shop Now"
+            fontSize={scale(10)}
+            color={COLORS.white}
+            fontFamily="Roboto-Bold"
+          />
+          <Feather name="chevron-right" size={14} color={COLORS.white} />
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 };
 
 const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
-
   const [latestProducts, setLatestProducts] = useState<MenuItem[]>([]);
-
+  const { isLoadingLatestProducts, setLoadingLatestProducts } = useLoadingStore();
 
   useEffect(() => {
     const fetchLatestProducts = async () => {
-      const latestProducts = await homeApi.getLatestProducts();
-      setLatestProducts(latestProducts.products.edges);
+      try {
+        setLoadingLatestProducts(true);
+        const latestProducts = await homeApi.getLatestProducts();
+        setLatestProducts(latestProducts.products.edges);
+      } catch (error) {
+        console.error("Failed to fetch latest products:", error);
+      } finally {
+        setLoadingLatestProducts(false);
+      }
     };
     fetchLatestProducts();
-  }, []);
+  }, [setLoadingLatestProducts]);
 
   return (
     <View style={styles.container}>
@@ -100,13 +103,17 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
-        {latestProducts.map((card, index) => (
-          <BrandCard
-            key={card.id || `product-${index}`}
-            data={card.node}
-            onPress={() => router.push(`/(tabs)/(explore)`)}
-          />
-        ))}
+        {isLoadingLatestProducts ? (
+          <CardSkeleton />
+        ) : (
+          latestProducts.map((card, index) => (
+            <BrandCard
+              key={card.id || `product-${index}`}
+              data={card.node}
+              onPress={() => router.push(`/(tabs)/(explore)`)}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -145,23 +152,22 @@ const styles = StyleSheet.create({
     elevation: 4,
     backgroundColor: COLORS.white,
     marginBottom: verticalScale(6),
+    width: scale(160),
   },
   cardContent: {
     flexDirection: "column",
     paddingHorizontal: scale(12),
     paddingVertical: scale(16),
     justifyContent: "flex-end",
-    height: scale(220),
-    width: scale(160),
-    borderRadius: scale(16),
+    height: scale(120),
+    borderTopLeftRadius: scale(16),
+    borderTopRightRadius: scale(16),
     overflow: "hidden",
-  },
-  cardImage: {
-    borderRadius: scale(16),
   },
   textContainer: {
     flex: 1,
     justifyContent: "flex-end",
+    paddingHorizontal: scale(12),
   },
   title: {
     marginBottom: verticalScale(7),

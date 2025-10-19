@@ -81,4 +81,9 @@ export const styles = StyleSheet.create({
   suggestionTab: {
     marginVertical: verticalScale(2),
   },
+  skeletonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: verticalScale(16),
+  },
 });

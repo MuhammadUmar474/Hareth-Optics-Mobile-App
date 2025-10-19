@@ -2,22 +2,23 @@ import { COLORS } from "@/constants/colors";
 import { BestSellingProduct } from "@/constants/data";
 import { executeHomeQuery, MenuItem } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
+import { useLoadingStore } from "@/store/loadingStore";
 import { useWishlistActions } from "@/utils/wishlist";
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
   Dimensions,
   FlatList,
-  ImageBackground,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+import { CardSkeleton } from "../skeletons";
 import Typography from "../ui/custom-typography";
+import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -38,8 +39,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const { isInWishlist } = useWishlistActions();
 
-
-
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.card}>
       <View style={styles.cardContent}>
@@ -58,7 +57,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </Animated.View>
         </TouchableOpacity>
 
-        <Image source={{uri: product.featuredImage.url}} style={styles.productImage}  contentFit="cover"/>
+        <SimpleOptimizedImage
+          source={{ uri: product.featuredImage.url }}
+          style={styles.productImage}
+          contentFit="cover"
+          priority="high"
+        />
 
         <View style={styles.infoContainer}>
           <Typography
@@ -71,13 +75,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
           <View style={styles.priceContainer}>
             <Typography
-              title={product.priceRange.minVariantPrice.amount+" "+product.priceRange.minVariantPrice.currencyCode}
+              title={
+                product.priceRange.minVariantPrice.amount +
+                " " +
+                product.priceRange.minVariantPrice.currencyCode
+              }
               fontSize={scale(14)}
               fontFamily="Roboto-Bold"
               color={COLORS.primary}
             />
             <Typography
-              title={product.priceRange.minVariantPrice.amount+" "+product.priceRange.minVariantPrice.currencyCode}
+              title={
+                product.priceRange.minVariantPrice.amount +
+                " " +
+                product.priceRange.minVariantPrice.currencyCode
+              }
               fontSize={scale(11)}
               color={COLORS.grey10}
               style={styles.originalPrice}
@@ -100,11 +112,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
 const BestSelling: React.FC = () => {
   const addToCart = useCartStore((state) => state.addToCart);
   const { toggleWishlist, isInWishlist } = useWishlistActions();
-  const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>([]);
-
+  const { isLoadingBestSelling, setLoadingBestSelling } = useLoadingStore();
+  const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>(
+    []
+  );
 
   const handleAddToCart = (product: any) => {
-    const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
+    const price = parseFloat(
+      product.priceRange?.minVariantPrice?.amount || "0"
+    );
     addToCart({
       id: product.id,
       name: product.title,
@@ -114,7 +130,9 @@ const BestSelling: React.FC = () => {
   };
 
   const handleToggleWishlist = (product: any) => {
-    const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
+    const price = parseFloat(
+      product.priceRange?.minVariantPrice?.amount || "0"
+    );
     toggleWishlist({
       id: product.id,
       name: product.title,
@@ -124,53 +142,62 @@ const BestSelling: React.FC = () => {
   };
 
   const handleFetchLatestProducts = async () => {
-    const query = `
-      query GetBestSellingEyeglasses {
-        products(first: 20, sortKey: BEST_SELLING, query: "product_type:eyeglasses") {
-          edges {
-            node {
-              id
-              title
-              handle
-              description
-              vendor
-              productType
-              tags
-              totalInventory
-              availableForSale
-              featuredImage { url altText }
-              images(first: 5) { edges { node { url altText } } }
-              variants(first: 10) {
-                edges {
-                  node {
-                    id
-                    title
-                    sku
-                    availableForSale
-                    price { amount currencyCode }
-                    compareAtPrice { amount currencyCode }
-                    selectedOptions { name value }
-                    image { url altText }
+    try {
+      setLoadingBestSelling(true);
+      const query = `
+        query GetBestSellingEyeglasses {
+          products(first: 20, sortKey: BEST_SELLING, query: "product_type:eyeglasses") {
+            edges {
+              node {
+                id
+                title
+                handle
+                description
+                vendor
+                productType
+                tags
+                totalInventory
+                availableForSale
+                featuredImage { url altText }
+                images(first: 5) { edges { node { url altText } } }
+                variants(first: 10) {
+                  edges {
+                    node {
+                      id
+                      title
+                      sku
+                      availableForSale
+                      price { amount currencyCode }
+                      compareAtPrice { amount currencyCode }
+                      selectedOptions { name value }
+                      image { url altText }
+                    }
                   }
                 }
-              }
-              priceRange {
-                minVariantPrice { amount currencyCode }
-                maxVariantPrice { amount currencyCode }
+                priceRange {
+                  minVariantPrice { amount currencyCode }
+                  maxVariantPrice { amount currencyCode }
+                }
               }
             }
           }
         }
-      }
-    `;
+      `;
 
-    const data = await executeHomeQuery<{ products: { edges: any[] } }>(query);
-    setBestSellingProducts(data.products.edges);
+      const data = await executeHomeQuery<{ products: { edges: any[] } }>(
+        query
+      );
+      setBestSellingProducts(data.products.edges);
+    } catch (error) {
+      console.error("Failed to fetch best selling products:", error);
+    } finally {
+      setLoadingBestSelling(false);
+    }
   };
 
   useEffect(() => {
     handleFetchLatestProducts();
-  }, []);
+  }, [setLoadingBestSelling]);
 
   return (
     <View style={styles.container}>
@@ -185,7 +212,7 @@ const BestSelling: React.FC = () => {
       </View>
 
       <FlatList
-        data={bestSellingProducts}
+        data={isLoadingBestSelling ? [] : bestSellingProducts}
         renderItem={({ item }) => (
           <ProductCard
             product={item.node}
@@ -197,7 +224,7 @@ const BestSelling: React.FC = () => {
             isFavorited={isInWishlist(item.node.id)}
           />
         )}
-        // keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={isLoadingBestSelling ? <CardSkeleton /> : null}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
@@ -205,47 +232,85 @@ const BestSelling: React.FC = () => {
 
       <View style={styles.viewAllButtons}>
         <TouchableOpacity
-          style={styles.viewAllButtonContainer}
+          style={[styles.viewAllButtonContainer, styles.eyeglassesButton]}
           onPress={() => router.push("/(tabs)/(explore)")}
+          activeOpacity={0.8}
         >
-          <ImageBackground
-            source={require("@/assets/images/sale.jpg")}
-            style={styles.viewAllButtonBackground}
-            imageStyle={styles.viewAllButtonImageStyle}
-            resizeMode="cover"
-          >
-            <View style={styles.viewAllButtonOverlay}>
-              <Typography
-                title="Bestselling Eyeglasses"
-                fontSize={scale(16)}
-                color={COLORS.white}
-                fontFamily="Roboto-Bold"
-                style={styles.viewAllButtonText}
-              />
+          <View style={styles.buttonGradient}>
+            <View style={styles.buttonContent}>
+              <View style={styles.iconContainer}>
+                <MaterialIcons
+                  name="visibility"
+                  size={24}
+                  color={COLORS.white}
+                />
+              </View>
+              <View style={styles.buttonSecondaryContent}>
+                <View style={styles.textContainer}>
+                  <Typography
+                    title="Eyeglasses"
+                    fontSize={scale(16)}
+                    color={COLORS.white}
+                    fontFamily="Roboto-Bold"
+                    style={styles.buttonTitle}
+                  />
+                  <Typography
+                    title="Best Sellers"
+                    fontSize={scale(12)}
+                    color={COLORS.white}
+                    fontFamily="Roboto-Regular"
+                    style={styles.buttonSubtitle}
+                  />
+                </View>
+                <View style={styles.arrowContainer}>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={18}
+                    color={COLORS.white}
+                  />
+                </View>
+              </View>
             </View>
-          </ImageBackground>
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.viewAllButtonContainer}
+          style={[styles.viewAllButtonContainer, styles.sunglassesButton]}
           onPress={() => router.push("/(tabs)/(explore)")}
+          activeOpacity={0.8}
         >
-          <ImageBackground
-            source={require("@/assets/images/lenses.jpg")}
-            style={styles.viewAllButtonBackground}
-            imageStyle={styles.viewAllButtonImageStyle}
-            resizeMode="cover"
-          >
-            <View style={styles.viewAllButtonOverlay}>
-              <Typography
-                title="Bestselling Sunglasses"
-                fontSize={scale(16)}
-                color={COLORS.white}
-                fontFamily="Roboto-Bold"
-                style={styles.viewAllButtonText}
-              />
+          <View style={styles.buttonGradient}>
+            <View style={styles.buttonContent}>
+              <View style={styles.iconContainer}>
+                <MaterialIcons name="wb-sunny" size={24} color={COLORS.white} />
+              </View>
+              <View style={styles.buttonSecondaryContent}>
+                <View style={styles.textContainer}>
+                  <Typography
+                    title="Sunglasses"
+                    fontSize={scale(16)}
+                    color={COLORS.white}
+                    fontFamily="Roboto-Bold"
+                    style={styles.buttonTitle}
+                  />
+                  <Typography
+                    title="Best Sellers"
+                    fontSize={scale(12)}
+                    color={COLORS.white}
+                    fontFamily="Roboto-Regular"
+                    style={styles.buttonSubtitle}
+                  />
+                </View>
+                <View style={styles.arrowContainer}>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={18}
+                    color={COLORS.white}
+                  />
+                </View>
+              </View>
             </View>
-          </ImageBackground>
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -342,6 +407,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.grey4,
   },
+  buttonSecondaryContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
   addToCart: {
     backgroundColor: COLORS.primary,
     paddingVertical: verticalScale(10),
@@ -354,35 +425,82 @@ const styles = StyleSheet.create({
   },
   viewAllButtons: {
     flexDirection: "row",
-    gap: scale(12),
+    gap: scale(16),
     marginHorizontal: scale(16),
-    marginTop: verticalScale(16),
+    marginTop: verticalScale(20),
   },
   viewAllButtonContainer: {
     flex: 1,
-    height: verticalScale(200),
-    borderRadius: scale(12),
+    height: verticalScale(120),
+    borderRadius: scale(16),
     overflow: "hidden",
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  viewAllButtonBackground: {
-    flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-  viewAllButtonImageStyle: {
-    borderRadius: scale(12),
-  },
-  viewAllButtonOverlay: {
+  eyeglassesButton: {
     backgroundColor: COLORS.primary,
+  },
+  sunglassesButton: {
+    backgroundColor: COLORS.orange,
+  },
+  buttonGradient: {
+    flex: 1,
+    paddingHorizontal: scale(14),
+    paddingVertical: scale(26),
+    justifyContent: "center",
+  },
+  buttonContent: {
+    alignItems: "center",
+    gap: scale(16),
+  },
+  iconContainer: {
+    width: scale(48),
+    height: scale(48),
+    borderRadius: scale(24),
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: scale(12),
-    marginHorizontal: scale(8),
-    paddingVertical: verticalScale(32),
-    marginBottom: verticalScale(8),
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  viewAllButtonText: {
-    textAlign: "center",
+  textContainer: {
+    flex: 1,
+    gap: scale(6),
+  },
+  buttonTitle: {
+    textAlign: "left",
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    fontWeight: "600",
+  },
+  buttonSubtitle: {
+    textAlign: "left",
+    opacity: 0.9,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    fontWeight: "500",
+  },
+  arrowContainer: {
+    width: scale(32),
+    height: scale(32),
+    borderRadius: scale(16),
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

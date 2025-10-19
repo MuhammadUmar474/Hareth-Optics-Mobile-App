@@ -15,26 +15,36 @@ import {
   storeBenefits,
 } from "@/constants/data";
 import { homeApi, MenuItem } from "@/services/home/homeApi";
+import { useLoadingStore } from "@/store/loadingStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 
 const HomeScreen = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [categories, setCategories] = useState<MenuItem[]>([]);
+  const { isLoadingCategories, setLoadingCategories } = useLoadingStore();
 
-  const handleGetCategories = async () => {
-    const categories = await homeApi.getCategories();
-    setCategories(
-      categories.filter((category) => category.type === "COLLECTION")
-    );
-  };
+  const handleGetCategories = useCallback(async () => {
+    try {
+      setLoadingCategories(true);
+      const categories = await homeApi.getCategories();
+      setCategories(
+        categories.filter((category) => category.type === "COLLECTION")
+      );
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  }, [setLoadingCategories]);
+
   useEffect(() => {
     handleGetCategories();
-  }, []);
+  }, [handleGetCategories]);
 
   const player = useVideoPlayer(
     "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
@@ -58,7 +68,6 @@ const HomeScreen = () => {
     router.navigate("/(tabs)/(explore)");
   };
 
- 
   return (
     <View style={styles.container}>
       <StickyHeader categories={categories} />
@@ -68,17 +77,24 @@ const HomeScreen = () => {
       >
         <TrendingNow />
 
-
-
-
-        {categories.map((category) => (
+        {isLoadingCategories ? (
           <Products
-            key={category.id}
-            productCategory={category.items || []}
+            productCategory={[]}
             onProductPress={onProductPress}
-            title={category.title}
+            title="Categories"
+            loading={true}
           />
-        ))}
+        ) : (
+          categories.map((category) => (
+            <Products
+              key={category.id}
+              productCategory={category.items || []}
+              onProductPress={onProductPress}
+              title={category.title}
+              loading={false}
+            />
+          ))
+        )}
 
         <PaymentMethods paymentMethods={paymentMethodTypes} />
 

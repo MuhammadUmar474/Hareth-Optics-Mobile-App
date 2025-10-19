@@ -4,13 +4,9 @@ import { Feather } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { router } from "expo-router";
 import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
+import { TrendingNowSkeleton } from "../skeletons";
 import Typography from "../ui/custom-typography";
 
 const BRAND_COLOR = COLORS.primary;
@@ -40,7 +36,10 @@ const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
               style={styles.subtitle}
             />
           ) : null}
-          <TouchableOpacity style={styles.shopNowButton} onPress={() => router.push(`/(tabs)/(explore)`)}>
+          <TouchableOpacity
+            style={styles.shopNowButton}
+            onPress={() => router.push(`/(tabs)/(explore)`)}
+          >
             <Typography
               title="Shop Now"
               fontSize={scale(10)}
@@ -55,7 +54,11 @@ const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
   );
 };
 
-const TrendingNow: React.FC = () => {
+interface TrendingNowProps {
+  loading?: boolean;
+}
+
+const TrendingNow: React.FC<TrendingNowProps> = ({ loading = false }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -74,13 +77,17 @@ const TrendingNow: React.FC = () => {
         contentContainerStyle={styles.scrollContainer}
         style={styles.scrollView}
       >
-        {trendingCards.map((card) => (
-          <TrendingCard
-            key={card.id}
-            data={card}
-            onPress={() => router.navigate("/product-details")}
-          />
-        ))}
+        {loading ? (
+          <TrendingNowSkeleton />
+        ) : (
+          trendingCards.map((card) => (
+            <TrendingCard
+              key={card.id}
+              data={card}
+              onPress={() => router.navigate("/product-details")}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );

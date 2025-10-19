@@ -131,7 +131,7 @@ const ShoppingCart = () => {
                     numberOfLines={1}
                   />
                   <Typography
-                    title={`$${item.price.toFixed(2)}`}
+                    title={`${item.price.toFixed(2)} KD`}
                     fontSize={scale(13)}
                     fontFamily="Roboto-Bold"
                     color={COLORS.grey33}
@@ -211,7 +211,7 @@ const ShoppingCart = () => {
               color={COLORS.grey29}
             />
             <Typography
-              title={`$${subtotal.toFixed(2)}`}
+              title={`${subtotal.toFixed(2)} KD`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
@@ -229,7 +229,7 @@ const ShoppingCart = () => {
               color={COLORS.grey29}
             />
             <Typography
-              title={`$${shipping.toFixed(2)}`}
+              title={`${shipping.toFixed(2)} KD`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
@@ -247,7 +247,7 @@ const ShoppingCart = () => {
               color={COLORS.grey29}
             />
             <Typography
-              title={`$${estimatedTax.toFixed(2)}`}
+              title={`${estimatedTax.toFixed(2)} KD`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
@@ -266,7 +266,7 @@ const ShoppingCart = () => {
               style={styles.totalLabel}
             />
             <Typography
-              title={`$${total.toFixed(2)}`}
+              title={`${total.toFixed(2)} KD`}
               fontSize={scale(20)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
