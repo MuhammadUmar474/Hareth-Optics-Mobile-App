@@ -4,6 +4,7 @@ type GraphQLError = { message: string };
 type GraphQLResponse<T> = { data: T; errors?: GraphQLError[] };
 
 export type MenuItem = {
+  resource: any;
   id: string;
   title: string;
   url: string;
@@ -105,6 +106,14 @@ type AllProductsProductNode = {
   variants: { edges: { node: AllProductsVariantNode }[] };
 };
 export type AllProductsResponse = {
+  products: {
+    edges: { node: AllProductsProductNode }[];
+    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+  };
+};
+
+// Types for Search Products response
+export type SearchProductsResponse = {
   products: {
     edges: { node: AllProductsProductNode }[];
     pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -314,6 +323,57 @@ class HomeApi {
     `;
 
     return await this.executeQuery<AllProductsResponse>(query, {
+      first,
+      after,
+    });
+  }
+
+  /**
+   * Search products by a query string with pagination support.
+   */
+  async searchProducts(
+    queryString: string,
+    first: number = 50,
+    after?: string
+  ): Promise<SearchProductsResponse> {
+    const query = `
+      query SearchProducts($query: String!, $first: Int = 50, $after: String) {
+        products(first: $first, after: $after, query: $query) {
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              productType
+              vendor
+              tags
+              featuredImage { url altText }
+              images(first: 5) { edges { node { url altText } } }
+              priceRange {
+                minVariantPrice { amount currencyCode }
+                maxVariantPrice { amount currencyCode }
+              }
+              variants(first: 10) {
+                edges {
+                  node {
+                    id
+                    title
+                    availableForSale
+                    selectedOptions { name value }
+                    price { amount currencyCode }
+                  }
+                }
+              }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    `;
+
+    return await this.executeQuery<SearchProductsResponse>(query, {
+      query: queryString,
       first,
       after,
     });

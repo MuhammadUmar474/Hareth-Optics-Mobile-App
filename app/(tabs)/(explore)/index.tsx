@@ -1,15 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, FlatList, ScrollView, View } from "react-native";
+import { Animated, FlatList, ScrollView, Text, View } from "react-native";
 
 import { AnimatedProductCard } from "@/components/explore/animated-product-card";
 import SuggestionTab from "@/components/home/suggestion-tab";
 import { Header } from "@/components/ui/header";
-import { COLORS } from "@/constants/colors";
-import { categoryOptions } from "@/constants/data";
 import { handleLargerText } from "@/constants/helper";
 import { homeApi } from "@/services/home/homeApi";
+import { useCommonStore } from "@/store/commonStore";
 import { styles } from "@/styles/explore/explore";
-import { Feather, Ionicons } from "@expo/vector-icons";
 
 type ExploreProduct = {
   id: string;
@@ -30,6 +28,7 @@ const Explore = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
+  const categories = useCommonStore((state) => state.categories);
 
   // Animate header on mount
   useEffect(() => {
@@ -45,8 +44,11 @@ const Explore = () => {
     setError(null);
 
     try {
-      const selected = categoryOptions.find((c) => c.title === selectedFilter);
-      const handle = selected?.handle ?? "";
+      const selected = categories.find((c) => c.title === selectedFilter);
+      const handle =
+        selectedFilter === "All"
+          ? "eyeglasses"
+          : selected?.resource?.handle  ?? "";
 
       const { collection } = await homeApi.getProductsByCollection(
         handle,
@@ -64,8 +66,6 @@ const Explore = () => {
           node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
         category: node.productType || selectedFilter,
       }));
-
-      
 
       // If loading more, append to current list
       setProducts((prev) => (loadMore ? [...prev, ...mapped] : mapped));
@@ -94,12 +94,9 @@ const Explore = () => {
     });
   };
 
-  const handleCategoryPress = (categoryId: number) => {
+  const handleCategoryPress = (categoryId: string) => {
     const categoryTitle =
-      categoryOptions.find((category) => category.id === categoryId)?.title ||
-      "All";
-
-    setSelectedCategories([categoryId]);
+      categories.find((category) => category.id === categoryId)?.title || "All";
     setSelectedFilter(categoryTitle);
   };
 
@@ -137,35 +134,28 @@ const Explore = () => {
         contentContainerStyle={styles.suggestionContainer}
         style={styles.suggestionScrollView}
       >
-        {categoryOptions.map((category) => (
+        {/* "ALL" tab (index -1 to avoid collision with categories) */}
+        <SuggestionTab
+          key="all"
+          title="ALL"
+          isSelected={selectedCategories.includes(-1)}
+          onPress={() => {
+            handleCategoryPress("All");
+            setSelectedCategories([-1]);
+          }}
+          containerStyle={styles.suggestionTab}
+        />
+
+        {/* Category tabs */}
+        {categories.map((category, index) => (
           <SuggestionTab
-            key={category.id}
+            key={category.id ?? index}
             title={category.title}
-            lefticon={
-              category.iconLibrary === "ionicons" ? (
-                <Ionicons
-                  name={category.iconName as keyof typeof Ionicons.glyphMap}
-                  size={16}
-                  color={
-                    selectedCategories.includes(category.id)
-                      ? COLORS.white
-                      : COLORS.primary
-                  }
-                />
-              ) : (
-                <Feather
-                  name={category.iconName as keyof typeof Feather.glyphMap}
-                  size={16}
-                  color={
-                    selectedCategories.includes(category.id)
-                      ? COLORS.white
-                      : COLORS.primary
-                  }
-                />
-              )
-            }
-            isSelected={selectedCategories.includes(category.id)}
-            onPress={() => handleCategoryPress(category.id)}
+            isSelected={selectedCategories.includes(index)}
+            onPress={() => {
+              handleCategoryPress(category.id);
+              setSelectedCategories([index]);
+            }}
             containerStyle={styles.suggestionTab}
           />
         ))}
@@ -181,6 +171,17 @@ const Explore = () => {
           contentContainerStyle={styles.productsContainer}
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.5}
+          ListEmptyComponent={
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text>No products found</Text>
+            </View>
+          }
           onEndReached={() => {
             if (hasNextPage && !loading) {
               fetchProducts(true); // load more
