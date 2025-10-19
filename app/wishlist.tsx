@@ -1,11 +1,12 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/shopifyStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dimensions,
   FlatList,
@@ -19,8 +20,21 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const Wishlist = () => {
   const router = useRouter();
-  const { wishlistItems, removeFromWishlist } = useWishlistStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const { wishlistItems, removeFromWishlist, setCurrentUser } = useWishlistStore();
   const addToCart = useCartStore((state) => state.addToCart);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      setCurrentUser(user.email);
+    }
+  }, [isAuthenticated, user?.email, setCurrentUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/(auth)/login");
+    }
+  }, [isAuthenticated, router]);
 
   const handleAddToCart = (item: any) => {
     addToCart({

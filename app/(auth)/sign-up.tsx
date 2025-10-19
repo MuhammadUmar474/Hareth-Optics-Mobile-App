@@ -5,7 +5,6 @@ import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 import { useAuthStore } from "@/store/shopifyStore";
 import { AuthMode, SignupFormValues } from "@/types/auth";
-import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
@@ -15,8 +14,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
@@ -195,7 +193,9 @@ const SignUp = () => {
           style={styles.subtitle}
         />
 
-        <View style={styles.segmentContainer}>
+        {/* TODO: Might be need in future */}
+
+        {/* <View style={styles.segmentContainer}>
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => setMode("email")}
@@ -219,49 +219,48 @@ const SignUp = () => {
             />
           </TouchableOpacity>
 
-          {/* TODO: Might be need in future */}
-          {/* <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => setMode("phone")}
-          style={[styles.segment, mode === "phone" && styles.segmentActive]}
-        >
-          <Feather
-            name="phone"
-            size={16}
-            color={mode === "phone" ? COLORS.white : COLORS.grey22}
-            style={{ marginRight: 8 }}
-          />
-          <Typography
-            title="Phone"
-            fontSize={SIZES.body}
-            color={mode === "phone" ? COLORS.white : COLORS.grey22}
-            style={{ fontWeight: "600" }}
-          />
-        </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => setMode("phone")}
+            style={[styles.segment, mode === "phone" && styles.segmentActive]}
+          >
+            <Feather
+              name="phone"
+              size={16}
+              color={mode === "phone" ? COLORS.white : COLORS.grey22}
+              style={{ marginRight: 8 }}
+            />
+            <Typography
+              title="Phone"
+              fontSize={SIZES.body}
+              color={mode === "phone" ? COLORS.white : COLORS.grey22}
+              style={{ fontWeight: "600" }}
+            />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => setMode("whatsapp")}
-          style={[
-            styles.segment,
-            { borderTopRightRadius: 5, borderBottomRightRadius: 5 },
-            mode === "whatsapp" && styles.segmentActive,
-          ]}
-        >
-          <FontAwesome
-            name="whatsapp"
-            size={16}
-            color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
-            style={{ marginRight: 8 }}
-          />
-          <Typography
-            title="WhatsApp"
-            fontSize={SIZES.body}
-            color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
-            style={{ fontWeight: "600" }}
-          />
-        </TouchableOpacity> */}
-        </View>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => setMode("whatsapp")}
+            style={[
+              styles.segment,
+              { borderTopRightRadius: 5, borderBottomRightRadius: 5 },
+              mode === "whatsapp" && styles.segmentActive,
+            ]}
+          >
+            <FontAwesome
+              name="whatsapp"
+              size={16}
+              color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
+              style={{ marginRight: 8 }}
+            />
+            <Typography
+              title="WhatsApp"
+              fontSize={SIZES.body}
+              color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
+              style={{ fontWeight: "600" }}
+            />
+          </TouchableOpacity>
+        </View> */}
         <View style={styles.formContainer}>
           <Formik
             initialValues={getInitialValues()}
