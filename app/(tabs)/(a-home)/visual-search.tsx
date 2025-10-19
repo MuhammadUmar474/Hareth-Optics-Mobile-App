@@ -83,7 +83,7 @@ const VisualSearch = () => {
   };
 
   const handleQRScan = () => {
-    console.log("Scan QR");
+    // TODO: Implement QR scan
   };
 
   return (
