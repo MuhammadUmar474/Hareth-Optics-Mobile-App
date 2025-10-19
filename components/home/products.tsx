@@ -1,30 +1,29 @@
 import { COLORS } from "@/constants/colors";
 import { MenuItem } from "@/services/home/homeApi";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import React from "react";
-import {
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
+import { ProductsSkeleton } from "../skeletons";
 import Typography from "../ui/custom-typography";
+import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 interface ProductsProps {
   productCategory: MenuItem[];
   onProductPress?: (product: MenuItem) => void;
   title: string;
+  loading?: boolean;
 }
 
 const Products: React.FC<ProductsProps> = ({
   productCategory,
   onProductPress,
   title,
+  loading = false,
 }) => {
-
-
+  if (loading) {
+    return <ProductsSkeleton />;
+  }
 
   const renderProduct = ({ item }: { item: MenuItem[] }) => {
     return (
@@ -33,12 +32,15 @@ const Products: React.FC<ProductsProps> = ({
           onPress={() => onProductPress?.(item)}
           activeOpacity={0.8}
         >
-
-
-       <Image source={{uri:item.resource.image.url}} style={styles.productImage} />
+          <SimpleOptimizedImage
+            source={{ uri: item.resource.image.url }}
+            style={styles.productImage}
+            priority="high"
+            contentFit="cover"
+          />
         </TouchableOpacity>
         <Typography
-          title={item.title??""}
+          title={item.title ?? ""}
           fontSize={scale(11)}
           fontFamily="Roboto-Bold"
           color={COLORS.black}

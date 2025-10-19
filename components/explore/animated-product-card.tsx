@@ -2,13 +2,13 @@ import { COLORS } from "@/constants/colors";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
+import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 export const AnimatedProductCard = ({
   item,
@@ -84,13 +84,12 @@ export const AnimatedProductCard = ({
     >
       <TouchableOpacity activeOpacity={1} onPress={handlePress}>
         <View style={styles.productImageContainer}>
-          <Image
+          <SimpleOptimizedImage
             style={styles.productImagePlaceholder}
             source={{ uri: item.image }}
             contentFit="cover"
-            transition={300}
-            cachePolicy="memory-disk"
-            onLoadEnd={() => setImageLoaded(true)}
+            priority="normal"
+            onLoad={() => setImageLoaded(true)}
           />
 
           {!imageLoaded && (

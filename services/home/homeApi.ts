@@ -86,7 +86,10 @@ export type ProductsByCollectionResponse = {
     handle: string;
     description: string;
     image: Image | null;
-    products: { edges: { node: CollectionProductNode }[] };
+    products: { 
+      edges: { node: CollectionProductNode }[];
+      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+    };
   } | null;
 };
 

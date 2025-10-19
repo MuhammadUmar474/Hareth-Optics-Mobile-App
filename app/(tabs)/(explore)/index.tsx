@@ -3,6 +3,7 @@ import { Animated, FlatList, ScrollView, Text, View } from "react-native";
 
 import { AnimatedProductCard } from "@/components/explore/animated-product-card";
 import SuggestionTab from "@/components/home/suggestion-tab";
+import { ExploreCardSkeleton } from "@/components/skeletons";
 import { Header } from "@/components/ui/header";
 import { handleLargerText } from "@/constants/helper";
 import { homeApi } from "@/services/home/homeApi";
@@ -124,6 +125,12 @@ const Explore = () => {
     />
   );
 
+  const renderSkeleton = () => (
+    <View style={styles.skeletonContainer}>
+      <ExploreCardSkeleton />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Header />
@@ -163,7 +170,7 @@ const Explore = () => {
 
       <Animated.View style={[styles.content, { opacity: headerFadeAnim }]}>
         <FlatList
-          data={products}
+          data={loading && products.length === 0 ? [] : products}
           renderItem={renderProduct}
           keyExtractor={(item) => item.id}
           numColumns={2}
@@ -187,8 +194,13 @@ const Explore = () => {
               fetchProducts(true); // load more
             }
           }}
+          ListEmptyComponent={
+            loading && products.length === 0 ? renderSkeleton : null
+          }
           ListFooterComponent={
-            loading ? <View style={{ padding: 20 }} /> : null
+            loading && products.length > 0 ? (
+              <View style={{ padding: 20 }} />
+            ) : null
           }
         />
       </Animated.View>

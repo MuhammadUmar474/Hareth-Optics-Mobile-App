@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { Formik } from "formik";
 import React from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -332,12 +333,16 @@ const Login = () => {
                   onPress={() => handleSubmit()}
                   disabled={!isValid || loading}
                 >
-                  <Typography
-                    title={loading ? "Logging in..." : "Login"}
-                    fontSize={SIZES.body}
-                    style={{ fontWeight: "700" }}
-                    color={COLORS.white}
-                  />
+                  {loading ? (
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                  ) : (
+                    <Typography
+                      title="Login"
+                      fontSize={SIZES.body}
+                      style={{ fontWeight: "700" }}
+                      color={COLORS.white}
+                    />
+                  )}
                 </Button>
               </>
             )}

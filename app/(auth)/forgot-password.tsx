@@ -8,7 +8,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
 import React, { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
@@ -123,12 +123,16 @@ const ForgotPassword = () => {
                   onPress={() => handleSubmit()}
                   disabled={!isValid || loading}
                 >
-                  <Typography
-                    title={loading ? "Sending..." : "Reset Password"}
-                    fontSize={SIZES.body}
-                    style={{ fontWeight: "700" }}
-                    color={COLORS.white}
-                  />
+                  {loading ? (
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                  ) : (
+                    <Typography
+                      title="Reset Password"
+                      fontSize={SIZES.body}
+                      style={{ fontWeight: "700" }}
+                      color={COLORS.white}
+                    />
+                  )}
                 </Button>
               </>
             )}

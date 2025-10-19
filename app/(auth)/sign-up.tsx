@@ -10,6 +10,7 @@ import { router } from "expo-router";
 import { Formik } from "formik";
 import React from "react";
 import {
+  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -403,12 +404,16 @@ const SignUp = () => {
                   onPress={() => handleSubmit()}
                   disabled={!isValid || loading}
                 >
-                  <Typography
-                    title={loading ? "Creating Account..." : "Create Account"}
-                    fontSize={SIZES.body}
-                    style={{ fontWeight: "700" }}
-                    color={COLORS.white}
-                  />
+                  {loading ? (
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                  ) : (
+                    <Typography
+                      title="Create Account"
+                      fontSize={SIZES.body}
+                      style={{ fontWeight: "700" }}
+                      color={COLORS.white}
+                    />
+                  )}
                 </Button>
               </>
             )}

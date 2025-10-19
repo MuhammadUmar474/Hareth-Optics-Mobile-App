@@ -2,12 +2,14 @@ import { COLORS } from "@/constants/colors";
 import { TrendingCardData } from "@/constants/data";
 import { handleLargerText } from "@/constants/helper";
 import { executeHomeQuery } from "@/services/home/homeApi";
+import { useLoadingStore } from "@/store/loadingStore";
 import { Feather } from "@expo/vector-icons";
-import { ImageBackground } from "expo-image";
+import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
+import { TrendingNowSkeleton } from "../skeletons";
 import Typography from "../ui/custom-typography";
 
 const BRAND_COLOR = COLORS.primary;
@@ -28,38 +30,42 @@ const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
   console.log("datadatadatadata", data);
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <ImageBackground source={data.image} style={styles.cardContent}>
-        <View style={styles.textContainer}>
+      <Image
+        source={data.image}
+        style={styles.cardContent}
+        contentFit="cover"
+      />
+      <View style={styles.textContainer}>
+        <Typography
+          title={"Best Selling"}
+          fontSize={scale(12)}
+          fontFamily="Poppins-Bold"
+          color={COLORS.orange}
+          style={styles.title}
+        />
+        <View style={styles.titleContainer}>
           <Typography
-            title={"Best Selling"}
-            fontSize={scale(12)}
-            fontFamily="Poppins-Bold"
-            color={COLORS.orange}
-            style={styles.title}
+            title={handleLargerText(data.title, 22)}
+            fontSize={scale(20)}
+            color={COLORS.black}
+            style={styles.subtitle}
           />
-          <View style={styles.titleContainer}>
-            <Typography
-              title={handleLargerText(data.name, 15)}
-              fontSize={scale(20)}
-              color={COLORS.black}
-              style={styles.subtitle}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={styles.shopNowButton}
-            onPress={() => router.push(`/(tabs)/(explore)`)}
-          >
-            <Typography
-              title="Shop Now"
-              fontSize={scale(10)}
-              color={COLORS.black}
-              fontFamily="Roboto-Bold"
-            />
-            <Feather name="chevron-right" size={14} color={COLORS.black} />
-          </TouchableOpacity>
         </View>
-      </ImageBackground>
+
+        <TouchableOpacity
+          style={styles.shopNowButton}
+          onPress={() => router.push(`/(tabs)/(explore)`)}
+        >
+          <Typography
+            title="Shop Now"
+            fontSize={scale(10)}
+            color={COLORS.white}
+            fontFamily="Roboto-Bold"
+            style={styles.shopNowButtonText}
+          />
+          <Feather name="chevron-right" size={14} color={COLORS.white} />
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -68,8 +74,12 @@ const TrendingNow: React.FC = () => {
   const [trendingProducts, setTrendingProducts] = useState<ExploreProduct[]>(
     []
   );
-  const handleFetchLatestProducts = async () => {
-    const query = `
+  const { isLoadingTrending, setLoadingTrending } = useLoadingStore();
+
+  const handleFetchLatestProducts = useCallback(async () => {
+    try {
+      setLoadingTrending(true);
+      const query = `
       query GetBestSellingEyeglasses {
         products(first: 5, sortKey: BEST_SELLING) {
           edges {
@@ -95,20 +105,27 @@ const TrendingNow: React.FC = () => {
       }
     `;
 
-    const data = await executeHomeQuery<{ products: { edges: any[] } }>(query);
-    const mapped: ExploreProduct[] = data.products.edges.map(({ node }) => ({
-      id: node.id,
-      name: node.title,
-      price: node.priceRange.minVariantPrice.amount,
-      image:
-        node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
-    }));
-    setTrendingProducts(mapped);
-  };
+      const data = await executeHomeQuery<{ products: { edges: any[] } }>(
+        query
+      );
+      const mapped: ExploreProduct[] = data.products.edges.map(({ node }) => ({
+        id: node.id,
+        name: node.title,
+        price: node.priceRange.minVariantPrice.amount,
+        image:
+          node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
+      }));
+      setTrendingProducts(mapped);
+    } catch (error) {
+      console.error("Failed to fetch trending products:", error);
+    } finally {
+      setLoadingTrending(false);
+    }
+  }, [setLoadingTrending]);
 
   useEffect(() => {
     handleFetchLatestProducts();
-  }, []);
+  }, [handleFetchLatestProducts]);
 
   return (
     <View style={styles.container}>
@@ -128,13 +145,23 @@ const TrendingNow: React.FC = () => {
         contentContainerStyle={styles.scrollContainer}
         style={styles.scrollView}
       >
-        {trendingProducts.map((card) => (
-          <TrendingCard
-            key={card.id}
-            data={card}
-            onPress={() => router.navigate("/product-details")}
-          />
-        ))}
+        {isLoadingTrending ? (
+          <TrendingNowSkeleton />
+        ) : (
+          trendingProducts.map((card, index) => (
+            <TrendingCard
+              key={card.id}
+              data={{
+                id: index + 1,
+                title: card.name,
+                subtitle: `$${card.price}`,
+                image: { uri: card.image },
+                filter: "trending",
+              }}
+              onPress={() => router.navigate("/product-details")}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -161,18 +188,21 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingRight: scale(16),
-    gap: scale(12),
+    gap: scale(10),
   },
   card: {
     width: scale(280),
     backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.grey4,
     borderRadius: scale(16),
     shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 3, height: 4 },
+    shadowOpacity: 0.11,
     shadowRadius: 12,
-    elevation: 8,
-    overflow: "hidden",
+    elevation: 6,
+    marginHorizontal: scale(4),
+    marginBottom: verticalScale(6),
   },
   accentBar: {
     height: 4,
@@ -180,17 +210,21 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_COLOR,
   },
   cardContent: {
-    flexDirection: "row",
-    paddingHorizontal: scale(20),
-    paddingVertical: scale(10),
-    alignItems: "center",
-    gap: scale(16),
+    width: "100%",
+    height: verticalScale(112),
+    borderTopLeftRadius: scale(16),
+    borderTopRightRadius: scale(16),
+    overflow: "hidden",
   },
   textContainer: {
     flex: 1,
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(16),
   },
   title: {
-    marginBottom: verticalScale(7),
+    marginBottom: verticalScale(4),
+    fontWeight: "600",
+    marginLeft: scale(3),
   },
   subtitle: {
     fontWeight: "500",
@@ -201,15 +235,17 @@ const styles = StyleSheet.create({
     borderRadius: scale(12),
   },
   shopNowButton: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     gap: scale(4),
-    paddingHorizontal: scale(8),
+    paddingHorizontal: scale(10),
     paddingVertical: scale(5),
     borderRadius: scale(40),
     alignSelf: "flex-start",
-    marginBottom: verticalScale(16),
+  },
+  shopNowButtonText: {
+    fontWeight: "600",
   },
   titleContainer: {
     backgroundColor: COLORS.white,

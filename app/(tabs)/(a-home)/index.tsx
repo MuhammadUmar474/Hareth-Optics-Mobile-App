@@ -7,6 +7,7 @@ import OurPromiseComponent from "@/components/home/our-promise";
 import PaymentMethods from "@/components/home/payment-methods";
 import Products from "@/components/home/products";
 import TrendingNow from "@/components/home/trending-now";
+import { CardSkeleton, ExploreCardSkeleton, TrendingNowSkeleton } from "@/components/skeletons";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import {
@@ -18,10 +19,11 @@ import {
 import { handleLargerText } from "@/constants/helper";
 import { homeApi, MenuItem } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
+import { useLoadingStore } from "@/store/loadingStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -50,26 +52,39 @@ const HomeScreen = () => {
   const [endCursor, setEndCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
   const setCategories = useCommonStore((state) => state.setCategories);
-  const handleGetCategories = async () => {
-    const categories = await homeApi.getCategories();
-    const colllectionCategories = categories.filter(
-      (category) => category.type === "COLLECTION"
-    );
-    setMainCategories(colllectionCategories);
-    setCategories(colllectionCategories);
-  };
+  const { isLoadingCategories, setLoadingCategories } = useLoadingStore();
+  
+  const handleGetCategories = useCallback(async () => {
+    try {
+      setLoadingCategories(true);
+      const categories = await homeApi.getCategories();
+      const colllectionCategories = categories.filter(
+        (category) => category.type === "COLLECTION"
+      );
+      setMainCategories(colllectionCategories);
+      setCategories(colllectionCategories);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    } finally {
+      setLoadingCategories(false);
+      setInitialLoading(false);
+    }
+  }, [setLoadingCategories, setCategories]);
+
   useEffect(() => {
     handleGetCategories();
-  }, []);
+  }, [handleGetCategories]);
+ 
   useEffect(() => {
     Animated.timing(headerFadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [headerFadeAnim]);
 
   const player = useVideoPlayer(
     "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
@@ -93,7 +108,7 @@ const HomeScreen = () => {
     router.navigate("/(tabs)/(explore)");
   };
 
-  const fetchProducts = async (loadMore = false) => {
+  const fetchProducts = useCallback(async (loadMore = false) => {
     setLoading(true);
     const { collection } = await homeApi.getProductsByCollection(
       handle,
@@ -116,14 +131,14 @@ const HomeScreen = () => {
 
     setProducts((prev) => (loadMore ? [...prev, ...mapped] : mapped));
 
-    setEndCursor(collection?.products.pageInfo.endCursor ?? null);
-    setHasNextPage(collection?.products.pageInfo.hasNextPage ?? false);
+    setEndCursor(collection?.products.pageInfo?.endCursor ?? null);
+    setHasNextPage(collection?.products.pageInfo?.hasNextPage ?? false);
     setLoading(false);
-  };
+  }, [handle, endCursor]);
 
   useEffect(() => {
     fetchProducts(false); // initial load
-  }, [handle]);
+  }, [fetchProducts]);
 
   const renderProduct = ({
     item,
@@ -139,6 +154,25 @@ const HomeScreen = () => {
       // isFavorite={favorites.has(item.id)}
     />
   );
+
+  // Show initial loading skeleton while data is being fetched
+  if (initialLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.headerSkeleton}>
+          <View style={styles.headerSkeletonContent} />
+        </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <TrendingNowSkeleton />
+          <ExploreCardSkeleton />
+          <CardSkeleton />
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -166,9 +200,11 @@ const HomeScreen = () => {
                     alignItems: "center",
                   }}
                 >
-                  loading ?
-                  <ActivityIndicator size="large" color={COLORS.primary} /> :
-                  <Text>No products found</Text>
+                  {loading ? (
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                  ) : (
+                    <Text>No products found</Text>
+                  )}
                 </View>
               }
               onEndReached={() => {
@@ -193,6 +229,7 @@ const HomeScreen = () => {
                 productCategory={category.items || []}
                 onProductPress={onProductPress}
                 title={category.title}
+                loading={isLoadingCategories}
               />
             ))}
 
@@ -331,5 +368,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(12),
     paddingTop: verticalScale(12),
     paddingBottom: verticalScale(100),
+  },
+  headerSkeleton: {
+    height: verticalScale(60),
+    backgroundColor: COLORS.white,
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(12),
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.grey4,
+  },
+  headerSkeletonContent: {
+    height: verticalScale(36),
+    backgroundColor: COLORS.grey4,
+    borderRadius: scale(8),
   },
 });
