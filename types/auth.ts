@@ -21,7 +21,8 @@ export interface SignupCredentials {
 }
 
 export interface SignupFormValues {
-  fullName: string;
+   firstName: string;
+  lastName: string;
   email?: string;
   phone?: string;
   whatsapp?: string;
