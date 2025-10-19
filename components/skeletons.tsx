@@ -139,13 +139,12 @@ export const TrendingNowSkeleton: React.FC = () => {
       <View style={styles.trendingList}>
         {[1, 2, 3].map((index) => (
           <View key={index} style={styles.trendingCard}>
-            <Skeleton style={styles.trendingCardContent}>
-              <View style={styles.trendingTextContainer}>
-                <Skeleton style={styles.trendingCardTitle} />
-                <Skeleton style={styles.trendingCardSubtitle} />
-                <Skeleton style={styles.trendingButton} />
-              </View>
-            </Skeleton>
+            <Skeleton style={styles.trendingCardImage} />
+            <View style={styles.trendingTextContainer}>
+              <Skeleton style={styles.trendingCardTitle} />
+              <Skeleton style={styles.trendingCardSubtitle} />
+              <Skeleton style={styles.trendingButton} />
+            </View>
           </View>
         ))}
       </View>
@@ -283,34 +282,34 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: scale(16),
     shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 3, height: 4 },
+    shadowOpacity: 0.11,
     shadowRadius: 12,
-    elevation: 8,
-    overflow: "hidden",
+    elevation: 6,
+    marginHorizontal: scale(4),
+    marginBottom: verticalScale(6),
   },
-  trendingCardContent: {
-    flexDirection: "row",
-    paddingHorizontal: scale(20),
-    paddingVertical: scale(10),
-    alignItems: "center",
-    gap: scale(16),
+  trendingCardImage: {
+    width: "100%",
+    height: verticalScale(100),
     backgroundColor: COLORS.grey4,
   },
   trendingTextContainer: {
     flex: 1,
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(16),
   },
   trendingCardTitle: {
     height: scale(12),
-    width: scale(80),
+    width: scale(50),
     backgroundColor: COLORS.grey3,
-    marginBottom: verticalScale(7),
+    marginBottom: verticalScale(4),
   },
   trendingCardSubtitle: {
-    height: scale(16),
+    height: scale(13),
     width: scale(120),
     backgroundColor: COLORS.grey3,
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(10),
     marginBottom: verticalScale(10),
   },
   trendingButton: {

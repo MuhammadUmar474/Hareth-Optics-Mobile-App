@@ -206,7 +206,7 @@ export interface TrendingCardData {
   subtitle?: string;
   cta?: string;
   image: ImageSource;
-  filter: string;
+  filter: string
 }
 
 export const trendingCards: TrendingCardData[] = [
