@@ -7,7 +7,7 @@ import { useWishlistAuth } from "@/utils/wishlist";
 import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -20,57 +20,82 @@ import LocationModal from "../modals/location-modal";
 import Input from "../ui/input";
 import SuggestionTab from "./suggestion-tab";
 
-const StickyHeader = ({ categories, setHandle }: { categories: MenuItem[], setHandle: (handle: string) => void }) => {
+const StickyHeader = ({
+  categories,
+  setHandle,
+  onSearchStateChange,
+  clearSearchRef,
+}: {
+  categories: MenuItem[];
+  setHandle: (handle: string) => void;
+  onSearchStateChange?: (isSearching: boolean, query: string) => void;
+  clearSearchRef?: React.MutableRefObject<(() => void) | null>;
+}) => {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
   const [isVisible, setIsVisible] = useState(false);
   const { checkAuthForWishlistView } = useWishlistAuth();
 
-  const { isRtl,t } = useLocal();
+  useEffect(() => {
+    if (clearSearchRef) {
+      clearSearchRef.current = () => setSearchQuery("");
+    }
+  }, [clearSearchRef]);
+
+  const { isRtl, t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
     setSelectedCategories([categoryId]);
   };
+
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    const isSearching = text.trim().length > 0;
+    onSearchStateChange?.(isSearching, text);
+  };
+
   const dynamicStyles = useMemo(
-    () => StyleSheet.create({
-      profileContainer: {
-        flexDirection: isRtl ? "row-reverse" : "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: scale(10),
-      },
-      headerContainer: {
-        flexDirection: isRtl ? "row-reverse" : "row",
-        alignItems: "center",
-        justifyContent: "space-between" as const,
-        paddingHorizontal: scale(8),
-        paddingVertical: verticalScale(8),
-        gap: scale(10),
-      },
-      locationContainer: {
-        flexDirection: isRtl ? "row-reverse" : "row",
-        alignItems: "flex-end",
-      },
-      headerIcons: {
-        flexDirection: isRtl ? "row-reverse" : "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: scale(12),
-      },
-      rightIconContainer: {
-        flexDirection: isRtl ? "row-reverse" : "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: scale(10),
-      },
-      suggestionContainer: {
-        flexDirection: isRtl ? "row-reverse" : "row",
-        paddingHorizontal: scale(8),
-        paddingVertical: verticalScale(8),
-        gap: scale(8),
-        alignItems: "center",
-      },
-    }),
+    () =>
+      StyleSheet.create({
+        profileContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: scale(10),
+        },
+        headerContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between" as const,
+          paddingHorizontal: scale(8),
+          paddingVertical: verticalScale(8),
+          gap: scale(10),
+        },
+        locationContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "flex-end",
+        },
+        headerIcons: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: scale(12),
+        },
+        rightIconContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: scale(10),
+        },
+        suggestionContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          paddingHorizontal: scale(8),
+          paddingVertical: verticalScale(8),
+          gap: scale(8),
+          alignItems: "center",
+        },
+      }),
     [isRtl]
   );
   return (
@@ -89,7 +114,9 @@ const StickyHeader = ({ categories, setHandle }: { categories: MenuItem[], setHa
               style={dynamicStyles.locationContainer}
               onPress={() => setIsVisible(true)}
             >
-              <Text style={styles.locationText}>{t("home.selectLocation")}</Text>
+              <Text style={styles.locationText}>
+                {t("home.selectLocation")}
+              </Text>
               <Ionicons
                 name="chevron-down"
                 size={13}
@@ -134,6 +161,8 @@ const StickyHeader = ({ categories, setHandle }: { categories: MenuItem[], setHa
 
       <Input
         placeholder={t("home.lookingFor")}
+        value={searchQuery}
+        onChangeText={handleSearchChange}
         containerStyle={styles.inputContainer}
         inputContainerStyle={styles.inputContainerStyle}
         leftAccessory={
@@ -165,18 +194,20 @@ const StickyHeader = ({ categories, setHandle }: { categories: MenuItem[], setHa
         }
       />
       <LocationModal isVisible={isVisible} setIsVisible={setIsVisible} />
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={dynamicStyles.suggestionContainer}
         style={styles.suggestionScrollView}
       >
-        {categories.map((category,index) => (
+        {categories.map((category, index) => (
           <SuggestionTab
             key={category.id}
             title={category.title}
             isSelected={selectedCategories.includes(index)}
-            onPress={() => {handleCategoryPress(index)
+            onPress={() => {
+              handleCategoryPress(index);
               setHandle(category.resource?.handle ?? "");
             }}
             containerStyle={styles.suggestionTab}
