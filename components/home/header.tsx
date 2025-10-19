@@ -20,7 +20,7 @@ import LocationModal from "../modals/location-modal";
 import Input from "../ui/input";
 import SuggestionTab from "./suggestion-tab";
 
-const StickyHeader = ({ categories }: { categories: MenuItem[] }) => {
+const StickyHeader = ({ categories, setHandle }: { categories: MenuItem[], setHandle: (handle: string) => void }) => {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const cartCount = useCartStore((state) => state.cartCount);
   const wishlistCount = useWishlistStore((state) => state.wishlistCount);
@@ -29,11 +29,7 @@ const StickyHeader = ({ categories }: { categories: MenuItem[] }) => {
 
   const { isRtl,t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
+    setSelectedCategories([categoryId]);
   };
   const dynamicStyles = useMemo(
     () => StyleSheet.create({
@@ -180,7 +176,9 @@ const StickyHeader = ({ categories }: { categories: MenuItem[] }) => {
             key={category.id}
             title={category.title}
             isSelected={selectedCategories.includes(index)}
-            onPress={() => handleCategoryPress(index)}
+            onPress={() => {handleCategoryPress(index)
+              setHandle(category.resource?.handle ?? "");
+            }}
             containerStyle={styles.suggestionTab}
           />
         ))}
