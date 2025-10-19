@@ -10,21 +10,26 @@ import { router } from "expo-router";
 import { Formik } from "formik";
 import React from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
 
 const emailValidationSchema = Yup.object().shape({
-  fullName: Yup.string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be less than 50 characters")
-    .required("Full name is required"),
+  firstName: Yup.string()
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be less than 50 characters")
+    .required("First name is required"),
+  lastName: Yup.string()
+    .min(1, "Last name is required")
+    .max(50, "Last name must be less than 50 characters")
+    .required("Last name is required"),
   email: Yup.string()
     .email("Please enter a valid email")
     .required("Email is required"),
@@ -38,10 +43,14 @@ const emailValidationSchema = Yup.object().shape({
 });
 
 const phoneValidationSchema = Yup.object().shape({
-  fullName: Yup.string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be less than 50 characters")
-    .required("Full name is required"),
+  firstName: Yup.string()
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be less than 50 characters")
+    .required("First name is required"),
+  lastName: Yup.string()
+    .min(1, "Last name is required")
+    .max(50, "Last name must be less than 50 characters")
+    .required("Last name is required"),
   phone: Yup.string()
     .matches(/^[0-9+\-\s()]+$/, "Please enter a valid phone number")
     .min(10, "Phone number must be at least 10 digits")
@@ -56,10 +65,14 @@ const phoneValidationSchema = Yup.object().shape({
 });
 
 const whatsappValidationSchema = Yup.object().shape({
-  fullName: Yup.string()
-    .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be less than 50 characters")
-    .required("Full name is required"),
+  firstName: Yup.string()
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be less than 50 characters")
+    .required("First name is required"),
+  lastName: Yup.string()
+    .min(1, "Last name is required")
+    .max(50, "Last name must be less than 50 characters")
+    .required("Last name is required"),
   whatsapp: Yup.string()
     .matches(/^[0-9+\-\s()]+$/, "Please enter a valid WhatsApp number")
     .min(10, "WhatsApp number must be at least 10 digits")
@@ -77,12 +90,25 @@ const SignUp = () => {
   const [mode, setMode] = React.useState<AuthMode>("email");
   const { signup, loading, error, clearError } = useAuthStore();
   const toast = useToast();
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   React.useEffect(() => {
     if (error) {
       clearError();
     }
   }, [mode, error, clearError]);
+
+  React.useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 200);
+    });
+
+    return () => {
+      showSubscription.remove();
+    };
+  }, []);
 
   const getValidationSchema = () => {
     switch (mode) {
@@ -100,13 +126,13 @@ const SignUp = () => {
   const getInitialValues = () => {
     switch (mode) {
       case "email":
-        return { fullName: "", email: "", password: "" };
+        return { firstName: "", lastName: "", email: "", password: "" };
       case "phone":
-        return { fullName: "", phone: "", password: "" };
+        return { firstName: "", lastName: "", phone: "", password: "" };
       case "whatsapp":
-        return { fullName: "", whatsapp: "", password: "" };
+        return { firstName: "", lastName: "", whatsapp: "", password: "" };
       default:
-        return { fullName: "", email: "", password: "" };
+        return { firstName: "", lastName: "", email: "", password: "" };
     }
   };
 
@@ -127,23 +153,10 @@ const SignUp = () => {
       return;
     }
 
-    // Split full name into first and last name
-    const nameParts = values.fullName.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    if (!firstName) {
-      toast.show("Please enter your full name", {
-        type: "danger",
-        placement: "top",
-      });
-      return;
-    }
-
     try {
       await signup({
-        firstName,
-        lastName,
+        firstName: values.firstName,
+        lastName: values.lastName,
         email: values.email,
         password: values.password,
         acceptsMarketing: true,
@@ -169,9 +182,9 @@ const SignUp = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -278,27 +291,43 @@ const SignUp = () => {
               isValid,
             }) => (
               <>
-                <CustomTextInput
-                  label="Full Name"
-                  placeholder="Enter your name"
-                  containerStyle={{ marginBottom: 20 }}
-                  height={45}
-                  value={values.fullName}
-                  onChangeText={handleChange("fullName")}
-                  onBlur={handleBlur("fullName")}
-                  error={
-                    touched.fullName && errors.fullName
-                      ? errors.fullName
-                      : undefined
-                  }
-                />
+                <View style={styles.nameColumn}>
+                  <CustomTextInput
+                    label="First Name"
+                    placeholder="First name"
+                    height={45}
+                    value={values.firstName}
+                    onChangeText={handleChange("firstName")}
+                    onBlur={handleBlur("firstName")}
+                    error={
+                      touched.firstName && errors.firstName
+                        ? errors.firstName
+                        : undefined
+                    }
+                  />
+                </View>
+                <View style={styles.nameColumn}>
+                  <CustomTextInput
+                    label="Last Name"
+                    placeholder="Last name"
+                    height={45}
+                    value={values.lastName}
+                    onChangeText={handleChange("lastName")}
+                    onBlur={handleBlur("lastName")}
+                    error={
+                      touched.lastName && errors.lastName
+                        ? errors.lastName
+                        : undefined
+                    }
+                  />
+                </View>
 
                 {mode === "email" ? (
                   <CustomTextInput
                     label="Email"
                     email
                     placeholder="Enter your email"
-                    containerStyle={{ marginBottom: 20 }}
+                    containerStyle={{ marginBottom: 20, marginTop: 20 }}
                     height={45}
                     value={values.email}
                     onChangeText={handleChange("email")}
@@ -313,7 +342,7 @@ const SignUp = () => {
                     placeholder="Enter your phone number"
                     number
                     iconName="phone"
-                    containerStyle={{ marginBottom: 20 }}
+                    containerStyle={{ marginBottom: 20, marginTop: 20 }}
                     height={45}
                     value={values.phone}
                     onChangeText={handleChange("phone")}
@@ -328,7 +357,7 @@ const SignUp = () => {
                     placeholder="Enter your WhatsApp number"
                     number
                     iconName="phone"
-                    containerStyle={{ marginBottom: 20 }}
+                    containerStyle={{ marginBottom: 20, marginTop: 20 }}
                     height={45}
                     value={values.whatsapp}
                     onChangeText={handleChange("whatsapp")}
@@ -344,6 +373,7 @@ const SignUp = () => {
                 <CustomTextInput
                   label="Password"
                   placeholder="Enter your password"
+                  containerStyle={{ marginBottom: 20 }}
                   height={45}
                   isSecure
                   value={values.password}
@@ -424,7 +454,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingTop: verticalScale(20),
-    paddingBottom: verticalScale(100),
+    paddingBottom: verticalScale(10),
   },
   title: {
     marginBottom: 5,
@@ -440,6 +470,10 @@ const styles = StyleSheet.create({
   formContainer: {
     padding: 20,
     borderRadius: SIZES.radius,
+  },
+  nameColumn: {
+    flex: 1,
+    marginTop: 20,
   },
   segmentContainer: {
     flexDirection: "row",

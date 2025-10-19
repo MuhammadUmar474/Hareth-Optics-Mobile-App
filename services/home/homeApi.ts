@@ -43,6 +43,74 @@ export type LatestProductsResponse = {
   products: { edges: { node: ProductNode }[] };
 };
 
+// Types for Products by Collection response
+type SEO = { title?: string | null; description?: string | null };
+type Metafield = {
+  key: string;
+  value: string;
+  namespace: string;
+  type: string;
+};
+type CollectionVariantNode = {
+  id: string;
+  title: string;
+  sku?: string | null;
+  availableForSale: boolean;
+  selectedOptions: SelectedOption[];
+  price: Money;
+  compareAtPrice?: Money | null;
+  image?: Image | null;
+};
+type CollectionProductNode = {
+  id: string;
+  title: string;
+  handle: string;
+  description: string;
+  productType?: string | null;
+  vendor?: string | null;
+  availableForSale: boolean;
+  totalInventory?: number | null;
+  tags: string[];
+  featuredImage: Image | null;
+  images: { edges: { node: Image }[] };
+  variants: { edges: { node: CollectionVariantNode }[] };
+  priceRange: { minVariantPrice: Money; maxVariantPrice: Money };
+  seo?: SEO | null;
+  metafields: Metafield[];
+};
+export type ProductsByCollectionResponse = {
+  collection: {
+    id: string;
+    title: string;
+    handle: string;
+    description: string;
+    image: Image | null;
+    products: { edges: { node: CollectionProductNode }[] };
+  } | null;
+};
+
+// Types for All Products response (paginated)
+type AllProductsVariantNode = CollectionVariantNode;
+type AllProductsProductNode = {
+  id: string;
+  title: string;
+  handle: string;
+  description: string;
+  productType?: string | null;
+  vendor?: string | null;
+  tags: string[];
+  featuredImage: Image | null;
+  images: { edges: { node: Image }[] };
+  priceRange: { minVariantPrice: Money; maxVariantPrice: Money };
+  variants: { edges: { node: AllProductsVariantNode }[] };
+};
+export type AllProductsResponse = {
+  products: {
+    edges: { node: AllProductsProductNode }[];
+    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+  };
+};
+
 class HomeApi {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -119,6 +187,136 @@ class HomeApi {
     `;
 
     return await this.executeQuery<LatestProductsResponse>(query);
+  }
+
+  /**
+   * Fetch products for a specific collection handle.
+   */
+  async getProductsByCollection(
+    handle: string,
+    first: number = 20,
+    after?: string // add `after` cursor for pagination
+  ): Promise<ProductsByCollectionResponse> {
+    const query = `
+      query GetProductsByCollection($handle: String!, $first: Int = 20, $after: String) {
+        collection(handle: $handle) {
+          id
+          title
+          handle
+          description
+          image { url altText }
+          products(first: $first, after: $after) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            edges {
+              cursor
+              node {
+                id
+                title
+                handle
+                productType
+                vendor
+                availableForSale
+                totalInventory
+                tags
+                featuredImage { url altText }
+                images(first: 10) { edges { node { url altText } } }
+                variants(first: 20) {
+                  edges {
+                    node {
+                      id
+                      title
+                      sku
+                      availableForSale
+                      selectedOptions { name value }
+                      price { amount currencyCode }
+                      compareAtPrice { amount currencyCode }
+                      image { url altText }
+                    }
+                  }
+                }
+                priceRange {
+                  minVariantPrice { amount currencyCode }
+                  maxVariantPrice { amount currencyCode }
+                }
+                seo { title description }
+                metafields(
+                  identifiers: [
+                    { namespace: "custom", key: "color" },
+                    { namespace: "custom", key: "size" }
+                  ]
+                ) {
+                  key
+                  value
+                  namespace
+                  type
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+  
+    return await this.executeQuery<ProductsByCollectionResponse>(query, {
+      handle,
+      first,
+      after, // pass cursor
+    });
+  }
+
+  /**
+   * Fetch all products with pagination support.
+   */
+  async getAllProducts(
+    first: number,
+    after?: string
+  ): Promise<AllProductsResponse> {
+    const query = `
+      query GetAllProducts($first: Int!, $after: String) {
+        products(first: $first, after: $after) {
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              productType
+              vendor
+              tags
+              featuredImage { url altText }
+              images(first: 5) { edges { node { url altText } } }
+              priceRange {
+                minVariantPrice { amount currencyCode }
+                maxVariantPrice { amount currencyCode }
+              }
+              variants(first: 10) {
+                edges {
+                  node {
+                    id
+                    title
+                    sku
+                    availableForSale
+                    selectedOptions { name value }
+                    price { amount currencyCode }
+                    compareAtPrice { amount currencyCode }
+                    image { url altText }
+                  }
+                }
+              }
+            }
+          }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    `;
+
+    return await this.executeQuery<AllProductsResponse>(query, {
+      first,
+      after,
+    });
   }
 
   async getMainMenu(): Promise<Menu> {
