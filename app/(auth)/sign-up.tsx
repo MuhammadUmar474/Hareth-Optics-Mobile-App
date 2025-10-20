@@ -433,14 +433,21 @@ const SignUp = () => {
           <AntDesign name="apple" size={24} color="black" />
           <AntDesign name="google" size={24} color="green" />
         </View> */}
-          <Typography
-            title="Already have an account? Login"
-            fontSize={SIZES.body}
-            style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
-            onPress={() => {
-              router.push("/(auth)/login");
-            }}
-          />
+          <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
+            <Typography
+              title="Already have an account? "
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500" }}
+            />
+            <Typography
+              title="Login"
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500", color: COLORS.primary }}
+              onPress={() => {
+                router.push("/(auth)/login");
+              }}
+            />
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
