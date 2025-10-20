@@ -1,10 +1,11 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -15,9 +16,45 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const ShoppingCart = () => {
+  const { t, isRtl } = useLocal();
   const router = useRouter();
   const { cartItems, removeFromCart, updateQuantity: updateCartQuantity } = useCartStore();
   const [promoCode, setPromoCode] = useState<string>("");
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+
+        cartItemContent: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(12),
+        },
+        quantityContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(12),
+          marginTop: verticalScale(4),
+        },
+        promoContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          gap: scale(12),
+          paddingHorizontal: scale(16),
+          marginTop: verticalScale(24),
+          marginBottom: verticalScale(24),
+        },
+        summaryRow: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   const updateQuantity = (id: number, delta: number) => {
     const item = cartItems.find((i) => i.id === id);
@@ -52,7 +89,7 @@ const ShoppingCart = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title="Cart"
+            title={t("purchases.cart")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -68,18 +105,18 @@ const ShoppingCart = () => {
             contentFit="contain"
           />
           <Typography
-            title="Your Cart is Waiting to Shine"
+            title={t("purchases.yourCartTitle")}
             fontSize={scale(20)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.emptyCartTitle}
+            style={[styles.emptyCartTitle, dynamicStyles.textAlign]}
           />
           <Typography
-            title="Don't leave your vision on hold — discover the perfect frame, lenses, and styles to match your look."
+            title={t("purchases.yourCartDescription")}
             fontSize={scale(14)}
             fontFamily="Roboto-Regular"
             color={COLORS.grey29}
-            style={styles.emptyCartMessage}
+            style={[styles.emptyCartMessage, dynamicStyles.textAlign]}
           />
         </View>
       </View>
@@ -94,14 +131,18 @@ const ShoppingCart = () => {
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={"arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
-          title="Shopping Cart"
+          title={t("purchases.cart")} // Updated to use translation
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -114,7 +155,7 @@ const ShoppingCart = () => {
         <View style={styles.cartItemsContainer}>
           {cartItems.map((item, index) => (
             <View key={`${item.id}-${item.name}-${index}`} style={styles.cartCard}>
-              <View style={styles.cartItemContent}>
+              <View style={dynamicStyles.cartItemContent}>
                 {/* Product Image */}
                 <View style={styles.imageContainer}>
                   <Image source={item.image} style={styles.productImage} />
@@ -127,7 +168,7 @@ const ShoppingCart = () => {
                     fontSize={scale(15)}
                     fontFamily="Poppins-Bold"
                     color={COLORS.black}
-                    style={styles.productName}
+                    style={[styles.productName, dynamicStyles.textAlign]}
                     numberOfLines={1}
                   />
                   <Typography
@@ -135,10 +176,11 @@ const ShoppingCart = () => {
                     fontSize={scale(13)}
                     fontFamily="Roboto-Bold"
                     color={COLORS.grey33}
+                    style={dynamicStyles.textAlign}
                   />
 
                   {/* Quantity Controls */}
-                  <View style={styles.quantityContainer}>
+                  <View style={dynamicStyles.quantityContainer}>
                     <TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, -1)}
@@ -154,7 +196,7 @@ const ShoppingCart = () => {
                       fontSize={scale(14)}
                       fontFamily="Roboto-Bold"
                       color={COLORS.black}
-                      style={styles.quantityText}
+                      style={[styles.quantityText, dynamicStyles.textAlign]}
                     />
                     <TouchableOpacity
                       style={styles.quantityButton}
@@ -182,119 +224,120 @@ const ShoppingCart = () => {
         </View>
 
         {/* Promo Code Section */}
-        <View style={styles.promoContainer}>
+        <View style={dynamicStyles.promoContainer}>
           <TextInput
-            style={styles.promoInput}
-            placeholder="Enter Promo Code"
+            style={[styles.promoInput, dynamicStyles.textAlign]}
+            placeholder={t("purchases.enterPromoCode")}
             placeholderTextColor={COLORS.grey10}
             value={promoCode}
             onChangeText={setPromoCode}
           />
           <TouchableOpacity style={styles.applyButton}>
             <Typography
-              title="Apply"
+              title={t("home.apply")}
               fontSize={scale(14)}
               fontFamily="Roboto-Bold"
               color={COLORS.primary}
-              style={styles.applyButtonText}
+              style={[styles.applyButtonText, dynamicStyles.textAlign]}
             />
           </TouchableOpacity>
         </View>
 
         {/* Price Summary */}
         <View style={styles.summaryContainer}>
-          <View style={styles.summaryRow}>
+          <View style={dynamicStyles.summaryRow}>
             <Typography
-              title="Subtotal"
+              title={t("purchases.subtotal")}
               fontSize={scale(15)}
               fontFamily="Roboto-Regular"
               color={COLORS.grey29}
+              style={dynamicStyles.textAlign}
             />
             <Typography
               title={`${subtotal.toFixed(2)} KD`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
-              style={styles.summaryValue}
+              style={dynamicStyles.textAlign}
             />
           </View>
 
           <View style={styles.divider} />
 
-          <View style={styles.summaryRow}>
+          <View style={dynamicStyles.summaryRow}>
             <Typography
-              title="Shipping"
+              title={t("purchases.shipping")}
               fontSize={scale(15)}
               fontFamily="Roboto-Regular"
               color={COLORS.grey29}
+              style={dynamicStyles.textAlign}
             />
             <Typography
               title={`${shipping.toFixed(2)} KD`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
-              style={styles.summaryValue}
+              style={ dynamicStyles.textAlign}
             />
           </View>
 
           <View style={styles.divider} />
 
-          <View style={styles.summaryRow}>
+          <View style={dynamicStyles.summaryRow}>
             <Typography
-              title="Estimated Tax"
+              title={t("purchases.estimatedTax")}
               fontSize={scale(15)}
               fontFamily="Roboto-Regular"
               color={COLORS.grey29}
+              style={dynamicStyles.textAlign}
             />
             <Typography
               title={`${estimatedTax.toFixed(2)} KD`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
-              style={styles.summaryValue}
+              style={ dynamicStyles.textAlign}
             />
           </View>
 
           <View style={styles.divider} />
 
-          <View style={styles.summaryRow}>
+          <View style={dynamicStyles.summaryRow}>
             <Typography
-              title="Total"
+              title={t("purchases.total")}
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              style={styles.totalLabel}
+              style={[styles.totalLabel, dynamicStyles.textAlign]}
             />
             <Typography
               title={`${total.toFixed(2)} KD`}
               fontSize={scale(20)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              style={styles.totalValue}
+              style={[styles.totalValue, dynamicStyles.textAlign]}
             />
           </View>
         </View>
       </ScrollView>
 
-        <View style={styles.bottomSection}>
-          <TouchableOpacity 
-            style={styles.checkoutButton}
-            onPress={() => router.push("/delivery-address")}
-          >
-            <Typography
-              title="Proceed to Checkout"
-              fontSize={scale(16)}
-              color={COLORS.white}
-              fontFamily="Poppins-Bold"
-              style={styles.checkoutButtonText}
-            />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.bottomSection}>
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={() => router.push("/delivery-address")}
+        >
+          <Typography
+            title={t("purchases.proceedToCheckout")}
+            fontSize={scale(16)}
+            color={COLORS.white}
+            fontFamily="Poppins-Bold"
+            style={[styles.checkoutButtonText, dynamicStyles.textAlign]}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
-
-export default ShoppingCart;
 
 const styles = StyleSheet.create({
   container: {
@@ -338,11 +381,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cartItemContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(12),
-  },
   imageContainer: {
     width: scale(80),
     height: scale(80),
@@ -365,12 +403,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     lineHeight: scale(20),
   },
-  quantityContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(12),
-    marginTop: verticalScale(4),
-  },
   quantityButton: {
     width: scale(26),
     height: scale(26),
@@ -387,13 +419,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     paddingTop: verticalScale(4),
-  },
-  promoContainer: {
-    flexDirection: "row",
-    gap: scale(12),
-    paddingHorizontal: scale(16),
-    marginTop: verticalScale(24),
-    marginBottom: verticalScale(24),
   },
   promoInput: {
     flex: 1,
@@ -425,14 +450,6 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(16),
     gap: verticalScale(16),
   },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  summaryValue: {
-    fontWeight: "400",
-  },
   divider: {
     height: 1,
     backgroundColor: COLORS.grey4,
@@ -444,7 +461,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bottomSection: {
-   paddingTop: verticalScale(16),
+    paddingTop: verticalScale(16),
   },
   checkoutButton: {
     backgroundColor: COLORS.primary,
@@ -472,7 +489,6 @@ const styles = StyleSheet.create({
   emptyCartTitle: {
     fontWeight: "600",
     textAlign: "center",
-    marginBottom: verticalScale(12),
   },
   emptyCartMessage: {
     textAlign: "center",
@@ -480,3 +496,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
   },
 });
+
+export default ShoppingCart;

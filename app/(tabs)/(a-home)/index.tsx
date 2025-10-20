@@ -22,6 +22,7 @@ import {
   storeBenefits,
 } from "@/constants/data";
 import { handleLargerText } from "@/constants/helper";
+import { useLocal } from "@/hooks/use-lang";
 import { homeApi, MenuItem } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
 import { useLoadingStore } from "@/store/loadingStore";
@@ -40,7 +41,6 @@ import {
   View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
-
 type ExploreProduct = {
   id: string;
   name: string;
@@ -50,6 +50,7 @@ type ExploreProduct = {
 };
 
 const HomeScreen = () => {
+  const { t } = useLocal();
   const [isPlaying, setIsPlaying] = useState(false);
   const [mainCategories, setMainCategories] = useState<MenuItem[]>([]);
   const [handle, setHandle] = useState<string>("");

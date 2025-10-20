@@ -1,7 +1,8 @@
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   StyleSheet,
@@ -17,8 +18,30 @@ interface Product {
 }
 
 export const OrderCard = ({ order, index }: { order: any; index: any }) => {
+  const { isRtl} = useLocal();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        orderHeader: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: moderateScale(8),
+        },
+        productImagesContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          gap: moderateScale(12),
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   useEffect(() => {
     Animated.parallel([
@@ -35,7 +58,7 @@ export const OrderCard = ({ order, index }: { order: any; index: any }) => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, index]);
 
   return (
     <Animated.View
@@ -52,16 +75,20 @@ export const OrderCard = ({ order, index }: { order: any; index: any }) => {
           router.navigate(`/order-detail`);
         }}
       >
-        <View style={styles.orderHeader}>
-          <Text style={styles.orderId}>Order #{order.id}</Text>
-          <Text style={styles.orderStatus}>{order.status}</Text>
+        <View style={dynamicStyles.orderHeader}>
+          <Text style={[styles.orderId, dynamicStyles.textAlign]}>
+            Order #{order.id}
+          </Text>
+          <Text style={[styles.orderStatus, dynamicStyles.textAlign]}>
+            {order.status}
+          </Text>
         </View>
 
-        <Text style={styles.orderDetails}>
+        <Text style={[styles.orderDetails, dynamicStyles.textAlign]}>
           Placed on {order.date} • {order.items} items • KD {order.total}
         </Text>
 
-        <View style={styles.productImagesContainer}>
+        <View style={dynamicStyles.productImagesContainer}>
           {order.products.map((product: Product) => (
             <View key={product.id} style={styles.productImageWrapper}>
               <Image
@@ -87,12 +114,6 @@ const styles = StyleSheet.create({
     marginBottom: moderateScale(16),
     ...COLORS.shadow,
   },
-  orderHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: moderateScale(8),
-  },
   orderId: {
     fontSize: moderateScale(18),
     fontWeight: "600",
@@ -106,10 +127,6 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(14),
     color: COLORS.grey22,
     marginBottom: moderateScale(16),
-  },
-  productImagesContainer: {
-    flexDirection: "row",
-    gap: moderateScale(12),
   },
   productImageWrapper: {
     width: moderateScale(80),

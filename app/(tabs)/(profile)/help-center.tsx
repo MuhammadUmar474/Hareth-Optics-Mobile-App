@@ -4,12 +4,13 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import React, { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 const HelpCenter: React.FC = () => {
   const [query] = useState("");
-
+const {t}=useLocal()
   const questions = useMemo(
     () => [
       {
@@ -49,7 +50,7 @@ const HelpCenter: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Help Center" />
+      <Header title={t("profile.menu.helpCenter")} />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
