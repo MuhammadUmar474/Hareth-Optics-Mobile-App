@@ -6,6 +6,7 @@ import {
   SavedCard,
   savedCards,
 } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -20,6 +21,7 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const Payment = () => {
+  const{t}=useLocal()
   const router = useRouter();
   const [cards, setCards] = useState<SavedCard[]>(savedCards);
   const [paymentMethods, setPaymentMethods] =
@@ -64,7 +66,7 @@ const Payment = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Payment"
+          title={t("purchases.payment")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -80,7 +82,7 @@ const Payment = () => {
         {/* Saved Cards Section */}
         <View style={styles.section}>
           <Typography
-            title="Saved Cards"
+            title={t("purchases.savedCards")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -128,7 +130,7 @@ const Payment = () => {
         {/* Other Payment Methods Section */}
         <View style={styles.section}>
           <Typography
-            title="Other Payment Methods"
+            title={t("purchases.otherPayments")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -183,7 +185,7 @@ const Payment = () => {
           <TouchableOpacity style={styles.addNewCardButton}>
             <AntDesign name="plus" size={13} color={COLORS.primary} />
             <Typography
-              title="Add New Card"
+              title={t("purchases.addNewCard")}
               fontSize={scale(13)}
               color={COLORS.primary}
               fontFamily="Poppins-Bold"
@@ -199,7 +201,7 @@ const Payment = () => {
           onPress={() => router.push("/order-summary")}
         >
           <Typography
-            title="Continue"
+            title={t("address.continue")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"

@@ -72,9 +72,13 @@ const Profile = () => {
 
   const toggleLanguage = async () => {
     const next = language === "en" ? "ar" : "en";
-
-    await i18n.changeLanguage(next);
-    setLanguage(next);
+try{
+  await i18n.changeLanguage(next);
+  setLanguage(next);
+}catch(e){
+  console.log(".s.s.s.s.ss.",e);
+  
+}
   };
 
   return (

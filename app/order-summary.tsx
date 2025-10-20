@@ -1,10 +1,12 @@
+
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { OrderItem, orderSummaryData } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -14,8 +16,74 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const OrderSummary = () => {
+  const { t, isRtl } = useLocal();
   const router = useRouter();
   const orderData = orderSummaryData;
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        itemCard: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          backgroundColor: COLORS.white,
+          borderRadius: scale(12),
+          padding: scale(12),
+          alignItems: "center",
+          gap: scale(12),
+        },
+        discountCard: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: COLORS.white,
+          borderRadius: scale(12),
+          padding: scale(16),
+          marginHorizontal: scale(16),
+        },
+        addressCard: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          backgroundColor: COLORS.white,
+          borderRadius: scale(12),
+          padding: scale(16),
+          marginHorizontal: scale(16),
+          gap: scale(12),
+        },
+        deliveryCard: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: COLORS.white,
+          borderRadius: scale(12),
+          padding: scale(16),
+          marginHorizontal: scale(16),
+        },
+        paymentCard: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          backgroundColor: COLORS.white,
+          borderRadius: scale(12),
+          padding: scale(16),
+          marginHorizontal: scale(16),
+          gap: scale(12),
+        },
+        costRow: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        },
+        totalRow: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: verticalScale(4),
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   const subtotal = orderData.items.reduce((sum, item) => sum + item.price, 0);
   const total =
@@ -32,11 +100,11 @@ const OrderSummary = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Order Summary"
+          title={t("orderDetail.orderSummary")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -48,16 +116,16 @@ const OrderSummary = () => {
         {/* Items Section */}
         <View style={styles.section}>
           <Typography
-            title="Items"
+            title={t("orderDetail.items")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
           <View style={styles.itemsList}>
             {orderData.items.map((item: OrderItem) => (
-              <View key={item.id} style={styles.itemCard}>
+              <View key={item.id} style={dynamicStyles.itemCard}>
                 <View style={styles.itemImageContainer}>
                   <Image source={item.image} style={styles.itemImage} />
                 </View>
@@ -67,14 +135,14 @@ const OrderSummary = () => {
                     fontSize={scale(15)}
                     fontFamily="Poppins-Bold"
                     color={COLORS.black}
-                    style={styles.itemName}
+                    style={[styles.itemName, dynamicStyles.textAlign]}
                   />
                   <Typography
                     title={item.description}
                     fontSize={scale(13)}
                     color={COLORS.grey29}
                     fontFamily="Roboto-Regular"
-                    style={styles.itemDescription}
+                    style={[styles.itemDescription, dynamicStyles.textAlign]}
                   />
                 </View>
                 <Typography
@@ -82,7 +150,7 @@ const OrderSummary = () => {
                   fontSize={scale(16)}
                   fontFamily="Roboto-Bold"
                   color={COLORS.black}
-                  style={styles.itemPrice}
+                  style={[styles.itemPrice, dynamicStyles.textAlign]}
                 />
               </View>
             ))}
@@ -92,26 +160,27 @@ const OrderSummary = () => {
         {/* Discounts Section */}
         <View style={styles.section}>
           <Typography
-            title="Discounts"
+            title={t("purchases.discounts")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
-          <View style={styles.discountCard}>
+          <View style={dynamicStyles.discountCard}>
             <Typography
               title={orderData.discount.name}
               fontSize={scale(14)}
               fontFamily="Roboto-Regular"
               color={COLORS.black}
+              style={dynamicStyles.textAlign}
             />
             <Typography
               title={`-$${orderData.discount.amount}`}
               fontSize={scale(14)}
               fontFamily="Roboto-Bold"
               color={COLORS.green2}
-              style={styles.discountAmount}
+              style={[styles.discountAmount, dynamicStyles.textAlign]}
             />
           </View>
         </View>
@@ -119,14 +188,14 @@ const OrderSummary = () => {
         {/* Delivery Address Section */}
         <View style={styles.section}>
           <Typography
-            title="Delivery Address"
+            title={t("address.deliveryAddress")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
-          <View style={styles.addressCard}>
+          <View style={dynamicStyles.addressCard}>
             <View style={styles.addressIconContainer}>
               <Ionicons name="location" size={22} color={COLORS.primary} />
             </View>
@@ -136,14 +205,14 @@ const OrderSummary = () => {
                 fontSize={scale(15)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
-                style={styles.addressLabel}
+                style={[styles.addressLabel, dynamicStyles.textAlign]}
               />
               <Typography
                 title={orderData.deliveryAddress.address}
                 fontSize={scale(13)}
                 color={COLORS.grey29}
                 fontFamily="Roboto-Regular"
-                style={styles.addressText}
+                style={[styles.addressText, dynamicStyles.textAlign]}
               />
             </View>
           </View>
@@ -152,26 +221,27 @@ const OrderSummary = () => {
         {/* Delivery Method Section */}
         <View style={styles.section}>
           <Typography
-            title="Delivery Method"
+            title={t("purchases.deliveryMethod")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
-          <View style={styles.deliveryCard}>
+          <View style={dynamicStyles.deliveryCard}>
             <Typography
               title={orderData.deliveryMethod.name}
               fontSize={scale(14)}
               fontFamily="Roboto-Regular"
               color={COLORS.black}
+              style={dynamicStyles.textAlign}
             />
             <Typography
               title={`$${orderData.deliveryMethod.price}`}
               fontSize={scale(14)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
-              style={styles.deliveryPrice}
+              style={[styles.deliveryPrice, dynamicStyles.textAlign]}
             />
           </View>
         </View>
@@ -179,14 +249,14 @@ const OrderSummary = () => {
         {/* Payment Method Section */}
         <View style={styles.section}>
           <Typography
-            title="Payment Method"
+            title={t("purchases.paymentMethod")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
-          <View style={styles.paymentCard}>
+          <View style={dynamicStyles.paymentCard}>
             <View style={styles.paymentIconContainer}>
               <Ionicons name="card" size={22} color={COLORS.black} />
             </View>
@@ -195,6 +265,7 @@ const OrderSummary = () => {
               fontSize={scale(14)}
               fontFamily="Roboto-Regular"
               color={COLORS.black}
+              style={dynamicStyles.textAlign}
             />
           </View>
         </View>
@@ -202,94 +273,98 @@ const OrderSummary = () => {
         {/* Cost Summary Section */}
         <View style={styles.section}>
           <Typography
-            title="Cost Summary"
+            title={t("purchases.costSummary")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
           <View style={styles.costSummaryCard}>
-            <View style={styles.costRow}>
+            <View style={dynamicStyles.costRow}>
               <Typography
-                title="Subtotal"
+                title={t("purchases.subtotal")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
+                style={dynamicStyles.textAlign}
               />
               <Typography
                 title={`$${subtotal.toFixed(2)}`}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.black}
-                style={styles.costValue}
+                style={[styles.costValue, dynamicStyles.textAlign]}
               />
             </View>
 
-            <View style={styles.costRow}>
+            <View style={dynamicStyles.costRow}>
               <Typography
-                title="Discount"
+                title={t("purchases.discount")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
+                style={dynamicStyles.textAlign}
               />
               <Typography
                 title={`-$${orderData.discount.amount.toFixed(2)}`}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.green}
-                style={styles.costValue}
+                style={[styles.costValue, dynamicStyles.textAlign]}
               />
             </View>
 
-            <View style={styles.costRow}>
+            <View style={dynamicStyles.costRow}>
               <Typography
-                title="Shipping"
+                title={t("purchases.shipping")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
+                style={dynamicStyles.textAlign}
               />
               <Typography
                 title={`$${orderData.deliveryMethod.price.toFixed(2)}`}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.black}
-                style={styles.costValue}
+                style={[styles.costValue, dynamicStyles.textAlign]}
               />
             </View>
 
-            <View style={styles.costRow}>
+            <View style={dynamicStyles.costRow}>
               <Typography
-                title="Taxes"
+                title={t("orderDetail.taxes")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
+                style={dynamicStyles.textAlign}
               />
               <Typography
                 title="$15.00"
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.black}
-                style={styles.costValue}
+                style={[styles.costValue, dynamicStyles.textAlign]}
               />
             </View>
 
             <View style={styles.divider} />
 
-            <View style={styles.totalRow}>
+            <View style={dynamicStyles.totalRow}>
               <Typography
-                title="Total"
+                title={t("purchases.total")}
                 fontSize={scale(16)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
-                style={styles.totalLabel}
+                style={[styles.totalLabel, dynamicStyles.textAlign]}
               />
               <Typography
                 title={`$${(total + 15).toFixed(2)}`}
                 fontSize={scale(18)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
-                style={styles.totalValue}
+                style={[styles.totalValue, dynamicStyles.textAlign]}
               />
             </View>
           </View>
@@ -303,19 +378,17 @@ const OrderSummary = () => {
           onPress={() => router.push("/order-confirmation")}
         >
           <Typography
-            title="Place Order"
+            title={t("orderDetail.placeOrder")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"
-            style={styles.placeOrderButtonText}
+            style={[styles.placeOrderButtonText, dynamicStyles.textAlign]}
           />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-export default OrderSummary;
 
 const styles = StyleSheet.create({
   container: {
@@ -358,14 +431,6 @@ const styles = StyleSheet.create({
     gap: scale(12),
     paddingHorizontal: scale(16),
   },
-  itemCard: {
-    flexDirection: "row",
-    backgroundColor: COLORS.white,
-    borderRadius: scale(12),
-    padding: scale(12),
-    alignItems: "center",
-    gap: scale(12),
-  },
   itemImageContainer: {
     width: scale(70),
     height: scale(70),
@@ -392,25 +457,8 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontWeight: "600",
   },
-  discountCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    borderRadius: scale(12),
-    padding: scale(16),
-    marginHorizontal: scale(16),
-  },
   discountAmount: {
     fontWeight: "500",
-  },
-  addressCard: {
-    flexDirection: "row",
-    backgroundColor: COLORS.white,
-    borderRadius: scale(12),
-    padding: scale(16),
-    marginHorizontal: scale(16),
-    gap: scale(12),
   },
   addressIconContainer: {
     width: scale(40),
@@ -430,26 +478,8 @@ const styles = StyleSheet.create({
   addressText: {
     lineHeight: scale(18),
   },
-  deliveryCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    borderRadius: scale(12),
-    padding: scale(16),
-    marginHorizontal: scale(16),
-  },
   deliveryPrice: {
     fontWeight: "500",
-  },
-  paymentCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    borderRadius: scale(12),
-    padding: scale(16),
-    marginHorizontal: scale(16),
-    gap: scale(12),
   },
   paymentIconContainer: {
     width: scale(40),
@@ -466,11 +496,6 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(16),
     gap: verticalScale(12),
   },
-  costRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   costValue: {
     fontWeight: "500",
   },
@@ -478,12 +503,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: COLORS.grey4,
     marginVertical: verticalScale(4),
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: verticalScale(4),
   },
   totalLabel: {
     fontWeight: "600",
@@ -519,3 +538,4 @@ const styles = StyleSheet.create({
   },
 });
 
+export default OrderSummary;

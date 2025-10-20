@@ -10,7 +10,9 @@
       "english": "English",
       "arabic": "Arabic",
       "viewAll":"View All",
-      "home":"Home"
+      "home":"Home",
+      "noProduct":"No products found",
+      "currency":"KD"
     },
     "profile": {
       "menu": {
@@ -90,9 +92,11 @@
       "discount":"Discount",
       "summerSaleDiscount":"Summer Sale Discount",
       "deliveryMethod":"Delivery Method",
-      "cosTSummary":"Cost Summary",
+      "costSummary":"Cost Summary",
       "estimatedDelivery":"Estimated Delivery",
-      "continueShopping":"Continue Shopping"
+      "continueShopping":"Continue Shopping",
+      "delivery":"Delivery",
+      "creditCard":"Credit Card"
     },
     "orderDetail":{
       "placeOrder":"place Order",
@@ -108,10 +112,11 @@
       "checkStatus":"Check Status",
       "order":"Order",
       "myOrder":"My Order",
-      "orderSummary":"OrderSummary",
-      "taxes":"taxes",
+      "orderSummary":"Order Summary",
+      "taxes":"Taxes",
       "downloadInvoice":"Download Invoice",
-      "ReorderItems":"Reorder Items"
+      "ReorderItems":"Reorder Items",
+      "orderConfirmationMessage":"Your order has been successfully placed. You will receive an email confirmation shortly."
     },
     "address":{
       "editAddress":"Edit Address",
@@ -138,7 +143,7 @@
       "streetAddressRequired":"Street address is required",
       "cityRequired":"City is required",
       "stateRequired":"State is required",
-      "zipCodeRequired":"ZIP code is required",
+      "zipCodeRequired":"ZIP code is required"
     },
     "bottomNavs":{
      "explore":"Explore",
@@ -187,7 +192,7 @@
       "medium":"Medium",
       "large":"Large",
       "lensType":"Lens Type",
-      "signleVision":"Single Vision",
+      "singleVision":"Single Vision",
       "forDistance":"For distance or reading",
       "bifocal":"Bifocal",
       "distanceReading":"Distance and reading",

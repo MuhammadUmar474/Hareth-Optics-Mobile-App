@@ -1,10 +1,11 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { howToFindYourSize, SizeMeasurement, sizeMeasurements } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { FontAwesome5, FontAwesome6, Ionicons, MaterialCommunityIcons, SimpleLineIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -14,24 +15,57 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const SizeGuide = () => {
+  const { t, isRtl } = useLocal();
   const router = useRouter();
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          backgroundColor: COLORS.white,
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.grey4,
+        },
+        measurementCard: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          padding: scale(4),
+          gap: scale(12),
+          alignItems: "flex-start",
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
-          title="Eyeglasses Size Guide"
+          title={t("eyeglassesDetails.eyeGlassesSizeGuide")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -44,18 +78,18 @@ const SizeGuide = () => {
           {/* Title Section */}
           <View style={styles.titleSection}>
             <Typography
-              title="Understanding Eyeglass Measurements"
+              title={t("eyeglassesDetails.guideTitle")}
               fontSize={scale(22)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              style={styles.mainTitle}
+              style={[styles.mainTitle, dynamicStyles.textAlign]}
             />
             <Typography
-              title="Eyeglass sizes are typically represented by three numbers, such as 52-18-140. These numbers correspond to the lens width, bridge width, and temple length, all measured in millimeters."
+              title={t("eyeglassesDetails.guideDecription")}
               fontSize={scale(14)}
               color={COLORS.grey29}
               fontFamily="Roboto-Regular"
-              style={styles.description}
+              style={[styles.description, dynamicStyles.textAlign]}
             />
           </View>
 
@@ -71,7 +105,7 @@ const SizeGuide = () => {
           {/* Measurements List */}
           <View style={styles.measurementsList}>
             {sizeMeasurements.map((measurement: SizeMeasurement) => (
-              <View key={measurement.id} style={styles.measurementCard}>
+              <View key={measurement.id} style={dynamicStyles.measurementCard}>
                 <View style={styles.iconContainer}>
                   {measurement.iconLibrary === "fontawesome6" ? (
                     <FontAwesome6
@@ -101,18 +135,18 @@ const SizeGuide = () => {
                 </View>
                 <View style={styles.measurementContent}>
                   <Typography
-                    title={measurement.label}
+                    title={t(measurement.label)}
                     fontSize={scale(15)}
                     fontFamily="Poppins-Bold"
                     color={COLORS.black}
-                    style={styles.measurementLabel}
+                    style={[styles.measurementLabel, dynamicStyles.textAlign]}
                   />
                   <Typography
-                    title={measurement.description}
+                    title={t(measurement.description)}
                     fontSize={scale(13)}
                     color={COLORS.grey29}
                     fontFamily="Roboto-Regular"
-                    style={styles.measurementDescription}
+                    style={[styles.measurementDescription, dynamicStyles.textAlign]}
                   />
                 </View>
               </View>
@@ -122,18 +156,18 @@ const SizeGuide = () => {
           {/* How to Find Your Size Section */}
           <View style={styles.howToFindSection}>
             <Typography
-              title={howToFindYourSize.title}
+              title={t(howToFindYourSize.title)}
               fontSize={scale(18)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              style={styles.howToFindTitle}
+              style={[styles.howToFindTitle, dynamicStyles.textAlign]}
             />
             <Typography
-              title={howToFindYourSize.description}
+              title={t(howToFindYourSize.description)}
               fontSize={scale(13)}
               color={COLORS.grey29}
               fontFamily="Roboto-Regular"
-              style={styles.howToFindDescription}
+              style={[styles.howToFindDescription, dynamicStyles.textAlign]}
             />
           </View>
         </View>
@@ -142,23 +176,10 @@ const SizeGuide = () => {
   );
 };
 
-export default SizeGuide;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey4,
   },
   headerButton: {
     width: scale(40),
@@ -209,12 +230,6 @@ const styles = StyleSheet.create({
   measurementsList: {
     gap: scale(16),
   },
-  measurementCard: {
-    flexDirection: "row",
-    padding: scale(4),
-    gap: scale(12),
-    alignItems: "flex-start",
-  },
   iconContainer: {
     width: scale(44),
     height: scale(44),
@@ -247,3 +262,4 @@ const styles = StyleSheet.create({
   },
 });
 
+export default SizeGuide;

@@ -1,15 +1,33 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { orderConfirmationData } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
 const OrderConfirmation = () => {
+  const { t, isRtl } = useLocal();
   const router = useRouter();
   const orderData = orderConfirmationData;
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        detailRow: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   return (
     <View style={styles.container}>
@@ -19,14 +37,18 @@ const OrderConfirmation = () => {
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
-          title="Order Confirmation"
+          title={t("orderDetail.orderConfirmation")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -44,19 +66,19 @@ const OrderConfirmation = () => {
           </View>
 
           <Typography
-            title="Order Received!"
+            title={t("orderDetail.orderReceived")}
             fontSize={scale(24)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.successTitle}
+            style={[styles.successTitle, dynamicStyles.textAlign]}
           />
 
           <Typography
-            title="Your order has been successfully placed. You will receive an email confirmation shortly."
+            title={t("orderDetail.orderConfirmationMessage")}
             fontSize={scale(14)}
             fontFamily="Roboto-Regular"
             color={COLORS.grey29}
-            style={styles.successMessage}
+            style={[styles.successMessage, { textAlign: isRtl ? "right" : "center" }]}
           />
         </View>
 
@@ -64,46 +86,48 @@ const OrderConfirmation = () => {
         <View style={styles.orderDetailsSection}>
           <View style={styles.detailsCard}>
             <Typography
-              title="Order Details"
+              title={t("orderDetail.orderDetails")}
               fontSize={scale(18)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              style={styles.sectionTitle}
+              style={[styles.sectionTitle, dynamicStyles.textAlign]}
             />
 
             <View style={styles.divider} />
 
-            <View style={styles.detailRow}>
+            <View style={dynamicStyles.detailRow}>
               <Typography
-                title="Order Number"
+                title={t("orderDetail.orderNumber")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
+                style={dynamicStyles.textAlign}
               />
               <Typography
                 title={orderData.orderNumber}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.black}
-                style={styles.detailValue}
+                style={[styles.detailValue, dynamicStyles.textAlign]}
               />
             </View>
 
             <View style={styles.divider} />
 
-            <View style={styles.detailRow}>
+            <View style={dynamicStyles.detailRow}>
               <Typography
-                title="Estimated Delivery"
+                title={t("purchases.estimatedDelivery")}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Regular"
                 color={COLORS.grey29}
+                style={dynamicStyles.textAlign}
               />
               <Typography
                 title={orderData.estimatedDelivery}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.black}
-                style={styles.detailValue}
+                style={[styles.detailValue, dynamicStyles.textAlign]}
               />
             </View>
           </View>
@@ -112,31 +136,35 @@ const OrderConfirmation = () => {
 
       {/* Bottom Buttons */}
       <View style={styles.bottomSection}>
-        <TouchableOpacity style={styles.trackOrderButton} onPress={() => router.push("/track-order")}>
+        <TouchableOpacity
+          style={styles.trackOrderButton}
+          onPress={() => router.push("/track-order")}
+        >
           <Typography
-            title="Track Order"
+            title={t("common.trackOrder")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"
-            style={styles.trackOrderButtonText}
+            style={[styles.trackOrderButtonText, dynamicStyles.textAlign]}
           />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.continueShoppingButton} onPress={() => router.push("/(tabs)/(a-home)")}>
+        <TouchableOpacity
+          style={styles.continueShoppingButton}
+          onPress={() => router.push("/(tabs)/(a-home)")}
+        >
           <Typography
-            title="Continue Shopping"
+            title={t("purchases.continueShopping")}
             fontSize={scale(16)}
             color={COLORS.primary}
             fontFamily="Poppins-Bold"
-            style={styles.continueShoppingButtonText}
+            style={[styles.continueShoppingButtonText, dynamicStyles.textAlign]}
           />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-export default OrderConfirmation;
 
 const styles = StyleSheet.create({
   container: {
@@ -195,7 +223,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(12),
   },
   successMessage: {
-    textAlign: "center",
     lineHeight: scale(22),
     paddingHorizontal: scale(12),
   },
@@ -213,11 +240,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: scale(12),
     padding: scale(16),
-  },
-  detailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
   },
   detailValue: {
     fontWeight: "500",
@@ -265,3 +287,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default OrderConfirmation;

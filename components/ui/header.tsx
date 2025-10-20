@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { Ionicons } from "@expo/vector-icons";
 import { goBack } from "expo-router/build/global-state/routing";
 import { I18nManager, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -15,6 +16,7 @@ export const Header = ({
   const goBackHandler = () => {
     goBack();
   };
+  const {t}=useLocal()
   return (
     <View style={styles.header}>
       <TouchableOpacity
@@ -28,7 +30,7 @@ export const Header = ({
         />
       </TouchableOpacity>
       <Typography
-        title={title || "Explore"}
+        title={title || t("bottomNavs.explore")}
         fontSize={moderateScale(18)}
         color={COLORS.secondary}
         fontFamily="Inter-Bold"

@@ -10,9 +10,11 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { styles } from "@/styles/3d-try-on/3d-try-on";
 
 const TryOnViewer = () => {
+  const{t}=useLocal()
   const [isViewerActive, setIsViewerActive] = useState(false);
   const { frameId: routeFrameId } = useLocalSearchParams<{ frameId?: string }>();
 
@@ -105,7 +107,7 @@ const TryOnViewer = () => {
                   color={COLORS.grey6}
                 />
                 <Typography
-                  title="Camera view placeholder"
+                  title={t("tryOn.cameraPlaceholder")}
                   fontSize={SIZES.desc}
                   color={COLORS.grey6}
                   style={styles.placeholderText}
@@ -113,7 +115,7 @@ const TryOnViewer = () => {
               </View>
               <Button style={styles.startButton} onPress={handleStartTryOn}>
                 <Typography
-                  title="Start Try-on"
+                  title={t("tryOn.startTryOn")}
                   fontSize={SIZES.desc}
                   color={COLORS.white}
                   style={styles.buttonText}

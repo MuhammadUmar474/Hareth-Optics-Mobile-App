@@ -31,31 +31,35 @@ class ImageCacheManager {
 
     if (validUrls.length === 0) return;
 
+    // Mark as preloaded immediately to avoid retrying
+    validUrls.forEach((url) => this.preloadedImages.add(url));
+
     try {
       // Check if FastImage is available and working
-      if (!FastImage || typeof FastImage.preload !== "function") {
+      if (!FastImage) {
         console.warn("⚠️ FastImage not available, skipping preload");
         return;
       }
 
-        const preloadResult = await FastImage.preload(
-          validUrls.map((url): Source => ({
-            uri: url,
-            priority,
-            cache: cache as any,
-          }))
-        );
-
-      // Check if preload was successful
-      if (preloadResult === null || preloadResult === undefined) {
-        console.warn("⚠️ FastImage.preload returned null, skipping preload");
+      // Check if preload method exists
+      if (typeof FastImage.preload !== "function") {
+        console.warn("⚠️ FastImage.preload not available, skipping preload");
         return;
       }
 
-      // Mark as preloaded
-      validUrls.forEach((url) => this.preloadedImages.add(url));
+      const preloadResult = await FastImage.preload(
+        validUrls.map((url): Source => ({
+          uri: url,
+          priority,
+          cache: cache as any,
+        }))
+      );
 
-      console.log(`✅ Preloaded ${validUrls.length} images`);
+      // Check if preload was successful
+      if (preloadResult === null || preloadResult === undefined) {
+        console.warn("⚠️ FastImage.preload returned null");
+        return;
+      }
     } catch (error: unknown) {
       console.error("❌ Failed to preload images:", error);
       // Continue execution even if preload fails
@@ -85,7 +89,6 @@ class ImageCacheManager {
         FastImage.clearDiskCache();
       }
       this.preloadedImages.clear();
-      console.log("🧹 Image cache cleared");
     } catch (error: unknown) {
       console.warn("⚠️ Failed to clear cache:", error);
     }

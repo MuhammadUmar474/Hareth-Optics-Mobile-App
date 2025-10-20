@@ -7,10 +7,12 @@ import Button from "@/components/ui/custom-button";
 import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { styles } from "@/styles/home/visual-try";
 import { router } from "expo-router";
 
 const VisualSearch = () => {
+  const {t}=useLocal()
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleChoosePhoto = async () => {
@@ -83,12 +85,12 @@ const VisualSearch = () => {
   };
 
   const handleQRScan = () => {
-    console.log("Scan QR");
+    // TODO: Implement QR scan
   };
 
   return (
     <View style={styles.container}>
-      <Header title="Visual Search" />
+      <Header title={t("visualSearch.visualSearch")} />
 
       <ScrollView style={[styles.contentContainer]} showsVerticalScrollIndicator={false}>
         {/* Selected Image Display */}
@@ -113,12 +115,12 @@ const VisualSearch = () => {
 
         <View style={styles.card}>
           <Typography
-            title="Upload a photo"
+            title={t("visualSearch.uploadPhoto")}
             fontSize={16}
             style={styles.cardTitle}
           />
           <Typography
-            title="Find similar frames by image."
+            title={t("visualSearch.similarFrame")}
             fontSize={13}
             color={COLORS.black4}
             style={styles.cardSubtitle}
@@ -131,7 +133,7 @@ const VisualSearch = () => {
               onPress={handleChoosePhoto}
             >
               <Typography
-                title="Choose photo"
+                title={t("visualSearch.choosePhoto")}
                 fontSize={15}
                 color={COLORS.black}
               />
@@ -139,7 +141,7 @@ const VisualSearch = () => {
 
             <Button style={styles.primaryButton} onPress={handleFindSimilar}>
               <Typography
-                title="Find similar"
+                title={t("visualSearch.findSimilar")}
                 fontSize={15}
                 color={COLORS.white}
               />
@@ -150,12 +152,12 @@ const VisualSearch = () => {
         {/* Click Photo Section */}
         <View style={styles.card}>
           <Typography
-            title="Click a photo"
+            title={t("visualSearch.clickPhoto")}
             fontSize={18}
             style={styles.cardTitle}
           />
           <Typography
-            title="Use your camera to search by image."
+            title={t("visualSearch.cameraSearchImage")}
             fontSize={15}
             color={COLORS.black4}
             style={styles.cardSubtitle}
@@ -163,7 +165,7 @@ const VisualSearch = () => {
 
           <Button style={styles.cameraButton} onPress={handleOpenCamera}>
             <Typography
-              title="Open camera"
+              title={t("visualSearch.openCamera")}
               fontSize={16}
               color={COLORS.white}
               style={styles.buttonText}
@@ -173,14 +175,14 @@ const VisualSearch = () => {
 
         <View style={styles.card}>
           <Typography
-            title="Discover other camera options"
+            title={t("visualSearch.discoverCameraOptions")}
             fontSize={18}
             style={styles.cardTitle}
           />
 
           <TouchableOpacity style={styles.optionButton} onPress={handleARTryOn}>
             <Typography
-              title="Try frames on your face (AR Try-on)"
+              title={t("visualSearch.tryFrameonYourFace")}
               fontSize={15}
               color={COLORS.black}
             />
@@ -188,7 +190,7 @@ const VisualSearch = () => {
 
           <TouchableOpacity style={styles.optionButton} onPress={handleQRScan}>
             <Typography
-              title="Scan QR code at store"
+              title={t("visualSearch.scanQR")}
               fontSize={15}
               color={COLORS.black}
             />

@@ -4,13 +4,13 @@ import { handleLargerText } from "@/constants/helper";
 import { executeHomeQuery } from "@/services/home/homeApi";
 import { useLoadingStore } from "@/store/loadingStore";
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { TrendingNowSkeleton } from "../skeletons";
 import Typography from "../ui/custom-typography";
+import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 const BRAND_COLOR = COLORS.primary;
 
@@ -27,13 +27,13 @@ type ExploreProduct = {
 };
 
 const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
-  console.log("datadatadatadata", data);
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <Image
-        source={data.image}
+      <SimpleOptimizedImage
+        source={typeof data.image === 'string' ? { uri: data.image } : { uri: data.image.uri || '' }}
         style={styles.cardContent}
         contentFit="cover"
+        priority="high"
       />
       <View style={styles.textContainer}>
         <Typography
