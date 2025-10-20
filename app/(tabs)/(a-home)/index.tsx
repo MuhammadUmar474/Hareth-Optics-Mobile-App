@@ -19,6 +19,7 @@ import { handleLargerText } from "@/constants/helper";
 import { useLocal } from "@/hooks/use-lang";
 import { MenuItem, homeApi } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
+import { useAuthGuard } from "@/utils/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { VideoView, useVideoPlayer } from "expo-video";
 import React, { useEffect, useRef, useState } from "react";
@@ -33,7 +34,6 @@ import {
   View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
-
 type ExploreProduct = {
   id: string;
   name: string;
@@ -53,6 +53,7 @@ const HomeScreen = () => {
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
   const setCategories = useCommonStore((state) => state.setCategories);
+  const { checkAuthAndNavigate } = useAuthGuard();
   const handleGetCategories = async () => {
     const categories = await homeApi.getCategories();
     const colllectionCategories = categories.filter(

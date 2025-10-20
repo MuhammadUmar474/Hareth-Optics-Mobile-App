@@ -36,7 +36,7 @@ const SuggestionTab = (props: SuggestionTabProps) => {
     gap: scale(6),
   },
  })
-  ,[])
+  ,[isRtl])
   return (
     <TouchableOpacity
       onPress={onPress}

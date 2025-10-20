@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useAuthGuard } from "@/utils/auth";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React, { useCallback, useEffect, useState } from "react";

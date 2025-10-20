@@ -23,7 +23,7 @@ export const AnimatedProductCard = ({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [imageLoaded, setImageLoaded] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
-  const {t}=useLocal();
+  const {t,isRtl}=useLocal();
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
@@ -134,12 +134,14 @@ export const AnimatedProductCard = ({
             fontSize={moderateScale(16)}
             color={COLORS.secondary}
             fontFamily="Inter-SemiBold"
+            textAlign={isRtl?"right":"left"}
           />
           <Typography
             title={`${item.category} • KD ${item.price}`}
             fontSize={moderateScale(13)}
             color="#6b7280"
             style={styles.productDetails}
+            textAlign={isRtl?"right":"left"}
           />
 
           <TouchableOpacity

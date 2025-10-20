@@ -10,7 +10,8 @@
       "english": "الإنجليزية",
       "arabic": "العربية",
       "viewAll": "عرض الكل",
-      "home": "الرئيسية"
+      "home": "الرئيسية",
+      "currency": "د.ك"
     },
     "profile": {
       "menu": {
@@ -92,7 +93,9 @@
       "deliveryMethod": "طريقة التوصيل",
       "costSummary": "ملخص التكلفة",
       "estimatedDelivery": "التوصيل المقدر",
-      "continueShopping": "مواصلة التسوق"
+      "continueShopping": "مواصلة التسوق",
+      "delivery": "التوصيل",
+      "creditCard": "بطاقة ائتمان"
     },
     "orderDetail": {
       "placeOrder": "تقديم الطلب",
@@ -111,7 +114,8 @@
       "orderSummary": "ملخص الطلب",
       "taxes": "الضرائب",
       "downloadInvoice": "تحميل الفاتورة",
-      "ReorderItems": "إعادة طلب العناصر"
+      "ReorderItems": "إعادة طلب العناصر",
+      "orderConfirmationMessage": "تم تقديم طلبك بنجاح. ستتلقى رسالة تأكيد عبر البريد الإلكتروني قريبًا."
     },
     "address": {
       "editAddress": "تعديل العنوان",
@@ -171,6 +175,7 @@
       "eyeglassesDetails": "تفاصيل النظارات الطبية",
       "frameColor": "لون الإطار",
       "frameSize": "حجم الإطار",
+      "singleVision": "عدسة أحادية الرؤية",
       "sizeGuide": "دليل المقاسات",
       "eyeGlassesSizeGuide": "دليل مقاسات النظارات الطبية",
       "guideTitle": "فهم قياسات النظارات",

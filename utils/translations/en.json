@@ -10,7 +10,9 @@
       "english": "English",
       "arabic": "Arabic",
       "viewAll":"View All",
-      "home":"Home"
+      "home":"Home",
+      "noProduct":"No products found",
+      "currency":"KD"
     },
     "profile": {
       "menu": {
@@ -92,7 +94,9 @@
       "deliveryMethod":"Delivery Method",
       "costSummary":"Cost Summary",
       "estimatedDelivery":"Estimated Delivery",
-      "continueShopping":"Continue Shopping"
+      "continueShopping":"Continue Shopping",
+      "delivery":"Delivery",
+      "creditCard":"Credit Card"
     },
     "orderDetail":{
       "placeOrder":"place Order",
@@ -108,10 +112,11 @@
       "checkStatus":"Check Status",
       "order":"Order",
       "myOrder":"My Order",
-      "orderSummary":"OrderSummary",
+      "orderSummary":"Order Summary",
       "taxes":"Taxes",
       "downloadInvoice":"Download Invoice",
-      "ReorderItems":"Reorder Items"
+      "ReorderItems":"Reorder Items",
+      "orderConfirmationMessage":"Your order has been successfully placed. You will receive an email confirmation shortly."
     },
     "address":{
       "editAddress":"Edit Address",

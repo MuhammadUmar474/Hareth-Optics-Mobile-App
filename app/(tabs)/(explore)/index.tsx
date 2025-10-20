@@ -179,7 +179,7 @@ const Explore = () => {
                 alignItems: "center",
               }}
             >
-              <Text>No products found</Text>
+              <Text>{`t(common.noProduct)`}</Text>
             </View>
           }
           onEndReached={() => {

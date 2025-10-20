@@ -4,7 +4,7 @@ import { DeliveryOption, deliveryOptions } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -13,11 +13,27 @@ import {
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
-const Delivery = () => {  
-  const { t } = useLocal()
-
+const Delivery = () => {
+  const { t, isRtl } = useLocal();
   const router = useRouter();
   const [options, setOptions] = useState<DeliveryOption[]>(deliveryOptions);
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        optionContent: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: scale(12),
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   const handleSelectOption = (id: number) => {
     setOptions((prev) =>
@@ -39,11 +55,11 @@ const Delivery = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
-          title="Delivery"
+          title={t("purchases.delivery")} // Updated to use translation
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -55,11 +71,12 @@ const Delivery = () => {
         {/* Delivery Options Section */}
         <View style={styles.section}>
           <Typography
-            title="Delivery options"
+            title={t("purchases.deliveryOption")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
+            textAlign={isRtl?"right":"left"}
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
           <View style={styles.optionsList}>
@@ -72,21 +89,21 @@ const Delivery = () => {
                 ]}
                 onPress={() => handleSelectOption(option.id)}
               >
-                <View style={styles.optionContent}>
+                <View style={dynamicStyles.optionContent}>
                   <View style={styles.optionInfo}>
                     <Typography
-                      title={option.title}
+                      title={t(option.title)}
                       fontSize={scale(16)}
                       fontFamily="Poppins-Bold"
                       color={COLORS.black}
-                      style={styles.optionTitle}
+                      style={[styles.optionTitle, dynamicStyles.textAlign]}
                     />
                     <Typography
-                      title={option.description}
+                      title={t(option.description)}
                       fontSize={scale(13)}
                       color={COLORS.grey29}
                       fontFamily="Roboto-Regular"
-                      style={styles.optionDescription}
+                      style={[styles.optionDescription, dynamicStyles.textAlign]}
                     />
                   </View>
 
@@ -109,24 +126,22 @@ const Delivery = () => {
 
       {/* Bottom Button */}
       <View style={styles.bottomSection}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.continueButton}
           onPress={() => router.push("/payment")}
         >
           <Typography
-            title="Continue to payment"
+            title={t("purchases.continuePayment")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"
-            style={styles.continueButtonText}
+            style={[styles.continueButtonText, dynamicStyles.textAlign]}
           />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-export default Delivery;
 
 const styles = StyleSheet.create({
   container: {
@@ -183,12 +198,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderWidth: 2,
   },
-  optionContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: scale(12),
-  },
   optionInfo: {
     flex: 1,
     gap: verticalScale(4),
@@ -235,3 +244,4 @@ const styles = StyleSheet.create({
   },
 });
 
+export default Delivery;

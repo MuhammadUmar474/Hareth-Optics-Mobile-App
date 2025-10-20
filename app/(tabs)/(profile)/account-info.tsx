@@ -46,14 +46,6 @@ const AccountInfo: React.FC = () => {
   const toast = useToast();
   const{t}=useLocal()
 
-  const [values, setValues] = useState<FormValues>({
-    name: "",
-    email: "",
-    phone: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const { logout } = useAuthStore();
-
   // Get initial values from customer details
   const getInitialValues = (): FormValues => {
     if (customerDetails) {

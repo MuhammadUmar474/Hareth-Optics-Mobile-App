@@ -9,7 +9,7 @@ import { useWishlistActions } from "@/utils/wishlist";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   ScrollView,
@@ -29,10 +29,82 @@ const ProductDetails = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState<number>(1);
   const [selectedSize, setSelectedSize] = useState<number>(1);
-
-  const [isFavorited, setIsFavorited] = useState(false);
-  const {t}=useLocal();
+  const { t, isRtl } = useLocal();
   const product = productDetailData;
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+     
+        colorContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          gap: scale(12),
+        },
+        sizeContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          gap: scale(12),
+        },
+        sectionHeader: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: verticalScale(12),
+        },
+        bottomSection: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(16),
+          paddingVertical: verticalScale(16),
+          backgroundColor: COLORS.white,
+          borderTopWidth: 1,
+          borderTopColor: COLORS.grey4,
+          shadowColor: COLORS.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,
+          position: "absolute",
+          bottom: 12,
+          left: 0,
+          right: 0,
+        },
+        priceContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(8),
+        },
+        buyNowButtonContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(8),
+        },
+        sizeGuideButton: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(4),
+        },
+        addToCartButton: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(8),
+          backgroundColor: COLORS.primary,
+          paddingHorizontal: scale(12),
+          paddingVertical: verticalScale(12),
+          borderRadius: scale(10),
+        },
+        buyNowButton: {
+          borderWidth: 1,
+          borderColor: COLORS.grey4,
+          borderRadius: scale(10),
+          paddingHorizontal: scale(12),
+          paddingVertical:isRtl? verticalScale(15): verticalScale(10),
+          alignItems: "center",
+        },
+      }),
+    [isRtl]
+  );
 
   const handleScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -160,9 +232,10 @@ const ProductDetails = () => {
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
+              textAlign={isRtl ? "right":"left"}
               style={styles.sectionTitle}
             />
-            <View style={styles.colorContainer}>
+            <View style={dynamicStyles.colorContainer}>
               {product.frameColors.map((color: FrameColor) => (
                 <TouchableOpacity
                   key={color.id}
@@ -185,7 +258,7 @@ const ProductDetails = () => {
 
           {/* Frame Size Section */}
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
+            <View style={dynamicStyles.sectionHeader}>
               <Typography
                 title={t("eyeglassesDetails.frameSize")}
                 fontSize={scale(16)}
@@ -194,7 +267,7 @@ const ProductDetails = () => {
                 style={styles.sectionFrame}
               />
               <TouchableOpacity
-                style={styles.sizeGuideButton}
+                style={dynamicStyles.sizeGuideButton}
                 onPress={() => router.push("/size-guide")}
               >
                 <Ionicons
@@ -210,7 +283,7 @@ const ProductDetails = () => {
                 />
               </TouchableOpacity>
             </View>
-            <View style={styles.sizeContainer}>
+            <View style={dynamicStyles.sizeContainer}>
               {product.frameSizes.map((size: FrameSize) => (
                 <TouchableOpacity
                   key={size.id}
@@ -221,7 +294,7 @@ const ProductDetails = () => {
                   onPress={() => setSelectedSize(size.id)}
                 >
                   <Typography
-                    title={size.name}
+                    title={t(size.name)}
                     fontSize={scale(14)}
                     color={
                       selectedSize === size.id ? COLORS.white : COLORS.black
@@ -242,7 +315,7 @@ const ProductDetails = () => {
       </ScrollView>
 
       {/* Bottom Action Buttons */}
-      <View style={styles.bottomSection}>
+      <View style={dynamicStyles.bottomSection}>
         <View style={styles.totalPriceContainer}>
           <Typography
             title={t("purchases.totalPrice")}
@@ -250,7 +323,7 @@ const ProductDetails = () => {
             fontFamily="Poppins-Bold"
             color={COLORS.grey33}
           />
-          <View style={styles.priceContainer}>
+          <View style={dynamicStyles.priceContainer}>
             <Typography
               title={product.discountedPrice}
               fontSize={scale(20)}
@@ -265,9 +338,9 @@ const ProductDetails = () => {
             />
           </View>
         </View>
-        <View style={styles.buyNowButtonContainer}>
+        <View style={dynamicStyles.buyNowButtonContainer}>
           <TouchableOpacity
-            style={styles.addToCartButton}
+            style={dynamicStyles.addToCartButton}
             onPress={onAddToCart}
           >
             <Ionicons name="cart-outline" size={20} color={COLORS.white} />
@@ -279,7 +352,7 @@ const ProductDetails = () => {
             />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.buyNowButton}
+            style={dynamicStyles.buyNowButton}
             onPress={toggleFavorite}
           >
             <AntDesign
@@ -293,8 +366,6 @@ const ProductDetails = () => {
     </View>
   );
 };
-
-export default ProductDetails;
 
 const styles = StyleSheet.create({
   container: {
@@ -394,21 +465,6 @@ const styles = StyleSheet.create({
   sectionFrame: {
     fontWeight: "600",
   },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: verticalScale(12),
-  },
-  sizeGuideButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(4),
-  },
-  colorContainer: {
-    flexDirection: "row",
-    gap: scale(12),
-  },
   colorCircle: {
     width: scale(47),
     height: scale(47),
@@ -426,10 +482,6 @@ const styles = StyleSheet.create({
     height: scale(36),
     borderRadius: scale(50),
   },
-  sizeContainer: {
-    flexDirection: "row",
-    gap: scale(12),
-  },
   sizeButton: {
     paddingVertical: verticalScale(8),
     paddingHorizontal: scale(14),
@@ -444,56 +496,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  bottomSection: {
-    position: "absolute",
-    bottom: 12,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(16),
-    paddingVertical: verticalScale(16),
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.grey4,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  priceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(8),
+  totalPriceContainer: {
+    gap: scale(6),
   },
   originalPrice: {
     textDecorationLine: "line-through",
   },
-  addToCartButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(8),
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: scale(12),
-    paddingVertical: verticalScale(12),
-    borderRadius: scale(10),
-  },
-  totalPriceContainer: {
-    gap: scale(6),
-  },
-  buyNowButton: {
-    borderWidth: 1,
-    borderColor: COLORS.grey4,
-    borderRadius: scale(10),
-    paddingHorizontal: scale(12),
-    paddingVertical: verticalScale(10),
-    alignItems: "center",
-  },
-  buyNowButtonContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(8),
-  },
+
 });
+
+export default ProductDetails;

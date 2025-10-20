@@ -23,7 +23,7 @@ const Wishlist = () => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const { wishlistItems, removeFromWishlist, setCurrentUser } = useWishlistStore();
-  const{t}=useLocal()
+  const{t,isRtl}=useLocal()
   const addToCart = useCartStore((state) => state.addToCart);
 
   useEffect(() => {
@@ -144,6 +144,7 @@ const Wishlist = () => {
                 color={COLORS.black}
                 style={styles.productName}
                 numberOfLines={2}
+                textAlign={isRtl?"right":"left"}
               />
               <Typography
                 title={`$${item.price.toFixed(2)}`}
@@ -151,6 +152,7 @@ const Wishlist = () => {
                 fontFamily="Roboto-Bold"
                 color={COLORS.primary}
                 style={styles.productPrice}
+                textAlign={isRtl?"right":"left"}
               />
               <TouchableOpacity
                 style={styles.addToCartButton}

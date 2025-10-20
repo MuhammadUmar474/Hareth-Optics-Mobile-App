@@ -5,7 +5,7 @@ import { SavedAddress, savedAddresses } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -15,7 +15,7 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const DeliveryAddress = () => {
-  const { t } = useLocal()
+  const { t, isRtl } = useLocal();
   const router = useRouter();
   const [addresses, setAddresses] = useState<SavedAddress[]>(savedAddresses);
   const [streetAddress, setStreetAddress] = useState<string>("");
@@ -24,6 +24,31 @@ const DeliveryAddress = () => {
   const [state, setState] = useState<string>("");
   const [zipCode, setZipCode] = useState<string>("");
   const [setAsDefault, setSetAsDefault] = useState<boolean>(false);
+
+  // Dynamic styles for RTL support
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        addressContent: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(12),
+        },
+        inputRow: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          gap: scale(16),
+        },
+        checkboxContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(12),
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   const handleSelectAddress = (id: number) => {
     setAddresses((prev) =>
@@ -44,14 +69,18 @@ const DeliveryAddress = () => {
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
-          title={t("address.orderDetails")}
+          title={t("orderDetail.orderDetails")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -67,7 +96,7 @@ const DeliveryAddress = () => {
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
           <View style={styles.addressList}>
@@ -80,7 +109,7 @@ const DeliveryAddress = () => {
                 ]}
                 onPress={() => handleSelectAddress(address.id)}
               >
-                <View style={styles.addressContent}>
+                <View style={dynamicStyles.addressContent}>
                   <View style={styles.iconContainer}>
                     {address.iconLibrary === "ionicons" ? (
                       <Ionicons
@@ -105,21 +134,21 @@ const DeliveryAddress = () => {
                       fontSize={scale(16)}
                       fontFamily="Poppins-Bold"
                       color={COLORS.black}
-                      style={styles.addressLabel}
+                      style={[styles.addressLabel, dynamicStyles.textAlign]}
                     />
                     <Typography
                       title={`${address.address},`}
                       fontSize={scale(13)}
                       color={COLORS.grey29}
                       fontFamily="Roboto-Regular"
-                      style={styles.addressText}
+                      style={[styles.addressText, dynamicStyles.textAlign]}
                     />
                     <Typography
                       title={`${address.city}, ${address.state} ${address.zipCode}`}
                       fontSize={scale(13)}
                       color={COLORS.grey29}
                       fontFamily="Roboto-Regular"
-                      style={styles.addressText}
+                      style={[styles.addressText, dynamicStyles.textAlign]}
                     />
                   </View>
 
@@ -146,7 +175,7 @@ const DeliveryAddress = () => {
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
 
           <View style={styles.formContainer}>
@@ -155,8 +184,9 @@ const DeliveryAddress = () => {
               value={streetAddress}
               onChangeText={setStreetAddress}
               containerStyle={styles.inputContainer}
-              inputContainerStyle={styles.inputField}
+              inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
               placeholderTextColor={COLORS.grey10}
+              textAlign={isRtl ? "right" : "left"}
             />
 
             <Input
@@ -164,17 +194,18 @@ const DeliveryAddress = () => {
               value={aptSuite}
               onChangeText={setAptSuite}
               containerStyle={styles.inputContainer}
-              inputContainerStyle={styles.inputField}
+              inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
               placeholderTextColor={COLORS.grey10}
+              textAlign={isRtl ? "right" : "left"}
             />
 
-            <View style={styles.inputRow}>
+            <View style={dynamicStyles.inputRow}>
               <Input
                 placeholder={t("address.city")}
                 value={city}
                 onChangeText={setCity}
                 containerStyle={[styles.inputContainer, styles.inputHalf]}
-                inputContainerStyle={styles.inputField}
+                inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
                 placeholderTextColor={COLORS.grey10}
               />
               <Input
@@ -182,7 +213,7 @@ const DeliveryAddress = () => {
                 value={state}
                 onChangeText={setState}
                 containerStyle={[styles.inputContainer, styles.inputHalf]}
-                inputContainerStyle={styles.inputField}
+                inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
                 placeholderTextColor={COLORS.grey10}
               />
             </View>
@@ -193,11 +224,11 @@ const DeliveryAddress = () => {
               onChangeText={setZipCode}
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
-              inputContainerStyle={styles.inputField}
+              inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
               placeholderTextColor={COLORS.grey10}
             />
 
-            <View style={styles.checkboxContainer}>
+            <View style={dynamicStyles.checkboxContainer}>
               <TouchableOpacity onPress={() => setSetAsDefault(!setAsDefault)}>
                 <View style={styles.checkbox}>
                   {setAsDefault && (
@@ -215,6 +246,7 @@ const DeliveryAddress = () => {
                 fontSize={scale(14)}
                 color={COLORS.grey29}
                 fontFamily="Roboto-Regular"
+                style={dynamicStyles.textAlign}
               />
             </View>
           </View>
@@ -232,15 +264,13 @@ const DeliveryAddress = () => {
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"
-            style={styles.continueButtonText}
+            style={[styles.continueButtonText, dynamicStyles.textAlign]}
           />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-export default DeliveryAddress;
 
 const styles = StyleSheet.create({
   container: {
@@ -296,11 +326,6 @@ const styles = StyleSheet.create({
   addressCardSelected: {
     borderColor: COLORS.primary,
   },
-  addressContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(12),
-  },
   iconContainer: {
     width: scale(44),
     height: scale(44),
@@ -355,17 +380,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.grey4,
   },
-  inputRow: {
-    flexDirection: "row",
-    gap: scale(16),
-  },
   inputHalf: {
     flex: 1,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(12),
   },
   checkbox: {
     width: scale(18),
@@ -392,3 +408,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default DeliveryAddress;

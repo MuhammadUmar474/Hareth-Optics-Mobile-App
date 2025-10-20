@@ -539,9 +539,9 @@ export const productDetailData: ProductDetail = {
     { id: 4, name: "Gold", color: "#FFD700" },
   ],
   frameSizes: [
-    { id: 1, name: "Small", value: "S" },
-    { id: 2, name: "Medium", value: "M" },
-    { id: 3, name: "Large", value: "L" },
+    { id: 1, name: "eyeglassesDetails.small", value: "S" },
+    { id: 2, name: "eyeglassesDetails.medium", value: "M" },
+    { id: 3, name: "eyeglassesDetails.large", value: "L" },
   ],
   price: "KD 400",
   discountedPrice: "KD 300",
@@ -586,25 +586,25 @@ export interface SizeMeasurement {
 export const sizeMeasurements: SizeMeasurement[] = [
   {
     id: 1,
-    label: "Lens Width",
+    label: "eyeglassesDetails.lensWidth",
     description:
-      "The horizontal diameter of one lens. This is the first number in the sequence (e.g., 52-18-140).",
+      "eyeglassesDetails.lenseWidthDecription",
     iconLibrary: "fontawesome6",
     iconName: "ruler-horizontal",
   },
   {
     id: 2,
-    label: "Bridge Width",
+    label: "eyeglassesDetails.bridgeWidth",
     description:
-      "The distance between the two lenses, over your nose. This is the middle number (e.g., 52-18-140).",
+      "eyeglassesDetails.bridgeWidthDescrip",
     iconLibrary: "fontawesome5",
     iconName: "minus",
   },
   {
     id: 3,
-    label: "Temple Length",
+    label: "eyeglassesDetails.templeLength",
     description:
-      "The length of the arm from the hinge to the tip. This is the last number (e.g., 52-18-140).",
+      "eyeglassesDetails.templeDescrip",
     iconLibrary: "simplelineicons",
     iconName: "graph",
   },
@@ -616,9 +616,9 @@ export interface HowToFindSize {
 }
 
 export const howToFindYourSize: HowToFindSize = {
-  title: "How to Find Your Size",
+  title: "eyeglassesDetails.findYourSize",
   description:
-    "The easiest way to find your size is to check your current pair of glasses. If you don't have a pair, you can use a standard credit card to measure. The width of a credit card is roughly the same as a standard lens width.",
+    "eyeglassesDetails.findYourSizeDesc",
 };
 
 /* Shopping Cart Interfaces */
@@ -705,15 +705,15 @@ export interface DeliveryOption {
 export const deliveryOptions: DeliveryOption[] = [
   {
     id: 1,
-    title: "Standard",
-    description: "Free · Arrives in 5-7 business days",
+    title: "purchases.standard",
+    description: "purchases.standardDecriptions",
     price: 0,
     isSelected: true,
   },
   {
     id: 2,
-    title: "Express",
-    description: "$10 · Arrives in 2-3 business days",
+    title: "purchases.express",
+    description: "purchases.ExpressDescription",
     price: 10,
     isSelected: false,
   },
