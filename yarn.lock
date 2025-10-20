@@ -6208,6 +6208,7 @@ __metadata:
     react-native-size-matters: "npm:^0.4.2"
     react-native-toast-notifications: "npm:^3.4.0"
     react-native-web: "npm:~0.21.0"
+    react-native-webview: "npm:13.12.4"
     react-native-worklets: "npm:0.5.1"
     typescript: "npm:~5.9.2"
     yup: "npm:^1.7.1"
@@ -6506,7 +6507,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"invariant@npm:^2.2.4":
+"invariant@npm:2.2.4, invariant@npm:^2.2.4":
   version: 2.2.4
   resolution: "invariant@npm:2.2.4"
   dependencies:
@@ -9038,6 +9039,19 @@ __metadata:
     react: ^18.0.0 || ^19.0.0
     react-dom: ^18.0.0 || ^19.0.0
   checksum: 10/32f785541660c25326d6ef863afb7b07259b884c2faf083b2d9ea44677bf2423a5b805478f83531be7c9b0260d98997def720000c033d178fd55fecfe6336211
+  languageName: node
+  linkType: hard
+
+"react-native-webview@npm:13.12.4":
+  version: 13.12.4
+  resolution: "react-native-webview@npm:13.12.4"
+  dependencies:
+    escape-string-regexp: "npm:^4.0.0"
+    invariant: "npm:2.2.4"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10/38ada42370873fb0361d66eb0c246a62d2bf67fc80cfc4f5ba4f733af6c8459555e4a11d91d86e49c1ef1e41caef985efafb73af2c0d9b749e9f113129a18289
   languageName: node
   linkType: hard
 
