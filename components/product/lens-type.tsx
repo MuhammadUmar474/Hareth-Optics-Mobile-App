@@ -2,7 +2,8 @@ import Typography from "@/components/ui/custom-typography";
 import Input from "@/components/ui/input";
 import { COLORS } from "@/constants/colors";
 import { LensTypeOption, lensTypeOptions } from "@/constants/data";
-import React, { useState } from "react";
+import { useLocal } from "@/hooks/use-lang";
+import React, { useMemo, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
@@ -12,19 +13,40 @@ const LensType: React.FC = () => {
   const [sphereLeft, setSphereLeft] = useState<string>("");
   const [cylinderRight, setCylinderRight] = useState<string>("");
   const [cylinderLeft, setCylinderLeft] = useState<string>("");
-
+  const {isRtl,t}=useLocal();
+  const dynamicStyles=useMemo(()=>StyleSheet.create({
+    inputRow: {
+      flexDirection: isRtl?"row-reverse":"row",
+      gap: scale(12),
+      marginBottom: verticalScale(12),
+    },  
+    inputText: {
+      fontSize: scale(14),
+      color: COLORS.black,
+      textAlign:isRtl?"right":"left"
+    },
+    inputLabel: {
+      marginBottom: verticalScale(6),
+      fontWeight: "500",
+       textAlign:isRtl?"right":"left"
+    },
+    sectionTitle: {
+      marginBottom: verticalScale(12),
+      fontWeight: "600",
+      textAlign:isRtl?"right":"left"
+    },
+  }),[isRtl])
   return (
     <View style={styles.container}>
       {/* Lens Type Section */}
       <View style={styles.section}>
         <Typography
-          title="Lens Type"
+          title={t("eyeglassesDetails.lensType")}
           fontSize={scale(16)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.sectionTitle}
+          style={dynamicStyles.sectionTitle}
         />
-
         <View style={styles.lensTypeContainer}>
           {lensTypeOptions.map((option: LensTypeOption) => (
             <TouchableOpacity
@@ -36,16 +58,17 @@ const LensType: React.FC = () => {
               onPress={() => setSelectedLensType(option.id)}
             >
               <Typography
-                title={option.name}
+                title={t(option.name)}
                 fontSize={scale(15)}
                 color={
                   selectedLensType === option.id ? COLORS.black : COLORS.black
                 }
+                
                 fontFamily="Roboto-Bold"
                 style={styles.lensTypeName}
               />
               <Typography
-                title={option.description}
+                title={t(option.description)}
                 fontSize={scale(12)}
                 color={
                   selectedLensType === option.id
@@ -63,21 +86,22 @@ const LensType: React.FC = () => {
       {/* Enter Your Prescription Section */}
       <View style={styles.prescriptionSection}>
         <Typography
-          title="Enter Your Prescription"
+          title={t("eyeglassesDetails.enterYourPrescription")}
           fontSize={scale(16)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
+          textAlign={isRtl?"right":"left"}
           style={styles.prescriptionTitle}
         />
 
-        <View style={styles.inputRow}>
+        <View style={dynamicStyles.inputRow}>
           <View style={styles.inputColumn}>
             <Typography
-              title="Sphere (Right)"
+              title={t("eyeglassesDetails.sphereRight")}
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
-              style={styles.inputLabel}
+              style={dynamicStyles.inputLabel}
             />
             <Input
               value={sphereRight}
@@ -86,18 +110,18 @@ const LensType: React.FC = () => {
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
               inputContainerStyle={styles.inputField}
-              inputStyle={styles.inputText}
+              inputStyle={dynamicStyles.inputText}
               placeholderTextColor={COLORS.grey10}
             />
           </View>
 
           <View style={styles.inputColumn}>
             <Typography
-              title="Sphere (Left)"
+              title={t("eyeglassesDetails.sphereLeft")}
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
-              style={styles.inputLabel}
+              style={dynamicStyles.inputLabel}
             />
             <Input
               value={sphereLeft}
@@ -106,20 +130,20 @@ const LensType: React.FC = () => {
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
               inputContainerStyle={styles.inputField}
-              inputStyle={styles.inputText}
+              inputStyle={dynamicStyles.inputText}
               placeholderTextColor={COLORS.grey10}
             />
           </View>
         </View>
 
-        <View style={styles.inputRow}>
+        <View style={dynamicStyles.inputRow}>
           <View style={styles.inputColumn}>
             <Typography
-              title="Cylinder (Right)"
+              title={t("eyeglassesDetails.cylinderRight")}
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
-              style={styles.inputLabel}
+              style={dynamicStyles.inputLabel}
             />
             <Input
               value={cylinderRight}
@@ -128,18 +152,18 @@ const LensType: React.FC = () => {
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
               inputContainerStyle={styles.inputField}
-              inputStyle={styles.inputText}
+              inputStyle={dynamicStyles.inputText}
               placeholderTextColor={COLORS.grey10}
             />
           </View>
 
           <View style={styles.inputColumn}>
             <Typography
-              title="Cylinder (Left)"
+              title={t("eyeglassesDetails.cylinderLeft")}
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
-              style={styles.inputLabel}
+              style={dynamicStyles.inputLabel}
             />
             <Input
               value={cylinderLeft}
@@ -148,7 +172,7 @@ const LensType: React.FC = () => {
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
               inputContainerStyle={styles.inputField}
-              inputStyle={styles.inputText}
+              inputStyle={dynamicStyles.inputText}
               placeholderTextColor={COLORS.grey10}
             />
           </View>
@@ -156,7 +180,7 @@ const LensType: React.FC = () => {
 
         <TouchableOpacity style={styles.uploadButton}>
           <Typography
-            title="Upload Prescription"
+            title={t("eyeglassesDetails.uploadPrescription")}
             fontSize={scale(14)}
             color={COLORS.primary}
             fontFamily="Roboto-Bold"
@@ -177,10 +201,7 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: verticalScale(24),
   },
-  sectionTitle: {
-    marginBottom: verticalScale(12),
-    fontWeight: "600",
-  },
+
   lensTypeContainer: {
     gap: scale(12),
   },
@@ -217,17 +238,9 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(16),
     fontWeight: "600",
   },
-  inputRow: {
-    flexDirection: "row",
-    gap: scale(12),
-    marginBottom: verticalScale(12),
-  },
+  
   inputColumn: {
     flex: 1,
-  },
-  inputLabel: {
-    marginBottom: verticalScale(6),
-    fontWeight: "500",
   },
   inputContainer: {
     marginBottom: 0,
@@ -240,10 +253,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(12),
     paddingVertical: verticalScale(10),
   },
-  inputText: {
-    fontSize: scale(14),
-    color: COLORS.black,
-  },
+
   uploadButton: {
     backgroundColor: COLORS.white,
     paddingVertical: verticalScale(14),

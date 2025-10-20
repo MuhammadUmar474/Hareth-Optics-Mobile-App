@@ -4,17 +4,19 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 const ViewGiftCardBalance: React.FC = () => {
+  const{t}=useLocal()
   const [giftCode, setGiftCode] = React.useState<string>("");
   const balanceAmount = 120.0;
 
   return (
     <View style={styles.screen}>
-      <Header title="Gift Card Balance" />
+      <Header title={t("profile.menu.giftBalance")} />
 
       <View style={styles.content}>
         <Typography

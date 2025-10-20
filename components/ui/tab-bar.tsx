@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useAuthGuard } from "@/utils/auth";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React, { useCallback, useEffect, useState } from "react";
@@ -83,7 +84,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   };
 
   const iconMap = icon as Record<string, IconRenderer>;
-
+  const { checkAuthAndNavigate } = useAuthGuard();
   return (
     <View onLayout={onTabBarLayout} style={styles.tabbar}>
       <Animated.View
@@ -111,6 +112,11 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
         const isFocused = state.index === index;
 
         const onPress = () => {
+          if (route.name === "(a-home)") {
+            navigation.navigate(route.name);
+            return;
+          }
+          checkAuthAndNavigate("/(auth)/login","Please login to access this feature")
           tabPostionX.value = withSpring(getTabOffset(index), {
             duration: 350,
           });

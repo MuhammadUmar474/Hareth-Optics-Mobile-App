@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,7 +23,7 @@ export const AnimatedProductCard = ({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [imageLoaded, setImageLoaded] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
-
+  const {t,isRtl}=useLocal();
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
@@ -132,12 +133,14 @@ export const AnimatedProductCard = ({
             fontSize={moderateScale(16)}
             color={COLORS.secondary}
             fontFamily="Inter-SemiBold"
+            textAlign={isRtl?"right":"left"}
           />
           <Typography
             title={`${item.category} • KD ${item.price}`}
             fontSize={moderateScale(13)}
             color="#6b7280"
             style={styles.productDetails}
+            textAlign={isRtl?"right":"left"}
           />
 
           <TouchableOpacity
@@ -146,7 +149,7 @@ export const AnimatedProductCard = ({
             onPress={handleAddToCart}
           >
             <Typography
-              title="Add to Cart"
+              title={t("purchases.addtoCart")}
               fontSize={moderateScale(14)}
               color={COLORS.white}
               fontFamily="Inter-SemiBold"

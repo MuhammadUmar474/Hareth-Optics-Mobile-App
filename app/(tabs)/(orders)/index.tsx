@@ -5,9 +5,11 @@ import { moderateScale } from "react-native-size-matters";
 import { OrderCard } from "@/components/order/order-card";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { ORDERS } from "@/utils/data";
 
 const MyOrders = () => {
+  const{t}=useLocal()
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -24,7 +26,7 @@ const MyOrders = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="My Orders" />
+      <Header title={t("orderDetail.myOrder")}/>
       <FlatList
         data={ORDERS}
         renderItem={renderOrder}

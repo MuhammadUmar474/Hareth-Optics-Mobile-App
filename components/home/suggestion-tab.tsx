@@ -1,5 +1,6 @@
 import { COLORS } from "@/constants/colors";
-import React, { ReactNode } from "react";
+import { useLocal } from "@/hooks/use-lang";
+import React, { ReactNode, useMemo } from "react";
 import { StyleProp, StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
@@ -26,7 +27,16 @@ const SuggestionTab = (props: SuggestionTabProps) => {
     isSelected,
     ...rest
   } = props;
-
+  const {isRtl}=useLocal();
+ const dynamicStyles=useMemo(()=>StyleSheet.create({
+  contentRow: {
+    flexDirection: isRtl?"row-reverse":"row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: scale(6),
+  },
+ })
+  ,[isRtl])
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -38,7 +48,7 @@ const SuggestionTab = (props: SuggestionTabProps) => {
       ]}
       {...rest}
     >
-      <View style={styles.contentRow}>
+      <View style={dynamicStyles.contentRow}>
         {lefticon ? (
           <View style={[styles.iconContainer, iconStyle]}>{lefticon}</View>
         ) : null}
@@ -84,12 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderColor: COLORS.grey4,
   },
-  contentRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: scale(6),
-  },
+
   iconContainer: {
     justifyContent: "center",
     alignItems: "center",
