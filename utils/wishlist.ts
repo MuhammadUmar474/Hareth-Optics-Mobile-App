@@ -31,24 +31,24 @@ export const useWishlistAuth = () => {
   };
 
   const checkAuthForWishlistView = () => {
-    // if (!isAuthenticated) {
-    //   Alert.alert(
-    //     "Login Required",
-    //     "You need to be logged in to view your wishlist. Please login to continue.",
-    //     [
-    //       {
-    //         text: "Cancel",
-    //         style: "cancel",
-    //       },
-    //       {
-    //         text: "Login",
-    //         style: "default",
-    //         onPress: () => router.push("/(auth)/login"),
-    //       },
-    //     ]
-    //   );
-    //   return false;
-    // }
+    if (!isAuthenticated) {
+      Alert.alert(
+        "Login Required",
+        "You need to be logged in to view your wishlist. Please login to continue.",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Login",
+            style: "default",
+            onPress: () => router.push("/(auth)/login"),
+          },
+        ]
+      );
+      return false;
+    }
     return true;
   };
 
