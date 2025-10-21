@@ -393,8 +393,11 @@ const Login = () => {
               </>
             )}
           </Formik>
+          {/* TODO: Might be need in future */}
+          {/* <View style={styles.dividerContainer}>
+          <View style={styles.divider} />
           <Typography
-            title={t("login.dontHaveAccount")}
+            title="Or Continue with"
             fontSize={SIZES.body}
             style={{ fontWeight: "500" }}
           />
@@ -404,10 +407,11 @@ const Login = () => {
           <AntDesign name="apple" size={24} color="black" />
           <AntDesign name="google" size={24} color="green" />
         </View> */}
+         
           <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
             <Typography
-              title="Don't have an account? "
-              fontSize={SIZES.body}
+            title={t("login.dontHaveAccount")}
+            fontSize={SIZES.body}
               style={{ fontWeight: "500" }}
             />
             <Typography
