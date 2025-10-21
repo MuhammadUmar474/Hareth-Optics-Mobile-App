@@ -8,12 +8,12 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { CardSkeleton } from "../skeletons";
@@ -217,7 +217,7 @@ const BestSelling: React.FC = () => {
           <ProductCard
             product={item.node}
             onPress={() => {
-              router.push(`/product-details`);
+              router.push(`/product-details?id=${item.node.id}`);
             }}
             onAddToCart={() => handleAddToCart(item.node)}
             onToggleWishlist={() => handleToggleWishlist(item.node)}

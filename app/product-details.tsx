@@ -1,16 +1,23 @@
 import LensType from "@/components/product/lens-type";
 import VirtualTryOn from "@/components/product/virtual-try-on";
 import Typography from "@/components/ui/custom-typography";
-import { COLORS } from "@/constants/colors";
-import { FrameColor, FrameSize, productDetailData } from "@/constants/data";
+import { COLOR_MAP, COLORS } from "@/constants/colors";
 import { useLocal } from "@/hooks/use-lang";
+import { homeApi, ProductDetailResponse } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import React, { useMemo, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -23,23 +30,159 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const ProductDetails = () => {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const addToCart = useCartStore((state) => state.addToCart);
   const { toggleWishlist, isInWishlist } = useWishlistActions();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState<number>(1);
   const [selectedSize, setSelectedSize] = useState<number>(1);
+  const [product, setProduct] = useState<
+    ProductDetailResponse["product"] | null
+  >(null);
+  const [loading, setLoading] = useState(true);
   const { t, isRtl } = useLocal();
-  const product = productDetailData;
+
+  // Helper function to get color from variant options
+  const getColorFromVariant = useCallback((variant: any) => {
+    const colorKeywords = ["color", "colour", "frame", "finish", "material"];
+
+    const colorOption = variant.selectedOptions.find((option: any) =>
+      colorKeywords.some((keyword) =>
+        option.name.toLowerCase().includes(keyword)
+      )
+    );
+
+    return colorOption?.value || null;
+  }, []);
+
+  // Helper function to map color names to hex values
+  const getColorHex = (colorName: string) => {
+    const color = colorName.toLowerCase().trim();
+
+    if (COLOR_MAP[color]) return COLOR_MAP[color];
+
+    const colorParts = color.split(" ").filter((part) => part.length > 0);
+    for (const part of colorParts) {
+      if (COLOR_MAP[part]) {
+        return COLOR_MAP[part];
+      }
+    }
+
+    for (const [key, value] of Object.entries(COLOR_MAP)) {
+      if (color.includes(key) || key.includes(color)) {
+        return value;
+      }
+    }
+
+    const commonColors = [
+      "red",
+      "blue",
+      "green",
+      "yellow",
+      "orange",
+      "purple",
+      "pink",
+      "brown",
+      "black",
+      "white",
+      "gray",
+      "grey",
+      "silver",
+      "gold",
+    ];
+    for (const commonColor of commonColors) {
+      if (color.includes(commonColor)) {
+        return COLOR_MAP[commonColor] || "#000000";
+      }
+    }
+
+    if (color.startsWith("#") && color.length === 7) return color;
+
+    const hash = color.split("").reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const hue = Math.abs(hash) % 360;
+    const saturation = 60 + (Math.abs(hash) % 40);
+    const lightness = 40 + (Math.abs(hash) % 30);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  };
+
+  // Helper function to scroll to specific image when color is selected
+  const scrollToImage = (imageIndex: number) => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({
+        x: imageIndex * SCREEN_WIDTH,
+        animated: true,
+      });
+    }
+  };
+
+  // Helper function to find image index for a variant's image URL
+  const findImageIndex = useCallback(
+    (imageUrl: string) => {
+      if (!product) return 0;
+      return product.images.edges.findIndex(
+        ({ node }) => node.url === imageUrl
+      );
+    },
+    [product]
+  );
+
+  // Helper function to get unique colors from variants with proper image mapping
+  const getUniqueColors = useCallback(() => {
+    if (!product) return [];
+
+    const uniqueColors = new Map();
+    product.variants.edges.forEach(({ node: variant }) => {
+      const colorValue = getColorFromVariant(variant);
+      if (colorValue && !uniqueColors.has(colorValue)) {
+        const imageIndex = variant.image
+          ? findImageIndex(variant.image.url)
+          : 0;
+
+        uniqueColors.set(colorValue, {
+          colorValue,
+          firstImageIndex: imageIndex >= 0 ? imageIndex : 0,
+          variantId: variant.id,
+          variantTitle: variant.title,
+        });
+      }
+    });
+
+    return Array.from(uniqueColors.values());
+  }, [product, getColorFromVariant, findImageIndex]);
+
+  const fetchProductDetails = useCallback(async () => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await homeApi.getProductById(id);
+      setProduct(response.product);
+    } catch (error) {
+      console.error("Failed to fetch product details:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchProductDetails();
+  }, [fetchProductDetails]);
 
   // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
-     
         colorContainer: {
           flexDirection: isRtl ? "row-reverse" : "row",
           gap: scale(12),
+          paddingHorizontal: scale(4),
         },
         sizeContainer: {
           flexDirection: isRtl ? "row-reverse" : "row",
@@ -99,7 +242,7 @@ const ProductDetails = () => {
           borderColor: COLORS.grey4,
           borderRadius: scale(10),
           paddingHorizontal: scale(12),
-          paddingVertical:isRtl? verticalScale(15): verticalScale(10),
+          paddingVertical: isRtl ? verticalScale(15) : verticalScale(10),
           alignItems: "center",
         },
       }),
@@ -110,26 +253,115 @@ const ProductDetails = () => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / SCREEN_WIDTH);
     setCurrentImageIndex(index);
+
+    // Find which color variant this image belongs to
+    if (product && product.images.edges[index]) {
+      const currentImageUrl = product.images.edges[index].node.url;
+
+      const matchingVariant = product.variants.edges.find(
+        ({ node: variant }) =>
+          variant.image && variant.image.url === currentImageUrl
+      );
+
+      if (matchingVariant) {
+        const colorValue = getColorFromVariant(matchingVariant.node);
+        if (colorValue) {
+          const uniqueColors = getUniqueColors();
+          const matchingColor = uniqueColors.find(
+            (color) => color.colorValue === colorValue
+          );
+          if (matchingColor) {
+            setSelectedColor(matchingColor.firstImageIndex + 1);
+          }
+        }
+      }
+    }
   };
 
   const toggleFavorite = () => {
+    if (!product) return;
+
     toggleWishlist({
-      id: product.id,
-      name: product.name,
-      price: parseFloat(product.discountedPrice.replace(/[^0-9.]/g, "")),
-      image: product.images[0],
+      id: parseInt(product.id.split("/").pop() || "0", 10),
+      name: product.title,
+      price: parseFloat(product.priceRange.minVariantPrice.amount),
+      image: {
+        uri:
+          product.featuredImage?.url || product.images.edges[0]?.node.url || "",
+      },
     });
   };
 
   const onAddToCart = () => {
+    if (!product) return;
+
     addToCart({
-      id: product.id,
-      name: product.name,
-      price: parseFloat(product.discountedPrice.replace(/[^0-9.]/g, "")),
-      image: product.images[0],
+      id: parseInt(product.id.split("/").pop() || "0", 10),
+      name: product.title,
+      price: parseFloat(product.priceRange.minVariantPrice.amount),
+      image: {
+        uri:
+          product.featuredImage?.url || product.images.edges[0]?.node.url || "",
+      },
     });
     router.push("/shopping-cart");
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          </TouchableOpacity>
+          <Typography
+            title={t("home.eyeGlasses")}
+            fontSize={scale(18)}
+            fontFamily="Poppins-Bold"
+            color={COLORS.black}
+            style={styles.headerTitle}
+          />
+          <View style={styles.headerButton} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </View>
+    );
+  }
+
+  if (!product) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          </TouchableOpacity>
+          <Typography
+            title={t("home.eyeGlasses")}
+            fontSize={scale(18)}
+            fontFamily="Poppins-Bold"
+            color={COLORS.black}
+            style={styles.headerTitle}
+          />
+          <View style={styles.headerButton} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <Typography
+            title="Product not found"
+            fontSize={scale(16)}
+            color={COLORS.black}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -165,10 +397,10 @@ const ProductDetails = () => {
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
-            {product.images.map((image, index) => (
+            {product.images.edges.map(({ node: image }, index) => (
               <View key={index} style={styles.imageContainer}>
                 <Image
-                  source={image}
+                  source={{ uri: image.url }}
                   style={styles.productImage}
                   contentFit="cover"
                 />
@@ -179,7 +411,7 @@ const ProductDetails = () => {
           {/* Image Counter Badge */}
           <View style={styles.imageCounter}>
             <Typography
-              title={`${currentImageIndex + 1}/${product.images.length}`}
+              title={`${currentImageIndex + 1}/${product.images.edges.length}`}
               fontSize={scale(14)}
               color={COLORS.white}
               fontFamily="Roboto-Bold"
@@ -189,7 +421,7 @@ const ProductDetails = () => {
 
         {/* Pagination Dots */}
         <View style={styles.paginationContainer}>
-          {product.images.map((_, index) => {
+          {product.images.edges.map((_, index) => {
             const isActive = index === currentImageIndex;
             return (
               <View
@@ -210,7 +442,7 @@ const ProductDetails = () => {
           {/* Product Title and Description */}
           <View style={styles.titleSection}>
             <Typography
-              title={product.name}
+              title={product.title}
               fontSize={scale(22)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
@@ -232,28 +464,43 @@ const ProductDetails = () => {
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              textAlign={isRtl ? "right":"left"}
+              textAlign={isRtl ? "right" : "left"}
               style={styles.sectionTitle}
             />
-            <View style={dynamicStyles.colorContainer}>
-              {product.frameColors.map((color: FrameColor) => (
-                <TouchableOpacity
-                  key={color.id}
-                  style={[
-                    styles.colorCircle,
-                    selectedColor === color.id && styles.colorCircleSelected,
-                  ]}
-                  onPress={() => setSelectedColor(color.id)}
-                >
-                  <View
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={dynamicStyles.colorContainer}
+              style={styles.colorScrollView}
+            >
+              {getUniqueColors().map((colorData) => {
+                const displayColor = colorData.colorValue;
+
+                return (
+                  <TouchableOpacity
+                    key={colorData.variantId}
                     style={[
-                      styles.colorInner,
-                      { backgroundColor: color.color },
+                      styles.colorCircle,
+                      selectedColor === colorData.firstImageIndex + 1 &&
+                        styles.colorCircleSelected,
                     ]}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
+                    onPress={() => {
+                      setSelectedColor(colorData.firstImageIndex + 1);
+                      scrollToImage(colorData.firstImageIndex);
+                    }}
+                  >
+                    <View
+                      style={[
+                        styles.colorInner,
+                        {
+                          backgroundColor: getColorHex(displayColor),
+                        },
+                      ]}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
 
           {/* Frame Size Section */}
@@ -284,25 +531,32 @@ const ProductDetails = () => {
               </TouchableOpacity>
             </View>
             <View style={dynamicStyles.sizeContainer}>
-              {product.frameSizes.map((size: FrameSize) => (
-                <TouchableOpacity
-                  key={size.id}
-                  style={[
-                    styles.sizeButton,
-                    selectedSize === size.id && styles.sizeButtonSelected,
-                  ]}
-                  onPress={() => setSelectedSize(size.id)}
-                >
-                  <Typography
-                    title={t(size.name)}
-                    fontSize={scale(14)}
-                    color={
-                      selectedSize === size.id ? COLORS.white : COLORS.black
-                    }
-                    fontFamily="Roboto-Bold"
-                  />
-                </TouchableOpacity>
-              ))}
+              {product.variants.edges.map(({ node: variant }, index) => {
+                const sizeOption = variant.selectedOptions.find((option) =>
+                  option.name.toLowerCase().includes("size")
+                );
+                if (!sizeOption) return null;
+
+                return (
+                  <TouchableOpacity
+                    key={variant.id}
+                    style={[
+                      styles.sizeButton,
+                      selectedSize === index + 1 && styles.sizeButtonSelected,
+                    ]}
+                    onPress={() => setSelectedSize(index + 1)}
+                  >
+                    <Typography
+                      title={sizeOption.value}
+                      fontSize={scale(14)}
+                      color={
+                        selectedSize === index + 1 ? COLORS.white : COLORS.black
+                      }
+                      fontFamily="Roboto-Bold"
+                    />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
@@ -325,17 +579,20 @@ const ProductDetails = () => {
           />
           <View style={dynamicStyles.priceContainer}>
             <Typography
-              title={product.discountedPrice}
+              title={`$${product.priceRange.minVariantPrice.amount}`}
               fontSize={scale(20)}
               fontFamily="Poppins-Bold"
               color={COLORS.primary}
             />
-            <Typography
-              title={product.price}
-              fontSize={scale(14)}
-              color={COLORS.grey10}
-              style={styles.originalPrice}
-            />
+            {product.priceRange.maxVariantPrice.amount !==
+              product.priceRange.minVariantPrice.amount && (
+              <Typography
+                title={`$${product.priceRange.maxVariantPrice.amount}`}
+                fontSize={scale(14)}
+                color={COLORS.grey10}
+                style={styles.originalPrice}
+              />
+            )}
           </View>
         </View>
         <View style={dynamicStyles.buyNowButtonContainer}>
@@ -358,7 +615,11 @@ const ProductDetails = () => {
             <AntDesign
               name="heart"
               size={24}
-              color={isInWishlist(product.id) ? COLORS.danger : COLORS.grey33}
+              color={
+                isInWishlist(parseInt(product?.id?.split("/").pop() || "0", 10))
+                  ? COLORS.danger
+                  : COLORS.grey33
+              }
             />
           </TouchableOpacity>
         </View>
@@ -502,7 +763,15 @@ const styles = StyleSheet.create({
   originalPrice: {
     textDecorationLine: "line-through",
   },
-
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: verticalScale(50),
+  },
+  colorScrollView: {
+    marginVertical: verticalScale(8),
+  },
 });
 
 export default ProductDetails;

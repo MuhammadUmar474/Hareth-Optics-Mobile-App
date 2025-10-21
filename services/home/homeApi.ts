@@ -44,6 +44,40 @@ export type LatestProductsResponse = {
   products: { edges: { node: ProductNode }[] };
 };
 
+type ProductDetailVariant = {
+  id: string;
+  title: string;
+  sku?: string | null;
+  availableForSale: boolean;
+  price: Money;
+  compareAtPrice?: Money | null;
+  image?: Image | null;
+  selectedOptions: SelectedOption[];
+};
+
+type ProductDetailNode = {
+  id: string;
+  title: string;
+  description: string;
+  handle: string;
+  productType?: string | null;
+  vendor?: string | null;
+  tags: string[];
+  availableForSale: boolean;
+  totalInventory?: number | null;
+  featuredImage?: Image | null;
+  images: { edges: { node: Image }[] };
+  priceRange: {
+    minVariantPrice: Money;
+    maxVariantPrice: Money;
+  };
+  variants: { edges: { node: ProductDetailVariant }[] };
+};
+
+export type ProductDetailResponse = {
+  product: ProductDetailNode | null;
+};
+
 // Types for Products by Collection response
 type SEO = { title?: string | null; description?: string | null };
 type Metafield = {
@@ -199,6 +233,49 @@ class HomeApi {
     `;
 
     return await this.executeQuery<LatestProductsResponse>(query);
+  }
+
+  /**
+   * Get product details by ID
+   */
+  async getProductById(id: string): Promise<ProductDetailResponse> {
+    const query = `
+      query getProductById($id: ID!) {
+        product(id: $id) {
+          id
+          title
+          description
+          handle
+          productType
+          vendor
+          tags
+          availableForSale
+          totalInventory
+          featuredImage { url altText }
+          images(first: 10) { edges { node { url altText } } }
+          priceRange {
+            minVariantPrice { amount currencyCode }
+            maxVariantPrice { amount currencyCode }
+          }
+          variants(first: 20) {
+            edges {
+              node {
+                id
+                title
+                sku
+                availableForSale
+                price { amount currencyCode }
+                compareAtPrice { amount currencyCode }
+                image { url altText }
+                selectedOptions { name value }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<ProductDetailResponse>(query, { id });
   }
 
   /**

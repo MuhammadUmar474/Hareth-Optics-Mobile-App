@@ -9,11 +9,11 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import {
-  Dimensions,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
@@ -132,7 +132,7 @@ const Wishlist = () => {
               <Ionicons name="heart" size={20} color={COLORS.danger} />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push("/product-details")}>
+            <TouchableOpacity onPress={() => router.push(`/product-details?id=${item.id}`)}>
               <Image source={item.image} style={styles.productImage} />
             </TouchableOpacity>
 

@@ -50,6 +50,13 @@ const Products: React.FC<ProductsProps> = ({
     );
   };
 
+  const handleViewAllPress = (categoryTitle: string) => {
+    router.push({
+      pathname: "/(tabs)/(explore)",
+      params: { category: categoryTitle },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -60,7 +67,7 @@ const Products: React.FC<ProductsProps> = ({
           color={COLORS.secondary}
           style={styles.headerTitle}
         />
-        <TouchableOpacity onPress={() => router.push(`/(tabs)/(explore)`)}>
+        <TouchableOpacity onPress={() => handleViewAllPress(title)}>
           <Typography
             title="View All"
             fontSize={scale(12)}

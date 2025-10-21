@@ -1,14 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, FlatList, ScrollView, Text, View } from "react-native";
+import { Animated, FlatList, ScrollView, View } from "react-native";
 
 import { AnimatedProductCard } from "@/components/explore/animated-product-card";
 import SuggestionTab from "@/components/home/suggestion-tab";
 import { ExploreCardSkeleton } from "@/components/skeletons";
+import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
+import { COLORS } from "@/constants/colors";
 import { handleLargerText } from "@/constants/helper";
 import { homeApi } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
 import { styles } from "@/styles/explore/explore";
+import { useLocalSearchParams } from "expo-router";
+import { scale, verticalScale } from "react-native-size-matters";
 
 type ExploreProduct = {
   id: string;
@@ -30,6 +34,7 @@ const Explore = () => {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
   const categories = useCommonStore((state) => state.categories);
+  const params = useLocalSearchParams<{ category?: string }>();
 
   // Animate header on mount
   useEffect(() => {
@@ -40,6 +45,23 @@ const Explore = () => {
     }).start();
   }, []);
 
+  useEffect(() => {
+    if (params.category) {
+      const categoryIndex = categories.findIndex(
+        (cat) => cat.title === params.category
+      );
+
+      if (categoryIndex !== -1) {
+        setSelectedFilter(params.category);
+        setSelectedCategories([categoryIndex]);
+      } else {
+        // If category not found, default to "All"
+        setSelectedFilter("All");
+        setSelectedCategories([-1]);
+      }
+    }
+  }, [params.category, categories]);
+
   const fetchProducts = async (loadMore = false) => {
     setLoading(true);
     setError(null);
@@ -49,7 +71,7 @@ const Explore = () => {
       const handle =
         selectedFilter === "All"
           ? "eyeglasses"
-          : selected?.resource?.handle  ?? "";
+          : selected?.resource?.handle ?? "";
 
       const { collection } = await homeApi.getProductsByCollection(
         handle,
@@ -179,24 +201,31 @@ const Explore = () => {
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Text>{`t(common.noProduct)`}</Text>
-            </View>
+            loading && products.length === 0 ? (
+              renderSkeleton
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: verticalScale(100),
+                }}
+              >
+                <Typography
+                title="No products found"
+                fontSize={scale(16)}
+                fontFamily="Roboto-Bold"
+                color={COLORS.gray3}
+                />
+              </View>
+            )
           }
           onEndReached={() => {
             if (hasNextPage && !loading) {
               fetchProducts(true); // load more
             }
           }}
-          ListEmptyComponent={
-            loading && products.length === 0 ? renderSkeleton : null
-          }
           ListFooterComponent={
             loading && products.length > 0 ? (
               <View style={{ padding: 20 }} />
