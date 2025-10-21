@@ -423,7 +423,7 @@ const Login = () => {
               style={{ fontWeight: "500" }}
             />
             <Typography
-              title="Sign up"
+              title=" Sign up"
               fontSize={SIZES.body}
               style={{ fontWeight: "500", color: COLORS.primary }}
               onPress={() => {
