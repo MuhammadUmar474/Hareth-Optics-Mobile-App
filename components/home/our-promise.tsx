@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: scale(12),
     padding: scale(16),
+    gap: scale(10),
     justifyContent: "space-between",
     alignItems: "center",
     shadowColor: COLORS.grey29,
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     position: "absolute",
-    right: 0,
+    right: -10,
     height: "90%",
     width: 1,
     backgroundColor: COLORS.grey4,
