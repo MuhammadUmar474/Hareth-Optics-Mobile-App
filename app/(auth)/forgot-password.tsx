@@ -138,14 +138,21 @@ const ForgotPassword = () => {
             )}
           </Formik>
 
-          <Typography
-            title="Remember your password? Login"
-            fontSize={SIZES.body}
-            style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
-            onPress={() => {
-              router.push("/(auth)/login");
-            }}
-          />
+            <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
+            <Typography
+              title="Remember your password? "
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500" }}
+            />
+            <Typography
+              title="Back to Login"
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500", color: COLORS.primary }}
+              onPress={() => {
+                router.replace("/(auth)/login");
+              }}
+            />
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

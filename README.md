@@ -19,6 +19,9 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    For Developement: eas build --profile development --platform android
    For Preview (APK): eas build --profile preview --platform android
    For Production (AAB):  eas build --profile production --platform android
+
+   For IOS Build: eas build --platform ios --profile production --clear-cache
+   For Submitting to testflight: eas submit --platform ios --profile production --latest
    
 In the output, you'll find options to open the app in a
 
