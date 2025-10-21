@@ -17,7 +17,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
@@ -25,7 +25,9 @@ import * as Yup from "yup";
 
 const emailLoginSchema = (t: (key: string) => string) =>
   Yup.object().shape({
-    email: Yup.string().email(t("auth.validEmail")).required(t("auth.reqEmail")),
+    email: Yup.string()
+      .email(t("auth.validEmail"))
+      .required(t("auth.reqEmail")),
     password: Yup.string()
       .min(8, t("auth.pswrdLengthError"))
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, t("auth.pswrdRegexError"))
@@ -192,7 +194,7 @@ const Login = () => {
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
-      <BackButton />
+        <BackButton />
 
         <Image
           source={require("@/assets/images/hareth-icon.png")}
@@ -307,7 +309,9 @@ const Login = () => {
                     value={values.email}
                     onChangeText={handleChange("email")}
                     onBlur={handleBlur("email")}
-                    error={touched.email && errors.email ? errors.email : undefined}
+                    error={
+                      touched.email && errors.email ? errors.email : undefined
+                    }
                     textAlign={isRtl ? "right" : "left"}
                     labelStyles={{ textAlign: isRtl ? "right" : "left" }}
                   />
@@ -322,7 +326,9 @@ const Login = () => {
                     value={values.phone || ""}
                     onChangeText={handleChange("phone")}
                     onBlur={handleBlur("phone")}
-                    error={touched.phone && errors.phone ? errors.phone : undefined}
+                    error={
+                      touched.phone && errors.phone ? errors.phone : undefined
+                    }
                     textAlign={isRtl ? "right" : "left"}
                     labelStyles={{ textAlign: isRtl ? "right" : "left" }}
                   />
@@ -407,11 +413,13 @@ const Login = () => {
           <AntDesign name="apple" size={24} color="black" />
           <AntDesign name="google" size={24} color="green" />
         </View> */}
-         
-          <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
+
+          <View
+            style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}
+          >
             <Typography
-            title={t("login.dontHaveAccount")}
-            fontSize={SIZES.body}
+              title={t("login.dontHaveAccount")}
+              fontSize={SIZES.body}
               style={{ fontWeight: "500" }}
             />
             <Typography

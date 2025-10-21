@@ -258,7 +258,7 @@
        "enterWaNumber":"Enter your WhatsApp number",
        "password":"Password",
        "enterPassword":"Enter your password",
-       "dontHaveAccount":"Don't have an account? Sign up",
+       "dontHaveAccount":"Don't have an account?",
        "forgotPswrd":"Forgot your password?"
     }
   }
