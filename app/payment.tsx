@@ -10,7 +10,7 @@ import { useLocal } from "@/hooks/use-lang";
 import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -21,11 +21,48 @@ import {
 import { scale, verticalScale } from "react-native-size-matters";
 
 const Payment = () => {
-  const{t}=useLocal()
+  const { t, isRtl } = useLocal();
   const router = useRouter();
   const [cards, setCards] = useState<SavedCard[]>(savedCards);
   const [paymentMethods, setPaymentMethods] =
     useState<OtherPaymentMethod[]>(otherPaymentMethods);
+
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          backgroundColor: COLORS.white,
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.grey4,
+        },
+        paymentContent: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          gap: scale(12),
+        },
+        addNewCardButton: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: scale(4),
+          alignSelf: isRtl ? "flex-start" : "flex-end",
+          marginHorizontal: scale(16),
+          marginVertical: verticalScale(16),
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.primary,
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   const handleCardToggle = (id: number, value: boolean) => {
     setCards((prev) =>
@@ -34,7 +71,6 @@ const Payment = () => {
         isSelected: card.id === id ? value : false,
       }))
     );
-    // Unselect other payment methods when a card is selected
     if (value) {
       setPaymentMethods((prev) =>
         prev.map((method) => ({ ...method, isSelected: false }))
@@ -57,20 +93,23 @@ const Payment = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
           title={t("purchases.payment")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -79,20 +118,18 @@ const Payment = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Saved Cards Section */}
         <View style={styles.section}>
           <Typography
             title={t("purchases.savedCards")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
-
           <View style={styles.cardsList}>
             {cards.map((card) => (
               <View key={card.id} style={styles.paymentCard}>
-                <View style={styles.paymentContent}>
+                <View style={dynamicStyles.paymentContent}>
                   <Image source={card.icon} style={styles.cardIcon} />
                   <View style={styles.cardInfo}>
                     <Typography
@@ -100,14 +137,14 @@ const Payment = () => {
                       fontSize={scale(14)}
                       fontFamily="Poppins-Bold"
                       color={COLORS.black}
-                      style={styles.cardType}
+                      style={[styles.cardType, dynamicStyles.textAlign]}
                     />
                     <Typography
                       title={`.... ${card.lastFour}`}
                       fontSize={scale(13)}
                       color={COLORS.grey29}
                       fontFamily="Roboto-Regular"
-                      style={styles.cardNumber}
+                      style={[styles.cardNumber, dynamicStyles.textAlign]}
                     />
                   </View>
                   <Switch
@@ -126,21 +163,18 @@ const Payment = () => {
             ))}
           </View>
         </View>
-
-        {/* Other Payment Methods Section */}
         <View style={styles.section}>
           <Typography
             title={t("purchases.otherPayments")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.sectionTitle}
+            style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
-
           <View style={styles.methodsList}>
             {paymentMethods.map((method) => (
               <View key={method.id} style={styles.paymentCard}>
-                <View style={styles.paymentContent}>
+                <View style={dynamicStyles.paymentContent}>
                   <View style={styles.methodIconContainer}>
                     {method.iconLibrary === "ionicons" ? (
                       <Ionicons
@@ -162,7 +196,7 @@ const Payment = () => {
                       fontSize={scale(14)}
                       fontFamily="Poppins-Bold"
                       color={COLORS.black}
-                      style={styles.methodName}
+                      style={[styles.methodName, dynamicStyles.textAlign]}
                     />
                   </View>
                   <Switch
@@ -182,21 +216,20 @@ const Payment = () => {
               </View>
             ))}
           </View>
-          <TouchableOpacity style={styles.addNewCardButton}>
+          <TouchableOpacity style={dynamicStyles.addNewCardButton}>
             <AntDesign name="plus" size={13} color={COLORS.primary} />
             <Typography
               title={t("purchases.addNewCard")}
               fontSize={scale(13)}
               color={COLORS.primary}
               fontFamily="Poppins-Bold"
+              style={dynamicStyles.textAlign}
             />
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Bottom Button */}
       <View style={styles.bottomSection}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addCardButton}
           onPress={() => router.push("/order-summary")}
         >
@@ -205,7 +238,7 @@ const Payment = () => {
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"
-            style={styles.addCardButtonText}
+            style={[styles.addCardButtonText, dynamicStyles.textAlign]}
           />
         </TouchableOpacity>
       </View>
@@ -213,23 +246,10 @@ const Payment = () => {
   );
 };
 
-export default Payment;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white6,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey4,
   },
   headerButton: {
     width: scale(40),
@@ -272,11 +292,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-  },
-  paymentContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: scale(12),
   },
   cardIcon: {
     width: scale(28),
@@ -322,15 +337,6 @@ const styles = StyleSheet.create({
   addCardButtonText: {
     fontWeight: "600",
   },
-  addNewCardButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: scale(4),
-    alignSelf: "flex-end",
-    marginHorizontal: scale(16),
-    marginVertical: verticalScale(16),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.primary,
-  },
 });
+
+export default Payment;

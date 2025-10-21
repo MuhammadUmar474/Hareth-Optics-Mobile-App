@@ -25,7 +25,16 @@ const ShoppingCart = () => {
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
-
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.grey4,
+        },
         cartItemContent: {
           flexDirection: isRtl ? "row-reverse" : "row",
           alignItems: "center",
@@ -81,19 +90,23 @@ const ShoppingCart = () => {
     return (
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+            <Ionicons
+              name={isRtl ? "arrow-forward" : "arrow-back"}
+              size={24}
+              color={COLORS.black}
+            />
           </TouchableOpacity>
           <Typography
             title={t("purchases.cart")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.headerTitle}
+            style={[styles.headerTitle, dynamicStyles.textAlign]}
           />
           <View style={styles.headerButton} />
         </View>
@@ -126,19 +139,19 @@ const ShoppingCart = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
           <Ionicons
-            name={"arrow-back"}
+            name={isRtl ? "arrow-forward" : "arrow-back"}
             size={24}
             color={COLORS.black}
           />
         </TouchableOpacity>
         <Typography
-          title={t("purchases.cart")} // Updated to use translation
+          title={t("purchases.cart")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -172,7 +185,7 @@ const ShoppingCart = () => {
                     numberOfLines={1}
                   />
                   <Typography
-                    title={`${item.price.toFixed(2)} KD`}
+                    title={`${item.price.toFixed(2)} ${t("common.currency")}`}
                     fontSize={scale(13)}
                     fontFamily="Roboto-Bold"
                     color={COLORS.grey33}
@@ -196,7 +209,7 @@ const ShoppingCart = () => {
                       fontSize={scale(14)}
                       fontFamily="Roboto-Bold"
                       color={COLORS.black}
-                      style={[styles.quantityText, dynamicStyles.textAlign]}
+                      style={[styles.quantityText]}
                     />
                     <TouchableOpacity
                       style={styles.quantityButton}
@@ -254,7 +267,7 @@ const ShoppingCart = () => {
               style={dynamicStyles.textAlign}
             />
             <Typography
-              title={`${subtotal.toFixed(2)} KD`}
+              title={`${subtotal.toFixed(2)} ${t("common.currency")}`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
@@ -273,11 +286,11 @@ const ShoppingCart = () => {
               style={dynamicStyles.textAlign}
             />
             <Typography
-              title={`${shipping.toFixed(2)} KD`}
+              title={`${shipping.toFixed(2)} ${t("common.currency")}`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
-              style={ dynamicStyles.textAlign}
+              style={dynamicStyles.textAlign}
             />
           </View>
 
@@ -292,11 +305,11 @@ const ShoppingCart = () => {
               style={dynamicStyles.textAlign}
             />
             <Typography
-              title={`${estimatedTax.toFixed(2)} KD`}
+              title={`${estimatedTax.toFixed(2)} ${t("common.currency")}`}
               fontSize={scale(16)}
               fontFamily="Roboto-Bold"
               color={COLORS.black}
-              style={ dynamicStyles.textAlign}
+              style={dynamicStyles.textAlign}
             />
           </View>
 
@@ -311,7 +324,7 @@ const ShoppingCart = () => {
               style={[styles.totalLabel, dynamicStyles.textAlign]}
             />
             <Typography
-              title={`${total.toFixed(2)} KD`}
+              title={`${total.toFixed(2)} ${t("common.currency")}`}
               fontSize={scale(20)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
@@ -343,16 +356,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey4,
   },
   headerButton: {
     width: scale(40),

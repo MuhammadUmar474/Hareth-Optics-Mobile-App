@@ -1,3 +1,4 @@
+import { useLocal } from '@/hooks/use-lang';
 import { useAuthStore } from '@/store/shopifyStore';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
@@ -27,19 +28,19 @@ export const refreshUserToken = async () => {
 
 export const useAuthGuard = () => {
   const { isAuthenticated } = useAuthStore();
-
+  const {t}=useLocal();
   const requireAuth = (action: () => void, message?: string) => {
     if (!isAuthenticated) {
       Alert.alert(
-        "Authentication Required",
-        message || "Please login to continue",
+        t("alertMsg.authRequired"),
+        message || t("alertMsg.loginContinue"),
         [
           {
-            text: "Cancel",
+            text: t("common.cancel"),
             style: "cancel",
           },
           {
-            text: "Login",
+            text: t("auth.login"),
             onPress: () => router.push('/(auth)/login'),
           },
         ]
