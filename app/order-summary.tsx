@@ -1,4 +1,3 @@
-
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { OrderItem, orderSummaryData } from "@/constants/data";
@@ -24,6 +23,17 @@ const OrderSummary = () => {
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          backgroundColor: COLORS.white,
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.grey4,
+        },
         itemCard: {
           flexDirection: isRtl ? "row-reverse" : "row",
           backgroundColor: COLORS.white,
@@ -92,12 +102,12 @@ const OrderSummary = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons name={isRtl? "arrow-forward":"arrow-back"} size={24} color={COLORS.black} />
         </TouchableOpacity>
         <Typography
           title={t("orderDetail.orderSummary")}
@@ -394,17 +404,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white6,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey4,
   },
   headerButton: {
     width: scale(40),

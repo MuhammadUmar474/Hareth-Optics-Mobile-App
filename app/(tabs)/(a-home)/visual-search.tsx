@@ -22,8 +22,8 @@ const VisualSearch = () => {
 
       if (permissionResult.granted === false) {
         Alert.alert(
-          "Permission Required",
-          "Permission to access camera roll is required!"
+          t("alertMsg.permissionRequired"),
+          t("alertMsg.permAccessCamera")
         );
         return;
       }
@@ -40,13 +40,13 @@ const VisualSearch = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick image from gallery");
+      Alert.alert(t("alertMsg.error"), t("alertMsg.imageGallery"));
     }
   };
 
   const handleFindSimilar = () => {
     if (!selectedImage) {
-      Alert.alert("No Image", "Please select an image first");
+      Alert.alert(t("alertMsg.noImage"), t("alertMsg.imageSelect"));
       return;
     }
     router.navigate("/(tabs)/(explore)");
@@ -59,8 +59,8 @@ const VisualSearch = () => {
 
       if (cameraPermission.granted === false) {
         Alert.alert(
-          "Permission Required",
-          "Permission to access camera is required!"
+          t("alertMsg.permissionRequired"),
+          t("alertMsg.permAccessCamera")
         );
         return;
       }
@@ -76,7 +76,7 @@ const VisualSearch = () => {
       }
     } catch (error) {
       console.error("Error taking photo:", error);
-      Alert.alert("Error", "Failed to take photo");
+      Alert.alert(t("alertMsg.error"), t("alertMsg.imgPickError"));
     }
   };
 
@@ -105,7 +105,7 @@ const VisualSearch = () => {
               onPress={() => setSelectedImage(null)}
             >
               <Typography
-                title="Remove Image"
+                title={t("visualSearch.removeImage")}
                 fontSize={12}
                 color={COLORS.white}
               />

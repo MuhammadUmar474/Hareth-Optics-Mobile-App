@@ -1,3 +1,4 @@
+import { useLocal } from "@/hooks/use-lang";
 import { useAuthStore } from "@/store/shopifyStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { router } from "expo-router";
@@ -8,18 +9,19 @@ import { Alert } from "react-native";
  */
 export const useWishlistAuth = () => {
   const { isAuthenticated } = useAuthStore();
+  const {t} =useLocal();
   const checkAuthAndShowAlert = (action: () => void) => {
     if (!isAuthenticated) {
       Alert.alert(
-        "Login Required",
-        "You need to be logged in to add items to your wishlist. Please login to continue.",
+        t("alertMsg.loginRequired"),
+        "",
         [
           {
-            text: "Cancel",
+            text: t("common.cancel"),
             style: "cancel",
           },
           {
-            text: "Login",
+            text: t("auth.login"),
             style: "default",
             onPress: () => router.push("/(auth)/login"),
           },

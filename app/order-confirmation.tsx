@@ -12,11 +12,19 @@ const OrderConfirmation = () => {
   const { t, isRtl } = useLocal();
   const router = useRouter();
   const orderData = orderConfirmationData;
-
-  // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row", // Add dynamic header direction
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.grey4,
+        },
         detailRow: {
           flexDirection: isRtl ? "row-reverse" : "row",
           justifyContent: "space-between",
@@ -32,7 +40,7 @@ const OrderConfirmation = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
@@ -170,16 +178,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey4,
   },
   headerButton: {
     width: scale(40),

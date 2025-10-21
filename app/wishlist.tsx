@@ -7,7 +7,7 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
     Dimensions,
     FlatList,
@@ -23,8 +23,28 @@ const Wishlist = () => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const { wishlistItems, removeFromWishlist, setCurrentUser } = useWishlistStore();
-  const{t,isRtl}=useLocal()
+  const { t, isRtl } = useLocal();
   const addToCart = useCartStore((state) => state.addToCart);
+
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.grey4,
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   useEffect(() => {
     if (isAuthenticated && user?.email) {
@@ -50,31 +70,34 @@ const Wishlist = () => {
   if (wishlistItems.length === 0) {
     return (
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+            <Ionicons
+              name={isRtl ? "arrow-forward" : "arrow-back"}
+              size={24}
+              color={COLORS.black}
+            />
           </TouchableOpacity>
           <Typography
             title={t("wishlist.wishlist")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.headerTitle}
+            style={[styles.headerTitle, dynamicStyles.textAlign]}
           />
           <View style={styles.headerButton} />
         </View>
 
         <View style={styles.emptyWishlistContainer}>
           <View style={styles.illustrationContainer}>
-              <Image 
-                source={require("@/assets/images/home/favorite-hareth.png")}
-                style={styles.illustrationImage}
-                contentFit="contain"
-              />
+            <Image
+              source={require("@/assets/images/home/favorite-hareth.png")}
+              style={styles.illustrationImage}
+              contentFit="contain"
+            />
           </View>
 
           <Typography
@@ -82,14 +105,14 @@ const Wishlist = () => {
             fontSize={scale(24)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
-            style={styles.emptyWishlistTitle}
+            style={[styles.emptyWishlistTitle, dynamicStyles.textAlign]}
           />
           <Typography
             title={t("wishlist.elevatDescription")}
             fontSize={scale(14)}
             fontFamily="Roboto-Regular"
             color={COLORS.grey29}
-            style={styles.emptyWishlistMessage}
+            style={[styles.emptyWishlistMessage, dynamicStyles.textAlign]}
           />
         </View>
       </View>
@@ -98,20 +121,23 @@ const Wishlist = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
           title={t("wishlist.wishlist")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -142,17 +168,15 @@ const Wishlist = () => {
                 fontSize={scale(12)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.black}
-                style={styles.productName}
+                style={[styles.productName, dynamicStyles.textAlign]}
                 numberOfLines={2}
-                textAlign={isRtl?"right":"left"}
               />
               <Typography
                 title={`$${item.price.toFixed(2)}`}
                 fontSize={scale(14)}
                 fontFamily="Roboto-Bold"
                 color={COLORS.primary}
-                style={styles.productPrice}
-                textAlign={isRtl?"right":"left"}
+                style={[styles.productPrice, dynamicStyles.textAlign]}
               />
               <TouchableOpacity
                 style={styles.addToCartButton}
@@ -163,6 +187,7 @@ const Wishlist = () => {
                   fontSize={scale(12)}
                   color={COLORS.white}
                   fontFamily="Roboto-Bold"
+                  style={dynamicStyles.textAlign}
                 />
               </TouchableOpacity>
             </View>
@@ -173,22 +198,10 @@ const Wishlist = () => {
   );
 };
 
-export default Wishlist;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.grey4,
   },
   headerButton: {
     width: scale(40),
@@ -214,11 +227,9 @@ const styles = StyleSheet.create({
   },
   emptyWishlistTitle: {
     fontWeight: "600",
-    textAlign: "center",
     marginBottom: verticalScale(12),
   },
   emptyWishlistMessage: {
-    textAlign: "center",
     lineHeight: scale(22),
     paddingHorizontal: scale(16),
   },
@@ -287,3 +298,4 @@ const styles = StyleSheet.create({
   },
 });
 
+export default Wishlist;

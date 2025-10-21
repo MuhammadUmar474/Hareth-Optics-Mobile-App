@@ -18,10 +18,18 @@ const Delivery = () => {
   const router = useRouter();
   const [options, setOptions] = useState<DeliveryOption[]>(deliveryOptions);
 
-  // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row", // Add dynamic header direction
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          backgroundColor: COLORS.white,
+        },
         optionContent: {
           flexDirection: isRtl ? "row-reverse" : "row",
           alignItems: "center",
@@ -47,15 +55,19 @@ const Delivery = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
-          title={t("purchases.delivery")} // Updated to use translation
+          title={t("purchases.delivery")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -74,7 +86,6 @@ const Delivery = () => {
             title={t("purchases.deliveryOption")}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
-            textAlign={isRtl?"right":"left"}
             color={COLORS.black}
             style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
@@ -147,15 +158,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white6,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    backgroundColor: COLORS.white,
   },
   headerButton: {
     width: scale(40),
