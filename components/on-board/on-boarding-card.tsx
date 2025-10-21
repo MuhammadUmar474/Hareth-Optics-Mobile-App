@@ -114,8 +114,7 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
             )}
           </View>
         </View>
-      </Button>
-      <ImageBackground
+        <ImageBackground
         source={image}
         style={[
           styles.categoryImageContainer,
@@ -127,6 +126,8 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
         imageStyle={styles.categoryImageStyle}
         resizeMode="cover"
       />
+      </Button>
+     
     </Animated.View>
   );
 };
@@ -138,15 +139,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     ...COLORS.shadow,
     shadowColor: COLORS.primary,
-    width: "48%",
-    height: verticalScale(120),
+    flex:1,
+    borderTopColor:COLORS.primary,
+    borderTopWidth:4,
+    flexDirection:"row",
+    justifyContent:"space-between",
   },
   categoryCardContent: {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: verticalScale(16),
-    height: verticalScale(120),
     alignSelf: "flex-start",
   },
   categoryTextSection: {
@@ -163,8 +166,8 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(4),
   },
   categoryImageContainer: {
-    flex: 1,
-    height: verticalScale(120),
+    height: verticalScale(70),
+    width: verticalScale(80),
     borderRadius: scale(14),
     overflow: "hidden",
     backgroundColor: "blue",
