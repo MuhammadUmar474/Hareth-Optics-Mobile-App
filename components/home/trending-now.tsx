@@ -158,7 +158,7 @@ const TrendingNow: React.FC = () => {
                 image: { uri: card.image },
                 filter: "trending",
               }}
-              onPress={() => router.navigate(`/product-details?id=${card.id}`)}
+              onPress={() => router.push(`/product-details?id=${card.id}&title=${encodeURIComponent(card.name)}`)}
             />
           ))
         )}

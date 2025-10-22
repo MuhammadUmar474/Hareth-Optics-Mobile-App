@@ -111,7 +111,9 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
               key={card.id || `product-${index}`}
               data={card.node}
               onPress={() => {
-                router.push(`/product-details?id=${card.node.id}`);
+                router.push(
+                  `/product-details?id=${card.node.id}&title=${encodeURIComponent(card.node.title)}`
+                );
               }}
             />
           ))
