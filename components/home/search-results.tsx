@@ -6,11 +6,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
@@ -159,7 +159,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ searchQuery, onClose, onC
       style={styles.productCard}
       onPress={() => router.push({
         pathname: "/product-details",
-        params: { id: item.id }
+        params: { id: item.id, title: encodeURIComponent(item.title) }
       })}
       activeOpacity={0.8}
     >

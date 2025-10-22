@@ -34,18 +34,16 @@ export default function RootLayout() {
             <Stack.Screen name="size-guide" options={{ headerShown: false }} />
             <Stack.Screen name="shopping-cart" options={{ headerShown: false }} />
             <Stack.Screen name="wishlist" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="delivery-address"
-              options={{ headerShown: false }}
-            />
+            <Stack.Screen name="delivery-address" options={{ headerShown: false }} />
             <Stack.Screen name="delivery" options={{ headerShown: false }} />
             <Stack.Screen name="payment" options={{ headerShown: false }} />
             <Stack.Screen name="order-detail" options={{ headerShown: false }} />
             <Stack.Screen name="order-summary" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="order-confirmation"
-              options={{ headerShown: false }}
-            />
+            <Stack.Screen name="order-confirmation" options={{ headerShown: false }} />
+            <Stack.Screen name="return-policy" options={{ headerShown: false }} />
+            <Stack.Screen name="exchange-policy" options={{ headerShown: false }} />
+            <Stack.Screen name="shipping-policy" options={{ headerShown: false }} />
+            <Stack.Screen name="warranty-policy" options={{ headerShown: false }} />
           </Stack>
         </ThemeProvider>
       </AuthProvider>

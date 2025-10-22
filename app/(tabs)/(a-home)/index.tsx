@@ -113,8 +113,11 @@ const HomeScreen = () => {
     setIsPlaying(newIsPlaying.isPlaying);
   });
 
-  const onProductPress = () => {
-    router.navigate("/(tabs)/(explore)");
+  const onProductPress = (title: string) => {
+    router.push({
+      pathname: "/(tabs)/(explore)",
+      params: { category: title },
+    });
   };
 
   const fetchProducts = useCallback(
@@ -252,7 +255,7 @@ const HomeScreen = () => {
                 }}
                 ListFooterComponent={
                   loading ? (
-                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <ActivityIndicator size="small" color={COLORS.primary} />
                   ) : null
                 }
               />

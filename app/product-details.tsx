@@ -2,6 +2,7 @@ import LensType, { PrescriptionData } from "@/components/product/lens-type";
 import VirtualTryOn from "@/components/product/virtual-try-on";
 import Typography from "@/components/ui/custom-typography";
 import { COLOR_MAP, COLORS } from "@/constants/colors";
+import { handleLargerText } from "@/constants/helper";
 import { useLocal } from "@/hooks/use-lang";
 import { homeApi, ProductDetailResponse } from "@/services/home/homeApi";
 import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
@@ -36,6 +37,7 @@ const ProductDetails = () => {
     cartLineId?: string;
     isFromCart?: string;
   }>();
+  const { title } = useLocalSearchParams<{ title: string }>();
   const {
     createCart,
     updateCartLines,
@@ -441,7 +443,7 @@ const ProductDetails = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title={t("home.eyeGlasses")}
+            title={title}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -467,7 +469,7 @@ const ProductDetails = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title={t("home.eyeGlasses")}
+            title={handleLargerText(title, 20)}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -501,7 +503,7 @@ const ProductDetails = () => {
           />
         </TouchableOpacity>
         <Typography
-          title={t("home.eyeGlasses")}
+          title={handleLargerText(title, 20)}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}

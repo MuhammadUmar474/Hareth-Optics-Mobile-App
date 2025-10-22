@@ -1,4 +1,5 @@
 import { ImageSource } from "expo-image";
+import { router } from "expo-router";
 
 // Define proper types for icon names - using actual Feather icon names
 export type FeatherIconName =
@@ -262,8 +263,9 @@ export interface PaymentMethod {
 export interface OurPromise {
   id: number;
   name: string;
-  iconLibrary: "fontisto" | "fontawesome" | "fontawesome5";
+  iconLibrary: "fontisto" | "fontawesome" | "fontawesome5" | "MaterialCommunityIcons";
   iconName: string;
+  onPress?: () => void; 
 }
 
 export const eyeGlassesProducts: ProductCategory = {
@@ -427,18 +429,29 @@ export const ourPromiseData: OurPromise[] = [
     name: "No Questions Asked Returns",
     iconLibrary: "fontisto",
     iconName: "arrow-return-left",
+    onPress: () => router.push("/return-policy"),
   },
   {
     id: 2,
     name: "Easy 14 day Exchange",
     iconLibrary: "fontawesome",
     iconName: "exchange",
+    onPress: () => router.push("/exchange-policy"),
+
   },
   {
     id: 3,
     name: "FREE Shipping",
     iconLibrary: "fontawesome5",
     iconName: "shipping-fast",
+    onPress: () => router.push("/shipping-policy"),
+  },
+  {
+    id: 4,
+    name: "1 year Warranty",
+    iconLibrary: "MaterialCommunityIcons",
+    iconName: "shield-check",
+    onPress: () => router.push("/warranty-policy"),
   },
 ];
 
