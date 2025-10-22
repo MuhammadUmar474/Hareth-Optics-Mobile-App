@@ -8,12 +8,12 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { CardSkeleton } from "../skeletons";
@@ -238,6 +238,8 @@ const BestSelling: React.FC = () => {
         >
           <View style={styles.buttonGradient}>
             <View style={styles.buttonContent}>
+             
+              <View style={styles.buttonSecondaryContent}>
               <View style={styles.iconContainer}>
                 <MaterialIcons
                   name="visibility"
@@ -245,7 +247,6 @@ const BestSelling: React.FC = () => {
                   color={COLORS.white}
                 />
               </View>
-              <View style={styles.buttonSecondaryContent}>
                 <View style={styles.textContainer}>
                   <Typography
                     title="Eyeglasses"
@@ -281,10 +282,12 @@ const BestSelling: React.FC = () => {
         >
           <View style={styles.buttonGradient}>
             <View style={styles.buttonContent}>
-              <View style={styles.iconContainer}>
-                <MaterialIcons name="wb-sunny" size={24} color={COLORS.white} />
-              </View>
+             
               <View style={styles.buttonSecondaryContent}>
+              <View style={styles.iconContainer}>
+              <MaterialIcons name="wb-sunny" size={24} color={COLORS.white} />
+
+              </View>
                 <View style={styles.textContainer}>
                   <Typography
                     title="Sunglasses"
@@ -412,6 +415,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
+    gap:10
   },
   addToCart: {
     backgroundColor: COLORS.primary,
@@ -424,14 +428,14 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(4),
   },
   viewAllButtons: {
-    flexDirection: "row",
+    // flexDirection: "row",
     gap: scale(16),
     marginHorizontal: scale(16),
     marginTop: verticalScale(20),
   },
   viewAllButtonContainer: {
     flex: 1,
-    height: verticalScale(120),
+    height: verticalScale(70),
     borderRadius: scale(16),
     overflow: "hidden",
     shadowColor: COLORS.black,
@@ -452,7 +456,7 @@ const styles = StyleSheet.create({
   buttonGradient: {
     flex: 1,
     paddingHorizontal: scale(14),
-    paddingVertical: scale(26),
+    // paddingVertical: scale(26),
     justifyContent: "center",
   },
   buttonContent: {
