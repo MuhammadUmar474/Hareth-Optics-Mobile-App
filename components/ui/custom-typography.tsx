@@ -2,7 +2,7 @@ import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 
 import React, { useMemo } from "react";
-import { StyleProp, Text, TextProps, TextStyle } from "react-native";
+import { DimensionValue, StyleProp, Text, TextProps, TextStyle } from "react-native";
 
 type TypographyProps = TextProps & {
   title: string | number | undefined;
@@ -11,7 +11,7 @@ type TypographyProps = TextProps & {
   fontFamily?: string;
   textMarginTop?: number;
   textAlign?: string;
-  width?: string;
+  width?: DimensionValue;
 };
 
 const Typography: React.FC<TypographyProps> = ({

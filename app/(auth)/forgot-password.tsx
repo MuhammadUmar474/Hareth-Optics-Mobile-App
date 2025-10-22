@@ -1,3 +1,4 @@
+import BackButton from "@/components/ui/back-button";
 import Button from "@/components/ui/custom-button";
 import CustomTextInput from "@/components/ui/custom-text-input";
 import Typography from "@/components/ui/custom-typography";
@@ -68,6 +69,7 @@ const ForgotPassword = () => {
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
+        <BackButton />
         <Image
           source={require("@/assets/images/hareth-icon.png")}
           style={styles.logo}

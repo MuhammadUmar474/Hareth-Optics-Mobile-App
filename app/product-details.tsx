@@ -179,6 +179,15 @@ const ProductDetails = () => {
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          backgroundColor: COLORS.white,
+        },
         colorContainer: {
           flexDirection: isRtl ? "row-reverse" : "row",
           gap: scale(12),
@@ -244,6 +253,9 @@ const ProductDetails = () => {
           paddingHorizontal: scale(12),
           paddingVertical: isRtl ? verticalScale(15) : verticalScale(10),
           alignItems: "center",
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
         },
       }),
     [isRtl]
@@ -366,19 +378,23 @@ const ProductDetails = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+          <Ionicons
+            name={isRtl ? "arrow-forward" : "arrow-back"}
+            size={24}
+            color={COLORS.black}
+          />
         </TouchableOpacity>
         <Typography
           title={t("home.eyeGlasses")}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, dynamicStyles.textAlign]}
         />
         <View style={styles.headerButton} />
       </View>
@@ -446,14 +462,14 @@ const ProductDetails = () => {
               fontSize={scale(22)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              style={styles.productTitle}
+              style={[styles.productTitle, dynamicStyles.textAlign]}
             />
             <Typography
               title={product.description}
               fontSize={scale(13)}
               color={COLORS.grey16}
               fontFamily="Roboto-Regular"
-              style={styles.productDescription}
+              style={[styles.productDescription, dynamicStyles.textAlign]}
             />
           </View>
 
@@ -464,8 +480,7 @@ const ProductDetails = () => {
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}
-              textAlign={isRtl ? "right" : "left"}
-              style={styles.sectionTitle}
+              style={[styles.sectionTitle, dynamicStyles.textAlign]}
             />
             <ScrollView
               horizontal
@@ -511,7 +526,7 @@ const ProductDetails = () => {
                 fontSize={scale(16)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
-                style={styles.sectionFrame}
+                style={[styles.sectionFrame, dynamicStyles.textAlign]}
               />
               <TouchableOpacity
                 style={dynamicStyles.sizeGuideButton}
@@ -527,6 +542,7 @@ const ProductDetails = () => {
                   fontSize={scale(12)}
                   color={COLORS.primary}
                   fontFamily="Roboto-Bold"
+                  style={dynamicStyles.textAlign}
                 />
               </TouchableOpacity>
             </View>
@@ -553,6 +569,7 @@ const ProductDetails = () => {
                         selectedSize === index + 1 ? COLORS.white : COLORS.black
                       }
                       fontFamily="Roboto-Bold"
+                      style={dynamicStyles.textAlign}
                     />
                   </TouchableOpacity>
                 );
@@ -576,6 +593,7 @@ const ProductDetails = () => {
             fontSize={scale(14)}
             fontFamily="Poppins-Bold"
             color={COLORS.grey33}
+            style={dynamicStyles.textAlign}
           />
           <View style={dynamicStyles.priceContainer}>
             <Typography
@@ -583,6 +601,7 @@ const ProductDetails = () => {
               fontSize={scale(20)}
               fontFamily="Poppins-Bold"
               color={COLORS.primary}
+              style={dynamicStyles.textAlign}
             />
             {product.priceRange.maxVariantPrice.amount !==
               product.priceRange.minVariantPrice.amount && (
@@ -590,7 +609,8 @@ const ProductDetails = () => {
                 title={`$${product.priceRange.maxVariantPrice.amount}`}
                 fontSize={scale(14)}
                 color={COLORS.grey10}
-                style={styles.originalPrice}
+                style={[styles.originalPrice, dynamicStyles.textAlign]}
+
               />
             )}
           </View>
@@ -606,6 +626,7 @@ const ProductDetails = () => {
               fontSize={scale(14)}
               color={COLORS.white}
               fontFamily="Roboto-Bold"
+              style={dynamicStyles.textAlign}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -631,15 +652,6 @@ const ProductDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
     backgroundColor: COLORS.white,
   },
   headerButton: {

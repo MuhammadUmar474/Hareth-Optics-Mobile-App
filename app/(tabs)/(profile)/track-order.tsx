@@ -5,28 +5,41 @@ import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
 import { useLocal } from "@/hooks/use-lang";
-import React from "react";
-import { View } from "react-native";
+import React, { useMemo } from "react";
+import { StyleSheet, View } from "react-native";
 
 const TrackOrder: React.FC = () => {
-  const {t}=useLocal()
+  const { t, isRtl } = useLocal();
+
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
       <Header title={t("profile.menu.trackOrder")} />
       <View style={{ padding: SIZES.padding }}>
         <CustomTextInput
-          label="Order ID"
-          placeholder="Enter Order ID"
+          label={t("orderDetail.orderId")}
+          placeholder={t("orderDetail.enterOrderId")}
           height={45}
-        />
+          labelStyles={{textAlign:isRtl ? "right" : "left"}}
+          textAlign={isRtl ? "right" : "left"}
+          />
         <Button
-          style={{ marginTop: SIZES.padding, borderRadius: 10, height: 45 }}
+          style={{ marginTop: SIZES.padding, borderRadius: 10, }}
           color="primary"
-        >
+          >
           <Typography
-            title="Check Status"
+            title={t("orderDetail.checkStatus")}
             color={COLORS.white}
-            style={{ fontWeight: "700" }}
+            style={[dynamicStyles.textAlign, { fontWeight: "700" }]}
           />
         </Button>
       </View>

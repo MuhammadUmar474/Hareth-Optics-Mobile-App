@@ -22,7 +22,6 @@ export const OrderCard = ({ order, index }: { order: any; index: any }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
-  // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({

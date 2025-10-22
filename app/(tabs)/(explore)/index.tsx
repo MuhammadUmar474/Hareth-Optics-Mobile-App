@@ -155,7 +155,7 @@ const Explore = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header title="Explore" />
 
       <ScrollView
         horizontal
@@ -213,10 +213,10 @@ const Explore = () => {
                 }}
               >
                 <Typography
-                title="No products found"
-                fontSize={scale(16)}
-                fontFamily="Roboto-Bold"
-                color={COLORS.gray3}
+                  title="No products found"
+                  fontSize={scale(16)}
+                  fontFamily="Roboto-Bold"
+                  color={COLORS.gray3}
                 />
               </View>
             )
