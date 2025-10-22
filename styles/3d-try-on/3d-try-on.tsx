@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   viewerContainer: {
-    minHeight: moderateScale(300),
+    height: "90%",
     position: "relative",
   },
   viewer3D: {
