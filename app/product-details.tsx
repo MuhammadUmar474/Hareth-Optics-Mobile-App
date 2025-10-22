@@ -1,11 +1,11 @@
-import LensType from "@/components/product/lens-type";
+import LensType, { PrescriptionData } from "@/components/product/lens-type";
 import VirtualTryOn from "@/components/product/virtual-try-on";
 import Typography from "@/components/ui/custom-typography";
 import { COLOR_MAP, COLORS } from "@/constants/colors";
 import { handleLargerText } from "@/constants/helper";
 import { useLocal } from "@/hooks/use-lang";
 import { homeApi, ProductDetailResponse } from "@/services/home/homeApi";
-import { useCartStore } from "@/store/cartStore";
+import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -19,6 +19,7 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -31,10 +32,20 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const ProductDetails = () => {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, cartLineId, isFromCart } = useLocalSearchParams<{
+    id: string;
+    cartLineId?: string;
+    isFromCart?: string;
+  }>();
   const { title } = useLocalSearchParams<{ title: string }>();
-  console.log("title", title);
-  const addToCart = useCartStore((state) => state.addToCart);
+  const {
+    createCart,
+    updateCartLines,
+    loading: cartLoading,
+    error: cartError,
+    loadCart,
+    cart,
+  } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistActions();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -44,6 +55,10 @@ const ProductDetails = () => {
     ProductDetailResponse["product"] | null
   >(null);
   const [loading, setLoading] = useState(true);
+  const [prescriptionData, setPrescriptionData] =
+    useState<PrescriptionData | null>(null);
+  const [isUpdatingCart, setIsUpdatingCart] = useState(false);
+  const [existingCartLine, setExistingCartLine] = useState<any>(null);
   const { t, isRtl } = useLocal();
 
   // Helper function to get color from variant options
@@ -176,7 +191,45 @@ const ProductDetails = () => {
 
   useEffect(() => {
     fetchProductDetails();
-  }, [fetchProductDetails]);
+    loadCart(); // Load cart when component mounts
+  }, [fetchProductDetails, loadCart]);
+
+  // Handle cart navigation and pre-fill prescription data
+  useEffect(() => {
+    if (isFromCart === "true" && cartLineId && cart) {
+      const cartLine = cart.lines.edges.find(
+        ({ node }) => node.id === cartLineId
+      );
+
+      if (cartLine) {
+        setExistingCartLine(cartLine.node);
+        setIsUpdatingCart(true);
+
+        // Pre-fill prescription data from cart attributes
+        const attributes = cartLine.node.attributes;
+        const prescriptionFromCart: PrescriptionData = {
+          lensType:
+            attributes.find((attr) => attr.key === "Lens Type")?.value ||
+            "Single Vision",
+          leftEye:
+            attributes.find((attr) => attr.key === "Left Eye (L)")?.value || "",
+          rightEye:
+            attributes.find((attr) => attr.key === "Right Eye (R)")?.value ||
+            "",
+          lensTint:
+            attributes.find((attr) => attr.key === "Lens Tint")?.value ||
+            "Clear",
+          blueLightFilter:
+            attributes.find((attr) => attr.key === "Blue Light Filter")
+              ?.value || "No",
+        };
+
+        setPrescriptionData(prescriptionFromCart);
+      }
+    } else {
+      setIsUpdatingCart(false);
+    }
+  }, [isFromCart, cartLineId, cart]);
 
   // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
@@ -211,7 +264,8 @@ const ProductDetails = () => {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: scale(16),
-          paddingVertical: verticalScale(16),
+          paddingTop: verticalScale(18),
+          paddingBottom: verticalScale(26),
           backgroundColor: COLORS.white,
           borderTopWidth: 1,
           borderTopColor: COLORS.grey4,
@@ -221,7 +275,7 @@ const ProductDetails = () => {
           shadowRadius: 4,
           elevation: 5,
           position: "absolute",
-          bottom: 12,
+          bottom: 0,
           left: 0,
           right: 0,
         },
@@ -307,25 +361,82 @@ const ProductDetails = () => {
     });
   };
 
-  const onAddToCart = () => {
+  const onAddToCart = async () => {
     if (!product) return;
 
-    addToCart({
-      id: parseInt(product.id.split("/").pop() || "0", 10),
-      name: product.title,
-      price: parseFloat(product.priceRange.minVariantPrice.amount),
-      image: {
-        uri:
-          product.featuredImage?.url || product.images.edges[0]?.node.url || "",
-      },
-    });
-    router.push("/shopping-cart");
+    if (!prescriptionData) {
+      Alert.alert(
+        "Prescription Required",
+        "Please fill in your prescription details in the form above before adding to cart.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    try {
+      // Get the selected variant
+      const selectedVariant = product.variants.edges[selectedSize - 1]?.node;
+      if (!selectedVariant) {
+        Alert.alert("Error", "Please select a variant");
+        return;
+      }
+
+      // Convert prescription to cart attributes with product ID
+      const attributes = prescriptionToCartAttributes(
+        prescriptionData,
+        product?.id
+      );
+
+      if (isUpdatingCart && existingCartLine) {
+        const updateLine = {
+          id: existingCartLine.id,
+          quantity: existingCartLine.quantity,
+          attributes,
+        };
+
+        const success = await updateCartLines([updateLine]);
+
+        if (success) {
+          Alert.alert("Success", "Cart item updated successfully", [
+            { text: "OK", onPress: () => router.push("/shopping-cart") },
+          ]);
+        } else {
+          Alert.alert("Error", cartError || "Failed to update cart item");
+        }
+      } else {
+        const cartLine = {
+          merchandiseId: selectedVariant.id,
+          quantity: 1,
+          attributes,
+        };
+
+        const success = await createCart([cartLine]);
+
+        if (success) {
+          Alert.alert("Success", "Item added to cart successfully", [
+            { text: "OK", onPress: () => router.push("/shopping-cart") },
+          ]);
+        } else {
+          Alert.alert("Error", cartError || "Failed to add item to cart");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to add item to cart:", error);
+      Alert.alert("Error", "Failed to add item to cart");
+    }
   };
+
+  const handlePrescriptionChange = useCallback(
+    (prescription: PrescriptionData | null) => {
+      setPrescriptionData(prescription);
+    },
+    []
+  );
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View>
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.back()}
@@ -351,7 +462,7 @@ const ProductDetails = () => {
   if (!product) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View>
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.back()}
@@ -477,111 +588,126 @@ const ProductDetails = () => {
           </View>
 
           {/* Frame Color Section */}
-          <View style={styles.section}>
-            <Typography
-              title={handleLargerText(title, 16)}
-              fontSize={scale(16)}
-              fontFamily="Poppins-Bold"
-              color={COLORS.black}
-              style={[styles.sectionTitle, dynamicStyles.textAlign]}
-            />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={dynamicStyles.colorContainer}
-              style={styles.colorScrollView}
-            >
-              {getUniqueColors().map((colorData) => {
-                const displayColor = colorData.colorValue;
-
-                return (
-                  <TouchableOpacity
-                    key={colorData.variantId}
-                    style={[
-                      styles.colorCircle,
-                      selectedColor === colorData.firstImageIndex + 1 &&
-                        styles.colorCircleSelected,
-                    ]}
-                    onPress={() => {
-                      setSelectedColor(colorData.firstImageIndex + 1);
-                      scrollToImage(colorData.firstImageIndex);
-                    }}
-                  >
-                    <View
-                      style={[
-                        styles.colorInner,
-                        {
-                          backgroundColor: getColorHex(displayColor),
-                        },
-                      ]}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* Frame Size Section */}
-          <View style={styles.section}>
-            <View style={dynamicStyles.sectionHeader}>
+          {getUniqueColors().length > 0 ? (
+            <View style={styles.section}>
               <Typography
-                title={t("eyeglassesDetails.frameSize")}
+                title={t("eyeglassesDetails.frameColor")}
                 fontSize={scale(16)}
                 fontFamily="Poppins-Bold"
                 color={COLORS.black}
-                style={[styles.sectionFrame, dynamicStyles.textAlign]}
+                style={[styles.sectionTitle, dynamicStyles.textAlign]}
               />
-              <TouchableOpacity
-                style={dynamicStyles.sizeGuideButton}
-                onPress={() => router.push("/size-guide")}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={dynamicStyles.colorContainer}
+                style={styles.colorScrollView}
               >
-                <Ionicons
-                  name="resize-outline"
-                  size={16}
-                  color={COLORS.primary}
-                />
-                <Typography
-                  title={t("eyeglassesDetails.sizeGuide")}
-                  fontSize={scale(12)}
-                  color={COLORS.primary}
-                  fontFamily="Roboto-Bold"
-                  style={dynamicStyles.textAlign}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={dynamicStyles.sizeContainer}>
-              {product.variants.edges.map(({ node: variant }, index) => {
-                const sizeOption = variant.selectedOptions.find((option) =>
-                  option.name.toLowerCase().includes("size")
-                );
-                if (!sizeOption) return null;
+                {getUniqueColors().map((colorData) => {
+                  const displayColor = colorData.colorValue;
 
-                return (
-                  <TouchableOpacity
-                    key={variant.id}
-                    style={[
-                      styles.sizeButton,
-                      selectedSize === index + 1 && styles.sizeButtonSelected,
-                    ]}
-                    onPress={() => setSelectedSize(index + 1)}
-                  >
-                    <Typography
-                      title={sizeOption.value}
-                      fontSize={scale(14)}
-                      color={
-                        selectedSize === index + 1 ? COLORS.white : COLORS.black
-                      }
-                      fontFamily="Roboto-Bold"
-                      style={dynamicStyles.textAlign}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
+                  return (
+                    <TouchableOpacity
+                      key={colorData.variantId}
+                      style={[
+                        styles.colorCircle,
+                        selectedColor === colorData.firstImageIndex + 1 &&
+                          styles.colorCircleSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedColor(colorData.firstImageIndex + 1);
+                        scrollToImage(colorData.firstImageIndex);
+                      }}
+                    >
+                      <View
+                        style={[
+                          styles.colorInner,
+                          {
+                            backgroundColor: getColorHex(displayColor),
+                          },
+                        ]}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
             </View>
-          </View>
+          ) : null}
+
+          {/* Frame Size Section */}
+          {product.variants.edges.find(({ node: variant }) =>
+            variant.selectedOptions.find((option) =>
+              option.name.toLowerCase().includes("size")
+            )
+          ) ? (
+            <View style={styles.section}>
+              <View style={dynamicStyles.sectionHeader}>
+                <Typography
+                  title={t("eyeglassesDetails.frameSize")}
+                  fontSize={scale(16)}
+                  fontFamily="Poppins-Bold"
+                  color={COLORS.black}
+                  style={[styles.sectionFrame, dynamicStyles.textAlign]}
+                />
+                <TouchableOpacity
+                  style={dynamicStyles.sizeGuideButton}
+                  onPress={() => router.push("/size-guide")}
+                >
+                  <Ionicons
+                    name="resize-outline"
+                    size={16}
+                    color={COLORS.primary}
+                  />
+                  <Typography
+                    title={t("eyeglassesDetails.sizeGuide")}
+                    fontSize={scale(12)}
+                    color={COLORS.primary}
+                    fontFamily="Roboto-Bold"
+                    style={dynamicStyles.textAlign}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={dynamicStyles.sizeContainer}>
+                {product.variants.edges.map(({ node: variant }, index) => {
+                  const sizeOption = variant.selectedOptions.find((option) =>
+                    option.name.toLowerCase().includes("size")
+                  );
+                  if (!sizeOption) return null;
+
+                  return (
+                    <TouchableOpacity
+                      key={variant.id}
+                      style={[
+                        styles.sizeButton,
+                        selectedSize === index + 1 && styles.sizeButtonSelected,
+                      ]}
+                      onPress={() => setSelectedSize(index + 1)}
+                    >
+                      <Typography
+                        title={sizeOption.value}
+                        fontSize={scale(14)}
+                        color={
+                          selectedSize === index + 1
+                            ? COLORS.white
+                            : COLORS.black
+                        }
+                        fontFamily="Roboto-Bold"
+                        style={dynamicStyles.textAlign}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
 
           {/* Lens Type Section */}
-          <LensType />
+          <LensType
+            onPrescriptionChange={handlePrescriptionChange}
+            initialData={
+              isUpdatingCart && prescriptionData ? prescriptionData : undefined
+            }
+          />
 
           {/* Virtual Try-On Section */}
           <VirtualTryOn onTryNow={() => router.push("/(tabs)/(3d-try-on)")} />
@@ -613,24 +739,37 @@ const ProductDetails = () => {
                 fontSize={scale(14)}
                 color={COLORS.grey10}
                 style={[styles.originalPrice, dynamicStyles.textAlign]}
-
               />
             )}
           </View>
         </View>
         <View style={dynamicStyles.buyNowButtonContainer}>
           <TouchableOpacity
-            style={dynamicStyles.addToCartButton}
+            style={[
+              dynamicStyles.addToCartButton,
+              !prescriptionData && styles.addToCartButtonDisabled,
+            ]}
             onPress={onAddToCart}
+            disabled={cartLoading}
           >
-            <Ionicons name="cart-outline" size={20} color={COLORS.white} />
-            <Typography
-              title={t("purchases.addtoCart")}
-              fontSize={scale(14)}
-              color={COLORS.white}
-              fontFamily="Roboto-Bold"
-              style={dynamicStyles.textAlign}
-            />
+            {cartLoading ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : (
+              <>
+                <Ionicons name="cart-outline" size={20} color={COLORS.white} />
+                <Typography
+                  title={
+                    isUpdatingCart
+                      ? "Update Cart Item"
+                      : t("purchases.addtoCart")
+                  }
+                  fontSize={scale(14)}
+                  color={COLORS.white}
+                  fontFamily="Roboto-Bold"
+                  style={dynamicStyles.textAlign}
+                />
+              </>
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={dynamicStyles.buyNowButton}
@@ -786,6 +925,10 @@ const styles = StyleSheet.create({
   },
   colorScrollView: {
     marginVertical: verticalScale(8),
+  },
+  addToCartButtonDisabled: {
+    backgroundColor: COLORS.grey4,
+    opacity: 0.6,
   },
 });
 

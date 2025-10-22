@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { COLORS } from "@/constants/colors";
+import { useCartInitialization } from "@/hooks/useCartInitialization";
 import { useLangStore } from "@/store/langStore";
 import { initI18n } from "@/utils/i18n";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
@@ -13,6 +14,8 @@ import { ToastProvider } from "react-native-toast-notifications";
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
   const language = useLangStore((s) => s.language);
+  
+  useCartInitialization();
 
   useEffect(() => {
     initI18n();

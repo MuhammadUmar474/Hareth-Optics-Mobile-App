@@ -146,7 +146,9 @@ const StickyHeader = ({
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.icon}
-            onPress={() => router.navigate("/shopping-cart")}
+            onPress={() => {
+              router.navigate("/shopping-cart");
+            }}
           >
             <Ionicons name="cart-outline" size={22} color={COLORS.black} />
             {cartCount > 0 ? (
