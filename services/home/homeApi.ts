@@ -157,6 +157,78 @@ export type SearchProductsResponse = {
   };
 };
 
+// Types for Address Management
+export type ShopifyAddress = {
+  id: string;
+  address1: string;
+  address2?: string | null;
+  city: string;
+  province: string;
+  country: string;
+  zip: string;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+export type MailingAddressInput = {
+  address1: string;
+  address2?: string | null;
+  city: string;
+  province: string;
+  country: string;
+  zip: string;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+export type CustomerUserError = {
+  field: string[];
+  message: string;
+};
+
+export type GetAddressesResponse = {
+  customer: {
+    addresses: {
+      edges: {
+        node: ShopifyAddress;
+      }[];
+    };
+    defaultAddress: ShopifyAddress | null;
+  } | null;
+};
+
+export type CreateAddressResponse = {
+  customerAddressCreate: {
+    customerAddress: ShopifyAddress | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
+export type UpdateAddressResponse = {
+  customerAddressUpdate: {
+    customerAddress: ShopifyAddress | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
+export type DeleteAddressResponse = {
+  customerAddressDelete: {
+    deletedCustomerAddressId: string | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
+export type SetDefaultAddressResponse = {
+  customerDefaultAddressUpdate: {
+    customer: {
+      defaultAddress: ShopifyAddress | null;
+    } | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
 class HomeApi {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -493,6 +565,181 @@ class HomeApi {
   async getCategories(): Promise<MenuItem[]> {
     const menu = await this.getMainMenu();
     return menu.items || [];
+  }
+
+  /**
+   * Get customer addresses
+   */
+  async getCustomerAddresses(customerAccessToken: string): Promise<GetAddressesResponse> {
+    const query = `
+      query GetCustomerAddresses($customerAccessToken: String!) {
+        customer(customerAccessToken: $customerAccessToken) {
+          addresses(first: 10) {
+            edges {
+              node {
+                id
+                address1
+                address2
+                city
+                province
+                country
+                zip
+                phone
+                firstName
+                lastName
+              }
+            }
+          }
+          defaultAddress {
+            id
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phone
+            firstName
+            lastName
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<GetAddressesResponse>(query, {
+      customerAccessToken,
+    });
+  }
+
+  /**
+   * Create a new customer address
+   */
+  async createCustomerAddress(
+    customerAccessToken: string,
+    address: MailingAddressInput
+  ): Promise<CreateAddressResponse> {
+    const query = `
+      mutation CustomerAddressCreate($customerAccessToken: String!, $address: MailingAddressInput!) {
+        customerAddressCreate(customerAccessToken: $customerAccessToken, address: $address) {
+          customerAddress {
+            id
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phone
+            firstName
+            lastName
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<CreateAddressResponse>(query, {
+      customerAccessToken,
+      address,
+    });
+  }
+
+  /**
+   * Update an existing customer address
+   */
+  async updateCustomerAddress(
+    customerAccessToken: string,
+    id: string,
+    address: MailingAddressInput
+  ): Promise<UpdateAddressResponse> {
+    const query = `
+      mutation CustomerAddressUpdate($customerAccessToken: String!, $id: ID!, $address: MailingAddressInput!) {
+        customerAddressUpdate(customerAccessToken: $customerAccessToken, id: $id, address: $address) {
+          customerAddress {
+            id
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phone
+            firstName
+            lastName
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<UpdateAddressResponse>(query, {
+      customerAccessToken,
+      id,
+      address,
+    });
+  }
+
+  /**
+   * Delete a customer address
+   */
+  async deleteCustomerAddress(
+    customerAccessToken: string,
+    id: string
+  ): Promise<DeleteAddressResponse> {
+    const query = `
+      mutation CustomerAddressDelete($customerAccessToken: String!, $id: ID!) {
+        customerAddressDelete(customerAccessToken: $customerAccessToken, id: $id) {
+          deletedCustomerAddressId
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<DeleteAddressResponse>(query, {
+      customerAccessToken,
+      id,
+    });
+  }
+
+  /**
+   * Set default customer address
+   */
+  async setDefaultCustomerAddress(
+    customerAccessToken: string,
+    addressId: string
+  ): Promise<SetDefaultAddressResponse> {
+    const query = `
+      mutation CustomerDefaultAddressUpdate($customerAccessToken: String!, $addressId: ID!) {
+        customerDefaultAddressUpdate(customerAccessToken: $customerAccessToken, addressId: $addressId) {
+          customer {
+            defaultAddress {
+              id
+              address1
+              city
+              country
+            }
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<SetDefaultAddressResponse>(query, {
+      customerAccessToken,
+      addressId,
+    });
   }
 }
 
