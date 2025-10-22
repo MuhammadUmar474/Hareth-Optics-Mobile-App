@@ -6,6 +6,7 @@ type AuthState = {
   token: string | null;
   refreshToken: string | null;
   userId: string | null;
+  customerAccessToken: string | null;
 };
 
 type AuthActions = {
@@ -13,8 +14,10 @@ type AuthActions = {
     token: string;
     refreshToken: string;
     userId: string;
+    customerAccessToken?: string;
   }) => void;
 
+  setCustomerAccessToken: (customerAccessToken: string) => void;
   unauthenticate: () => void;
 };
 
@@ -24,12 +27,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       token: null,
       refreshToken: null,
       userId: null,
+      customerAccessToken: null,
 
-      authenticate: ({ token, refreshToken, userId }) =>
-        set({ token, refreshToken, userId }),
+      authenticate: ({ token, refreshToken, userId, customerAccessToken }) =>
+        set({ token, refreshToken, userId, customerAccessToken }),
+
+      setCustomerAccessToken: (customerAccessToken) =>
+        set({ customerAccessToken }),
 
       unauthenticate: () =>
-        set({ token: null, refreshToken: null, userId: null }),
+        set({ token: null, refreshToken: null, userId: null, customerAccessToken: null }),
     }),
     {
       name: "auth-storage",
