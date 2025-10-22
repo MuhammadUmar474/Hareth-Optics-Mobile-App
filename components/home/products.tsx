@@ -30,9 +30,8 @@ const Products: React.FC<ProductsProps> = ({
 
   const renderProduct = ({ item }: { item: MenuItem }) => {
     // Handle cases where image might be null
-    const imageUrl = item.resource?.image?.url || null;
-
-    console.log({item});
+    const imageUrl = item.resource?.image?.url ||   "https://cdn.shopify.com/s/files/1/0787/9088/5611/collections/i_75ea468f-ce10-4c28-b208-c569c2668456.webp?v=1760730001";    
+    console.log(imageUrl,".>");
     
     return (
       <View>

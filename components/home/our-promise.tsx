@@ -1,8 +1,8 @@
 import { COLORS } from "@/constants/colors";
 import { OurPromise } from "@/constants/data";
-import { FontAwesome, FontAwesome5, Fontisto } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
 
@@ -44,6 +44,14 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
             color={iconColor}
           />
         );
+        case "MaterialCommunityIcons":
+        return (
+          <MaterialCommunityIcons
+            name={promise.iconName as any}
+            size={iconSize}
+            color={iconColor}
+          />
+        );
       default:
         return null;
     }
@@ -61,7 +69,14 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
 
       <View style={styles.promiseBox}>
         {promises.map((promise, index) => (
-          <View key={promise.id} style={styles.promiseItem}>
+         <TouchableOpacity
+         key={promise.id}
+         style={styles.promiseItem}
+         onPress={promise.onPress ? promise.onPress : undefined}
+         activeOpacity={promise.onPress ? 0.7 : 1}
+         disabled={!promise.onPress}
+       >
+       
             <View style={styles.iconContainer}>{renderIcon(promise)}</View>
             <Typography
               title={promise.name}
@@ -71,7 +86,7 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
               style={styles.promiseText}
             />
             {index < promises.length - 1 && <View style={styles.divider} />}
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
     </View>

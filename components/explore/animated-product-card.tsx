@@ -11,19 +11,22 @@ import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
 import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
-export const AnimatedProductCard = ({
-  item,
-  index,
-  onToggleFavorite,
-  isFavorite,
-}: any) => {
+export const AnimatedProductCard = ({ item, index }: any) => {
   const addToCart = useCartStore((state) => state.addToCart);
   const { toggleWishlist, isInWishlist } = useWishlistActions();
-  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const { t, isRtl } = useLocal();
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  const buttonScaleAnim = useRef(new Animated.Value(1)).current;
+  const checkmarkScaleAnim = useRef(new Animated.Value(0)).current;
+  const checkmarkOpacityAnim = useRef(new Animated.Value(0)).current;
+
   const [imageLoaded, setImageLoaded] = useState(false);
-  const spinAnim = useRef(new Animated.Value(0)).current;
-  const {t,isRtl}=useLocal();
+  const [showCheckmark, setShowCheckmark] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scaleAnim, {
@@ -40,28 +43,70 @@ export const AnimatedProductCard = ({
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Start spinner animation
-    Animated.loop(
-      Animated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      })
-    ).start();
-  }, [index, scaleAnim, fadeAnim, spinAnim]);
+  }, [index]);
 
   const handlePress = () => {
     router.push(`/product-details?id=${item.id}`);
   };
 
   const handleAddToCart = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+
+    // Button bounce
+    Animated.sequence([
+      Animated.spring(buttonScaleAnim, {
+        toValue: 0.9,
+        useNativeDriver: true,
+      }),
+      Animated.spring(buttonScaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Add to cart action
     addToCart({
       id: item.id,
       name: item.name,
       price: parseFloat(item.price),
       image: { uri: item.image },
     });
+
+    // Show checkmark animation
+    setShowCheckmark(true);
+    Animated.parallel([
+      Animated.spring(checkmarkScaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 80,
+        friction: 5,
+      }),
+      Animated.timing(checkmarkOpacityAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Hide after 1.2s
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(checkmarkScaleAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(checkmarkOpacityAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowCheckmark(false);
+        setIsAnimating(false);
+      });
+    }, 1200);
   };
 
   const handleToggleWishlist = () => {
@@ -77,10 +122,7 @@ export const AnimatedProductCard = ({
     <Animated.View
       style={[
         styles.productCard,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        },
+        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
       ]}
     >
       <TouchableOpacity activeOpacity={1} onPress={handlePress}>
@@ -89,7 +131,6 @@ export const AnimatedProductCard = ({
             style={styles.productImagePlaceholder}
             source={{ uri: item.image }}
             contentFit="cover"
-            priority="normal"
             onLoad={() => setImageLoaded(true)}
           />
 
@@ -98,10 +139,7 @@ export const AnimatedProductCard = ({
               colors={["#f0f9ff", "#e0f2fe", "#bae6fd"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={[
-                styles.productImagePlaceholder,
-                { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-              ]}
+              style={styles.productImagePlaceholder}
             >
               <Ionicons
                 name="glasses-outline"
@@ -117,13 +155,11 @@ export const AnimatedProductCard = ({
             onPress={handleToggleWishlist}
             activeOpacity={0.7}
           >
-            <Animated.View>
-              <Ionicons
-                name={isInWishlist(item.id) ? "heart" : "heart-outline"}
-                size={moderateScale(20)}
-                color={isInWishlist(item.id) ? COLORS.danger : COLORS.secondary}
-              />
-            </Animated.View>
+            <Ionicons
+              name={isInWishlist(item.id) ? "heart" : "heart-outline"}
+              size={moderateScale(20)}
+              color={isInWishlist(item.id) ? COLORS.danger : COLORS.secondary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -133,35 +169,64 @@ export const AnimatedProductCard = ({
             fontSize={moderateScale(16)}
             color={COLORS.secondary}
             fontFamily="Inter-SemiBold"
-            textAlign={isRtl?"right":"left"}
+            textAlign={isRtl ? "right" : "left"}
           />
           <Typography
             title={`${item.category} • KD ${item.price}`}
             fontSize={moderateScale(13)}
             color="#6b7280"
             style={styles.productDetails}
-            textAlign={isRtl?"right":"left"}
+            textAlign={isRtl ? "right" : "left"}
           />
 
-          <TouchableOpacity
-            style={styles.addToCartButton}
-            activeOpacity={0.8}
-            onPress={handleAddToCart}
+          <Animated.View
+            style={[
+              styles.addToCartButtonContainer,
+              { transform: [{ scale: buttonScaleAnim }] },
+            ]}
           >
-            <Typography
-              title={t("purchases.addtoCart")}
-              fontSize={moderateScale(14)}
-              color={COLORS.white}
-              fontFamily="Inter-SemiBold"
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.addToCartButton}
+              disabled={isAnimating}
+              onPress={handleAddToCart}
+              activeOpacity={0.8}
+            >
+              {/* Hide text when checkmark is visible */}
+              {!showCheckmark && (
+                <Typography
+                  title={t("purchases.addtoCart")}
+                  fontSize={moderateScale(14)}
+                  color={COLORS.white}
+                  fontFamily="Inter-SemiBold"
+                />
+              )}
+
+              {/* Checkmark animation (centered) */}
+              {showCheckmark && (
+                <Animated.View
+                  style={{
+                    opacity: checkmarkOpacityAnim,
+                    transform: [{ scale: checkmarkScaleAnim }],
+                    position: "absolute",
+                    alignSelf: "center",
+                  }}
+                >
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={moderateScale(26)}
+                    color={COLORS.white}
+                  />
+                </Animated.View>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   productCard: {
     width: (scale(355) - scale(46)) / 2,
     backgroundColor: COLORS.white,
@@ -170,9 +235,7 @@ export const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: COLORS.grey24,
   },
-  productImageContainer: {
-    position: "relative",
-  },
+  productImageContainer: { position: "relative" },
   productImagePlaceholder: {
     width: "100%",
     height: verticalScale(120),
@@ -180,7 +243,6 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   favoriteButton: {
     position: "absolute",
     top: verticalScale(12),
@@ -193,18 +255,15 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     ...COLORS.shadow,
   },
-  productInfo: {
-    padding: scale(12),
-  },
-  productDetails: {
-    marginTop: verticalScale(4),
-    marginBottom: verticalScale(12),
-  },
+  productInfo: { padding: scale(12) },
+  productDetails: { marginTop: verticalScale(4), marginBottom: verticalScale(12) },
+  addToCartButtonContainer: { position: "relative" },
   addToCartButton: {
     backgroundColor: COLORS.primary,
     paddingVertical: verticalScale(10),
     borderRadius: moderateScale(10),
     alignItems: "center",
     justifyContent: "center",
+    minHeight:verticalScale(35)
   },
 });
