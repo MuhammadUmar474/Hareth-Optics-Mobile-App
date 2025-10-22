@@ -1,3 +1,6 @@
+import { COLORS } from "@/constants/colors";
+import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
 import React, { useState } from "react";
@@ -14,9 +17,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-
-import { COLORS } from "@/constants/colors";
-import { SIZES } from "@/constants/sizes";
 import Typography from "./custom-typography";
 
 const ICON_SIZE = 16;
@@ -35,6 +35,7 @@ interface CustomTextInputProps extends TextInputProps {
   iconName?: ComponentProps<typeof Feather>["name"];
   multiline?: boolean;
   title?: boolean;
+  labelStyles?:StyleProp<TextStyle>;
   height?: number;
   placeholderTextColor?: string;
   paid?: boolean;
@@ -52,6 +53,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   number,
   placeHolder,
   textColor,
+  labelStyles,
   error,
   date,
   uneditable,
@@ -65,6 +67,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   ...props
 }) => {
   const [isDisplayed, setIsDisplayed] = useState(false);
+  const {isRtl}=useLocal();
   const inputType: TextInputProps["keyboardType"] = email
     ? "email-address"
     : number
@@ -84,15 +87,16 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           title={label}
           fontSize={SIZES.body}
           color={COLORS.black2}
-          style={styles.label}
+          style={[styles.label, labelStyles]}
         />
       )}
 
       <View
         style={[
+         
           styles.inputContainer,
           error && { borderColor: COLORS.danger },
-          { height: height },
+          { height: height , flexDirection: isRtl ?"row-reverse":"row" },
         ]}
         pointerEvents={uneditable ? "none" : "auto"}
       >
@@ -177,6 +181,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           fontSize={12}
           color={COLORS.danger}
           style={styles.errorMessage}
+          textAlign={isRtl ? "right" : "left"}
           title={error}
         />
       )}
@@ -201,19 +206,18 @@ const styles = StyleSheet.create<{
     fontWeight: "600",
   },
   icon: {
-    marginRight: SIZES.padding * 0.5,
   },
   iconSearch: {
     fontSize: 25,
   },
   inputContainer: {
-    flexDirection: "row",
     alignItems: "center",
     borderRadius: SIZES.padding * 0.5,
     paddingVertical: Platform.select({
       ios: SIZES.padding * 0.6,
       android: 0,
     }),
+    gap:SIZES.padding * 0.5,
     paddingHorizontal: SIZES.padding * 0.6,
     backgroundColor: "whitesmoke",
     borderColor: "whitesmoke",

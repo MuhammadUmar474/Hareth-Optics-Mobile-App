@@ -52,7 +52,7 @@ export const AnimatedProductCard = ({
   }, [index, scaleAnim, fadeAnim, spinAnim]);
 
   const handlePress = () => {
-    router.push(`/product-details`);
+    router.push(`/product-details?id=${item.id}`);
   };
 
   const handleAddToCart = () => {

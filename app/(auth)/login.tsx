@@ -1,71 +1,114 @@
+import BackButton from "@/components/ui/back-button";
 import Button from "@/components/ui/custom-button";
 import CustomTextInput from "@/components/ui/custom-text-input";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { useAuthStore } from "@/store/shopifyStore";
 import { AuthMode, LoginFormValues } from "@/types/auth";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
 
-const emailLoginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Please enter a valid email")
-    .required("Email is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-});
+const emailLoginSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    email: Yup.string()
+      .email(t("auth.validEmail"))
+      .required(t("auth.reqEmail")),
+    password: Yup.string()
+      .min(8, t("auth.pswrdLengthError"))
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, t("auth.pswrdRegexError"))
+      .required(t("auth.pswrdReqError")),
+  });
 
-const phoneLoginSchema = Yup.object().shape({
-  phone: Yup.string()
-    .matches(/^[0-9+\-\s()]+$/, "Please enter a valid phone number")
-    .min(10, "Phone number must be at least 10 digits")
-    .required("Phone number is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-});
+const phoneLoginSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    phone: Yup.string()
+      .matches(/^[0-9+\-\s()]+$/, t("auth.numberValidErr"))
+      .min(10, t("auth.numberLengthError"))
+      .required(t("auth.numberError")),
+    password: Yup.string()
+      .min(8, t("auth.pswrdLengthError"))
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, t("auth.pswrdRegexError"))
+      .required(t("auth.pswrdReqError")),
+  });
 
-const whatsappLoginSchema = Yup.object().shape({
-  whatsapp: Yup.string()
-    .matches(/^[0-9+\-\s()]+$/, "Please enter a valid WhatsApp number")
-    .min(10, "WhatsApp number must be at least 10 digits")
-    .required("WhatsApp number is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-});
+const whatsappLoginSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    whatsapp: Yup.string()
+      .matches(/^[0-9+\-\s()]+$/, t("auth.whatsValidError"))
+      .min(10, t("auth.waNumberLengthError"))
+      .required(t("auth.waRequiredError")),
+    password: Yup.string()
+      .min(8, t("auth.pswrdLengthError"))
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, t("auth.pswrdRegexError"))
+      .required(t("auth.pswrdReqError")),
+  });
 
 const Login = () => {
   const [mode, setMode] = React.useState<AuthMode>("email");
   const { login, loading, error, clearError } = useAuthStore();
   const toast = useToast();
+  const { isRtl, t } = useLocal();
+
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        backButton: {
+          width: scale(40),
+          height: scale(30),
+          borderRadius: scale(10),
+          alignItems: "center",
+          borderColor: COLORS.grey20,
+          borderWidth: 1,
+          justifyContent: "center",
+          left: isRtl ? scale(-10) : scale(10),
+          alignSelf: isRtl ? "flex-end" : "flex-start",
+        },
+        segmentContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          marginBottom: 16,
+        },
+        segment: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: 14,
+          backgroundColor: COLORS.white4,
+          flex: 1,
+        },
+        socialContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: 20,
+          gap: 20,
+        },
+        dividerContainer: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginTop: 20,
+        },
+        textAlign: {
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
 
   React.useEffect(() => {
     if (error) {
@@ -76,13 +119,13 @@ const Login = () => {
   const getValidationSchema = () => {
     switch (mode) {
       case "email":
-        return emailLoginSchema;
+        return emailLoginSchema(t);
       case "phone":
-        return phoneLoginSchema;
+        return phoneLoginSchema(t);
       case "whatsapp":
-        return whatsappLoginSchema;
+        return whatsappLoginSchema(t);
       default:
-        return emailLoginSchema;
+        return emailLoginSchema(t);
     }
   };
 
@@ -101,7 +144,7 @@ const Login = () => {
 
   const onSubmit = async (values: LoginFormValues) => {
     if (mode !== "email") {
-      toast.show("Only email login is supported with Shopify API", {
+      toast.show(t("login.shopifyEmailError"), {
         type: "danger",
         placement: "top",
       });
@@ -109,7 +152,7 @@ const Login = () => {
     }
 
     if (!values.email) {
-      toast.show("Email is required", {
+      toast.show(t("auth.reqEmail"), {
         type: "danger",
         placement: "top",
       });
@@ -122,7 +165,7 @@ const Login = () => {
         password: values.password,
       });
 
-      toast.show("Welcome back!", {
+      toast.show(t("login.welcomeBack"), {
         type: "success",
         placement: "top",
       });
@@ -131,15 +174,14 @@ const Login = () => {
     } catch (err) {
       console.error("❌ Login error caught in component:", err);
       const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Please check your credentials and try again";
+        err instanceof Error ? t("auth.genericError") : t("login.checkCred");
       toast.show(errorMessage, {
         type: "danger",
         placement: "top",
       });
     }
   };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -152,20 +194,24 @@ const Login = () => {
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
+        <BackButton />
+
         <Image
           source={require("@/assets/images/hareth-icon.png")}
           style={styles.logo}
           contentFit="contain"
         />
         <Typography
-          title="Welcome Back"
+          title={t("login.welcomeBack")}
           fontSize={SIZES.h3}
-          style={styles.title}
+          style={[styles.title]}
+          color={COLORS.primary}
         />
         <Typography
-          title="Sign in to your account to continue"
+          title={t("login.signInAccount")}
           fontSize={SIZES.body}
-          style={styles.subtitle}
+          style={[styles.subtitle]}
+          color={COLORS.black}
         />
         <View style={styles.formContainer}>
           {/* TODO: Might be need in future */}
@@ -255,9 +301,9 @@ const Login = () => {
               <>
                 {mode === "email" ? (
                   <CustomTextInput
-                    label="Email"
+                    label={t("login.email")}
                     email
-                    placeholder="Enter your email"
+                    placeholder={t("login.emailPlaceholder")}
                     containerStyle={{ marginBottom: 20 }}
                     height={45}
                     value={values.email}
@@ -266,11 +312,13 @@ const Login = () => {
                     error={
                       touched.email && errors.email ? errors.email : undefined
                     }
+                    textAlign={isRtl ? "right" : "left"}
+                    labelStyles={{ textAlign: isRtl ? "right" : "left" }}
                   />
                 ) : mode === "phone" ? (
                   <CustomTextInput
-                    label="Phone"
-                    placeholder="Enter your phone number"
+                    label={t("login.phone")}
+                    placeholder={t("login.phoneNumber")}
                     number
                     iconName="phone"
                     containerStyle={{ marginBottom: 20 }}
@@ -281,11 +329,13 @@ const Login = () => {
                     error={
                       touched.phone && errors.phone ? errors.phone : undefined
                     }
+                    textAlign={isRtl ? "right" : "left"}
+                    labelStyles={{ textAlign: isRtl ? "right" : "left" }}
                   />
                 ) : (
                   <CustomTextInput
-                    label="WhatsApp Number"
-                    placeholder="Enter your WhatsApp number"
+                    label={t("login.waNumber")}
+                    placeholder={t("login.enterWaNumber")}
                     number
                     iconName="phone"
                     containerStyle={{ marginBottom: 20 }}
@@ -298,11 +348,13 @@ const Login = () => {
                         ? errors.whatsapp
                         : undefined
                     }
+                    textAlign={isRtl ? "right" : "left"}
+                    labelStyles={{ textAlign: isRtl ? "right" : "left" }}
                   />
                 )}
                 <CustomTextInput
-                  label="Password"
-                  placeholder="Enter your password"
+                  label={t("login.password")}
+                  placeholder={t("login.enterPassword")}
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
                   isSecure
@@ -314,19 +366,19 @@ const Login = () => {
                       ? errors.password
                       : undefined
                   }
+                  textAlign={isRtl ? "right" : "left"}
+                  labelStyles={{ textAlign: isRtl ? "right" : "left" }}
                 />
-
                 {error && (
                   <View style={styles.errorContainer}>
                     <Typography
-                      title={error}
+                      title={t(error)}
                       fontSize={SIZES.body}
                       color={COLORS.red}
-                      style={styles.errorText}
+                      style={[styles.errorText, dynamicStyles.textAlign]}
                     />
                   </View>
                 )}
-
                 <Button
                   color="primary"
                   style={{ marginTop: 30, borderRadius: 10, height: 45 }}
@@ -337,9 +389,9 @@ const Login = () => {
                     <ActivityIndicator size="small" color={COLORS.white} />
                   ) : (
                     <Typography
-                      title="Login"
+                      title={t("auth.login")}
                       fontSize={SIZES.body}
-                      style={{ fontWeight: "700" }}
+                      style={[styles.buttonText, dynamicStyles.textAlign]}
                       color={COLORS.white}
                     />
                   )}
@@ -361,19 +413,29 @@ const Login = () => {
           <AntDesign name="apple" size={24} color="black" />
           <AntDesign name="google" size={24} color="green" />
         </View> */}
-          <Typography
-            title="Don't have an account? Sign up"
-            fontSize={SIZES.body}
-            style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
-            onPress={() => {
-              router.replace("/(auth)/sign-up");
-            }}
-          />
+
+          <View
+            style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}
+          >
+            <Typography
+              title={t("login.dontHaveAccount")}
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500" }}
+            />
+            <Typography
+              title=" Sign up"
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500", color: COLORS.primary }}
+              onPress={() => {
+                router.replace("/(auth)/sign-up");
+              }}
+            />
+          </View>
 
           <Typography
-            title="Forgot your password?"
+            title={t("login.forgotPswrd")}
             fontSize={SIZES.body}
-            style={{ fontWeight: "500", alignSelf: "center", marginTop: 10 }}
+            style={[styles.footerText, dynamicStyles.textAlign]}
             color={COLORS.primary}
             onPress={() => {
               router.push("/(auth)/forgot-password");
@@ -384,8 +446,6 @@ const Login = () => {
     </KeyboardAvoidingView>
   );
 };
-
-export default Login;
 
 const styles = StyleSheet.create({
   container: {
@@ -399,70 +459,35 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(20),
     paddingBottom: verticalScale(100),
   },
+  headerButton: {
+    width: scale(40),
+    height: scale(40),
+  },
   title: {
     marginBottom: 5,
     fontWeight: "bold",
-    alignSelf: "center",
-    color: COLORS.primary,
+    textAlign: "center",
   },
   subtitle: {
     fontWeight: "500",
-    alignSelf: "center",
-    color: COLORS.black,
+    textAlign: "center",
   },
   formContainer: {
     padding: 20,
     borderRadius: SIZES.radius,
   },
-  segmentContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  segment: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    backgroundColor: COLORS.white4,
-    flex: 1,
-  },
   segmentActive: {
     backgroundColor: COLORS.primary,
-  },
-  headerIcon: {
-    alignSelf: "center",
-    marginBottom: SIZES.padding,
-    backgroundColor: COLORS.primary,
-    width: 50,
-    height: 50,
-    borderRadius: 5,
-    marginTop: 25,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 20,
   },
   divider: {
     height: 1,
     backgroundColor: COLORS.gray,
     width: "30%",
   },
-  socialContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-    gap: 20,
-  },
   logo: {
     width: scale(80),
     height: verticalScale(50),
     alignSelf: "center",
-    marginTop: verticalScale(16),
   },
   errorContainer: {
     backgroundColor: COLORS.red + "10",
@@ -473,6 +498,16 @@ const styles = StyleSheet.create({
     borderColor: COLORS.red + "30",
   },
   errorText: {
-    textAlign: "center",
+    fontWeight: "500",
+  },
+  buttonText: {
+    fontWeight: "700",
+  },
+  footerText: {
+    fontWeight: "500",
+    alignSelf: "center",
+    marginTop: 10,
   },
 });
+
+export default Login;

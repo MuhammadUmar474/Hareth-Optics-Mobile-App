@@ -44,6 +44,40 @@ export type LatestProductsResponse = {
   products: { edges: { node: ProductNode }[] };
 };
 
+type ProductDetailVariant = {
+  id: string;
+  title: string;
+  sku?: string | null;
+  availableForSale: boolean;
+  price: Money;
+  compareAtPrice?: Money | null;
+  image?: Image | null;
+  selectedOptions: SelectedOption[];
+};
+
+type ProductDetailNode = {
+  id: string;
+  title: string;
+  description: string;
+  handle: string;
+  productType?: string | null;
+  vendor?: string | null;
+  tags: string[];
+  availableForSale: boolean;
+  totalInventory?: number | null;
+  featuredImage?: Image | null;
+  images: { edges: { node: Image }[] };
+  priceRange: {
+    minVariantPrice: Money;
+    maxVariantPrice: Money;
+  };
+  variants: { edges: { node: ProductDetailVariant }[] };
+};
+
+export type ProductDetailResponse = {
+  product: ProductDetailNode | null;
+};
+
 // Types for Products by Collection response
 type SEO = { title?: string | null; description?: string | null };
 type Metafield = {
@@ -123,6 +157,78 @@ export type SearchProductsResponse = {
   };
 };
 
+// Types for Address Management
+export type ShopifyAddress = {
+  id: string;
+  address1: string;
+  address2?: string | null;
+  city: string;
+  province: string;
+  country: string;
+  zip: string;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+export type MailingAddressInput = {
+  address1: string;
+  address2?: string | null;
+  city: string;
+  province: string;
+  country: string;
+  zip: string;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+};
+
+export type CustomerUserError = {
+  field: string[];
+  message: string;
+};
+
+export type GetAddressesResponse = {
+  customer: {
+    addresses: {
+      edges: {
+        node: ShopifyAddress;
+      }[];
+    };
+    defaultAddress: ShopifyAddress | null;
+  } | null;
+};
+
+export type CreateAddressResponse = {
+  customerAddressCreate: {
+    customerAddress: ShopifyAddress | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
+export type UpdateAddressResponse = {
+  customerAddressUpdate: {
+    customerAddress: ShopifyAddress | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
+export type DeleteAddressResponse = {
+  customerAddressDelete: {
+    deletedCustomerAddressId: string | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
+export type SetDefaultAddressResponse = {
+  customerDefaultAddressUpdate: {
+    customer: {
+      defaultAddress: ShopifyAddress | null;
+    } | null;
+    customerUserErrors: CustomerUserError[];
+  };
+};
+
 class HomeApi {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -199,6 +305,49 @@ class HomeApi {
     `;
 
     return await this.executeQuery<LatestProductsResponse>(query);
+  }
+
+  /**
+   * Get product details by ID
+   */
+  async getProductById(id: string): Promise<ProductDetailResponse> {
+    const query = `
+      query getProductById($id: ID!) {
+        product(id: $id) {
+          id
+          title
+          description
+          handle
+          productType
+          vendor
+          tags
+          availableForSale
+          totalInventory
+          featuredImage { url altText }
+          images(first: 10) { edges { node { url altText } } }
+          priceRange {
+            minVariantPrice { amount currencyCode }
+            maxVariantPrice { amount currencyCode }
+          }
+          variants(first: 20) {
+            edges {
+              node {
+                id
+                title
+                sku
+                availableForSale
+                price { amount currencyCode }
+                compareAtPrice { amount currencyCode }
+                image { url altText }
+                selectedOptions { name value }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<ProductDetailResponse>(query, { id });
   }
 
   /**
@@ -416,6 +565,181 @@ class HomeApi {
   async getCategories(): Promise<MenuItem[]> {
     const menu = await this.getMainMenu();
     return menu.items || [];
+  }
+
+  /**
+   * Get customer addresses
+   */
+  async getCustomerAddresses(customerAccessToken: string): Promise<GetAddressesResponse> {
+    const query = `
+      query GetCustomerAddresses($customerAccessToken: String!) {
+        customer(customerAccessToken: $customerAccessToken) {
+          addresses(first: 10) {
+            edges {
+              node {
+                id
+                address1
+                address2
+                city
+                province
+                country
+                zip
+                phone
+                firstName
+                lastName
+              }
+            }
+          }
+          defaultAddress {
+            id
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phone
+            firstName
+            lastName
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<GetAddressesResponse>(query, {
+      customerAccessToken,
+    });
+  }
+
+  /**
+   * Create a new customer address
+   */
+  async createCustomerAddress(
+    customerAccessToken: string,
+    address: MailingAddressInput
+  ): Promise<CreateAddressResponse> {
+    const query = `
+      mutation CustomerAddressCreate($customerAccessToken: String!, $address: MailingAddressInput!) {
+        customerAddressCreate(customerAccessToken: $customerAccessToken, address: $address) {
+          customerAddress {
+            id
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phone
+            firstName
+            lastName
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<CreateAddressResponse>(query, {
+      customerAccessToken,
+      address,
+    });
+  }
+
+  /**
+   * Update an existing customer address
+   */
+  async updateCustomerAddress(
+    customerAccessToken: string,
+    id: string,
+    address: MailingAddressInput
+  ): Promise<UpdateAddressResponse> {
+    const query = `
+      mutation CustomerAddressUpdate($customerAccessToken: String!, $id: ID!, $address: MailingAddressInput!) {
+        customerAddressUpdate(customerAccessToken: $customerAccessToken, id: $id, address: $address) {
+          customerAddress {
+            id
+            address1
+            address2
+            city
+            province
+            country
+            zip
+            phone
+            firstName
+            lastName
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<UpdateAddressResponse>(query, {
+      customerAccessToken,
+      id,
+      address,
+    });
+  }
+
+  /**
+   * Delete a customer address
+   */
+  async deleteCustomerAddress(
+    customerAccessToken: string,
+    id: string
+  ): Promise<DeleteAddressResponse> {
+    const query = `
+      mutation CustomerAddressDelete($customerAccessToken: String!, $id: ID!) {
+        customerAddressDelete(customerAccessToken: $customerAccessToken, id: $id) {
+          deletedCustomerAddressId
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<DeleteAddressResponse>(query, {
+      customerAccessToken,
+      id,
+    });
+  }
+
+  /**
+   * Set default customer address
+   */
+  async setDefaultCustomerAddress(
+    customerAccessToken: string,
+    addressId: string
+  ): Promise<SetDefaultAddressResponse> {
+    const query = `
+      mutation CustomerDefaultAddressUpdate($customerAccessToken: String!, $addressId: ID!) {
+        customerDefaultAddressUpdate(customerAccessToken: $customerAccessToken, addressId: $addressId) {
+          customer {
+            defaultAddress {
+              id
+              address1
+              city
+              country
+            }
+          }
+          customerUserErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    return await this.executeQuery<SetDefaultAddressResponse>(query, {
+      customerAccessToken,
+      addressId,
+    });
   }
 }
 

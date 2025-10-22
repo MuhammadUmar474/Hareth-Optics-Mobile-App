@@ -1,3 +1,4 @@
+import BackButton from "@/components/ui/back-button";
 import Button from "@/components/ui/custom-button";
 import CustomTextInput from "@/components/ui/custom-text-input";
 import Typography from "@/components/ui/custom-typography";
@@ -68,6 +69,7 @@ const ForgotPassword = () => {
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
+        <BackButton />
         <Image
           source={require("@/assets/images/hareth-icon.png")}
           style={styles.logo}
@@ -138,14 +140,21 @@ const ForgotPassword = () => {
             )}
           </Formik>
 
-          <Typography
-            title="Remember your password? Login"
-            fontSize={SIZES.body}
-            style={{ fontWeight: "500", alignSelf: "center", marginTop: 20 }}
-            onPress={() => {
-              router.push("/(auth)/login");
-            }}
-          />
+            <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
+            <Typography
+              title="Remember your password? "
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500" }}
+            />
+            <Typography
+              title="Back to Login"
+              fontSize={SIZES.body}
+              style={{ fontWeight: "500", color: COLORS.primary }}
+              onPress={() => {
+                router.replace("/(auth)/login");
+              }}
+            />
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

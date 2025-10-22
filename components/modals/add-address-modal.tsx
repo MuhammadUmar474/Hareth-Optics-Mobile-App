@@ -2,12 +2,12 @@ import { COLORS } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
@@ -16,6 +16,7 @@ interface AddAddressModalProps {
   visible: boolean;
   onClose: () => void;
   onSave: (address: AddressData) => void;
+  onSetDefault?: (addressId: string) => Promise<boolean>;
   editAddress?: {
     id: string;
     label: string;
@@ -45,6 +46,7 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
   visible,
   onClose,
   onSave,
+  onSetDefault,
   editAddress,
 }) => {
   const [formData, setFormData] = useState<AddressData>({
@@ -59,6 +61,7 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
   });
 
   const [errors, setErrors] = useState<Partial<AddressData>>({});
+  const [isSettingDefault, setIsSettingDefault] = useState(false);
 
   useEffect(() => {
     if (editAddress) {
@@ -111,6 +114,28 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
 
   const handleCancel = () => {
     onClose();
+  };
+
+  const handleSetDefaultPress = async () => {
+    if (!editAddress?.id || !onSetDefault) {
+      setFormData({ ...formData, isDefault: !formData.isDefault });
+      return;
+    }
+
+    setIsSettingDefault(true);
+    
+    try {
+      const success = await onSetDefault(editAddress.id);
+      if (success) {
+        setFormData({ ...formData, isDefault: true });
+      } else {
+        console.error("Failed to set address as default");
+      }
+    } catch (error) {
+      console.error("Error setting default address:", error);
+    } finally {
+      setIsSettingDefault(false);
+    }
   };
 
   const iconOptions = [
@@ -358,9 +383,8 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
           <View style={styles.section}>
             <TouchableOpacity
               style={styles.checkboxContainer}
-              onPress={() =>
-                setFormData({ ...formData, isDefault: !formData.isDefault })
-              }
+              onPress={handleSetDefaultPress}
+              disabled={isSettingDefault}
             >
               <View
                 style={[
@@ -368,18 +392,24 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
                   formData.isDefault && styles.checkedBox,
                 ]}
               >
-                {formData.isDefault && (
+                {isSettingDefault ? (
+                  <Ionicons
+                    name="refresh"
+                    size={moderateScale(16)}
+                    color={COLORS.white}
+                  />
+                ) : formData.isDefault ? (
                   <Ionicons
                     name="checkmark"
                     size={moderateScale(16)}
                     color={COLORS.white}
                   />
-                )}
+                ) : null}
               </View>
               <Typography
-                title="Set as default address"
+                title={isSettingDefault ? "Setting as default..." : "Set as default address"}
                 fontSize={moderateScale(16)}
-                color={COLORS.secondary}
+                color={isSettingDefault ? COLORS.grey14 : COLORS.secondary}
                 fontFamily="Inter-Medium"
                 style={styles.checkboxLabel}
               />

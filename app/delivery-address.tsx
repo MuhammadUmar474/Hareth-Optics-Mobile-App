@@ -25,10 +25,18 @@ const DeliveryAddress = () => {
   const [zipCode, setZipCode] = useState<string>("");
   const [setAsDefault, setSetAsDefault] = useState<boolean>(false);
 
-  // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
+        header: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: scale(6),
+          paddingTop: verticalScale(10),
+          paddingBottom: verticalScale(10),
+          backgroundColor: COLORS.white,
+        },
         addressContent: {
           flexDirection: isRtl ? "row-reverse" : "row",
           alignItems: "center",
@@ -63,8 +71,7 @@ const DeliveryAddress = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => router.back()}
@@ -89,7 +96,6 @@ const DeliveryAddress = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Saved Addresses Section */}
         <View style={styles.section}>
           <Typography
             title={t("address.savedAddress")}
@@ -98,7 +104,6 @@ const DeliveryAddress = () => {
             color={COLORS.black}
             style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
-
           <View style={styles.addressList}>
             {addresses.map((address) => (
               <TouchableOpacity
@@ -127,7 +132,6 @@ const DeliveryAddress = () => {
                       />
                     )}
                   </View>
-
                   <View style={styles.addressInfo}>
                     <Typography
                       title={address.label}
@@ -151,7 +155,6 @@ const DeliveryAddress = () => {
                       style={[styles.addressText, dynamicStyles.textAlign]}
                     />
                   </View>
-
                   <View
                     style={[
                       styles.radioButton,
@@ -167,8 +170,6 @@ const DeliveryAddress = () => {
             ))}
           </View>
         </View>
-
-        {/* Add New Address Section */}
         <View style={styles.section}>
           <Typography
             title={t("address.addNewAddress")}
@@ -177,7 +178,6 @@ const DeliveryAddress = () => {
             color={COLORS.black}
             style={[styles.sectionTitle, dynamicStyles.textAlign]}
           />
-
           <View style={styles.formContainer}>
             <Input
               placeholder={t("address.streetAddress")}
@@ -186,9 +186,7 @@ const DeliveryAddress = () => {
               containerStyle={styles.inputContainer}
               inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
               placeholderTextColor={COLORS.grey10}
-              textAlign={isRtl ? "right" : "left"}
             />
-
             <Input
               placeholder={t("address.suite")}
               value={aptSuite}
@@ -196,9 +194,7 @@ const DeliveryAddress = () => {
               containerStyle={styles.inputContainer}
               inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
               placeholderTextColor={COLORS.grey10}
-              textAlign={isRtl ? "right" : "left"}
             />
-
             <View style={dynamicStyles.inputRow}>
               <Input
                 placeholder={t("address.city")}
@@ -217,7 +213,6 @@ const DeliveryAddress = () => {
                 placeholderTextColor={COLORS.grey10}
               />
             </View>
-
             <Input
               placeholder={t("address.zipCode")}
               value={zipCode}
@@ -227,20 +222,14 @@ const DeliveryAddress = () => {
               inputContainerStyle={[styles.inputField, dynamicStyles.textAlign]}
               placeholderTextColor={COLORS.grey10}
             />
-
             <View style={dynamicStyles.checkboxContainer}>
               <TouchableOpacity onPress={() => setSetAsDefault(!setAsDefault)}>
                 <View style={styles.checkbox}>
                   {setAsDefault && (
-                    <Feather
-                      name="check"
-                      size={16}
-                      color={COLORS.primary}
-                    />
+                    <Feather name="check" size={16} color={COLORS.primary} />
                   )}
                 </View>
               </TouchableOpacity>
-
               <Typography
                 title={t("address.setdefaultAddress")}
                 fontSize={scale(14)}
@@ -252,8 +241,6 @@ const DeliveryAddress = () => {
           </View>
         </View>
       </ScrollView>
-
-      {/* Bottom Button */}
       <View style={styles.bottomSection}>
         <TouchableOpacity
           style={styles.continueButton}
@@ -276,15 +263,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white6,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: scale(6),
-    paddingTop: verticalScale(10),
-    paddingBottom: verticalScale(10),
-    backgroundColor: COLORS.white,
   },
   headerButton: {
     width: scale(40),

@@ -25,7 +25,10 @@ const Products: React.FC<ProductsProps> = ({
     return <ProductsSkeleton />;
   }
 
-  const renderProduct = ({ item }: { item: MenuItem[] }) => {
+  const renderProduct = ({ item }: { item: MenuItem }) => {
+    // Handle cases where image might be null
+    const imageUrl = item.resource?.image?.url || null;
+    
     return (
       <View>
         <TouchableOpacity
@@ -33,7 +36,7 @@ const Products: React.FC<ProductsProps> = ({
           activeOpacity={0.8}
         >
           <SimpleOptimizedImage
-            source={{ uri: item.resource.image.url }}
+            source={{ uri: imageUrl }}
             style={styles.productImage}
             priority="high"
             contentFit="cover"
@@ -50,6 +53,13 @@ const Products: React.FC<ProductsProps> = ({
     );
   };
 
+  const handleViewAllPress = (categoryTitle: string) => {
+    router.push({
+      pathname: "/(tabs)/(explore)",
+      params: { category: categoryTitle },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -60,7 +70,7 @@ const Products: React.FC<ProductsProps> = ({
           color={COLORS.secondary}
           style={styles.headerTitle}
         />
-        <TouchableOpacity onPress={() => router.push(`/(tabs)/(explore)`)}>
+        <TouchableOpacity onPress={() => handleViewAllPress(title)}>
           <Typography
             title="View All"
             fontSize={scale(12)}
@@ -73,7 +83,7 @@ const Products: React.FC<ProductsProps> = ({
       <FlatList
         data={productCategory}
         renderItem={renderProduct}
-        keyExtractor={(item) => `${productCategory.id}-${item.id}`}
+        keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
