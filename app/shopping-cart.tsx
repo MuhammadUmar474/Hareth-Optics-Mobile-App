@@ -4,9 +4,11 @@ import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -18,8 +20,88 @@ import { scale, verticalScale } from "react-native-size-matters";
 const ShoppingCart = () => {
   const { t, isRtl } = useLocal();
   const router = useRouter();
-  const { cartItems, removeFromCart, updateQuantity: updateCartQuantity } = useCartStore();
+  const {
+    cart,
+    loading,
+    error,
+    updateCartLines,
+    removeFromCart,
+    clearError,
+    loadCart,
+  } = useCartStore();
   const [promoCode, setPromoCode] = useState<string>("");
+
+  const memoizedLoadCart = useCallback(() => {
+    loadCart();
+  }, [loadCart]);
+
+  useEffect(() => {
+    memoizedLoadCart();
+  }, [memoizedLoadCart]);
+
+  useFocusEffect(
+    useCallback(() => {
+      memoizedLoadCart();
+    }, [memoizedLoadCart])
+  );
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Error", error, [{ text: "OK", onPress: clearError }]);
+    }
+  }, [error, clearError]);
+
+  const handleQuantityChange = async (lineId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      await handleRemoveItem(lineId);
+      return;
+    }
+
+    const success = await updateCartLines([
+      {
+        id: lineId,
+        quantity: newQuantity,
+      },
+    ]);
+
+    if (!success) {
+      Alert.alert("Error", "Failed to update quantity");
+    }
+  };
+
+  const handleRemoveItem = async (lineId: string) => {
+    Alert.alert(
+      "Remove Item",
+      "Are you sure you want to remove this item from your cart?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            const success = await removeFromCart([lineId]);
+            if (!success) {
+              Alert.alert("Error", "Failed to remove item");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleApplyPromo = () => {
+    // TODO: Implement promo code functionality
+    Alert.alert("Promo Code", "Promo code functionality coming soon!");
+  };
+
+  const handleCheckout = () => {
+    if (!cart?.checkoutUrl) {
+      Alert.alert("Error", "Checkout URL not available");
+      return;
+    }
+    // TODO: Implement checkout navigation
+    Alert.alert("Checkout", "Checkout functionality coming soon!");
+  };
 
   // Dynamic styles for RTL support
   const dynamicStyles = useMemo(
@@ -65,28 +147,19 @@ const ShoppingCart = () => {
     [isRtl]
   );
 
-  const updateQuantity = (id: number, delta: number) => {
-    const item = cartItems.find((i) => i.id === id);
-    if (item) {
-      const newQuantity = Math.max(1, item.quantity + delta);
-      updateCartQuantity(id, newQuantity);
-    }
-  };
-
-  const removeItem = (id: number) => {
-    removeFromCart(id);
-  };
-
-  const calculateSubtotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
-
-  const subtotal = calculateSubtotal();
+  const subtotal = cart
+    ? cart.lines.edges.reduce((sum, { node }) => {
+        const priceAmount = node.merchandise.price?.amount || "0.00";
+        const itemPrice = parseFloat(priceAmount);
+        const itemTotal = itemPrice * node.quantity;
+        return sum + itemTotal;
+      }, 0)
+    : 0;
   const shipping = 10.0;
   const estimatedTax = 15.0;
   const total = subtotal + shipping + estimatedTax;
 
-  if (cartItems.length === 0) {
+  if (!cart || cart.lines.edges.length === 0) {
     return (
       <View style={styles.container}>
         {/* Header */}
@@ -129,7 +202,7 @@ const ShoppingCart = () => {
             fontSize={scale(14)}
             fontFamily="Roboto-Regular"
             color={COLORS.grey29}
-            style={[styles.emptyCartMessage, dynamicStyles.textAlign]}
+            style={styles.emptyCartMessage}
           />
         </View>
       </View>
@@ -166,74 +239,162 @@ const ShoppingCart = () => {
       >
         {/* Cart Items */}
         <View style={styles.cartItemsContainer}>
-          {cartItems.map((item, index) => (
-            <View key={`${item.id}-${item.name}-${index}`} style={styles.cartCard}>
-              <View style={dynamicStyles.cartItemContent}>
-                {/* Product Image */}
-                <View style={styles.imageContainer}>
-                  <Image source={item.image} style={styles.productImage} />
-                </View>
-
-                {/* Product Info */}
-                <View style={styles.productInfo}>
-                  <Typography
-                    title={item.name}
-                    fontSize={scale(15)}
-                    fontFamily="Poppins-Bold"
-                    color={COLORS.black}
-                    style={[styles.productName, dynamicStyles.textAlign]}
-                    numberOfLines={1}
-                  />
-                  <Typography
-                    title={`${item.price.toFixed(2)} ${t("common.currency")}`}
-                    fontSize={scale(13)}
-                    fontFamily="Roboto-Bold"
-                    color={COLORS.grey33}
-                    style={dynamicStyles.textAlign}
-                  />
-
-                  {/* Quantity Controls */}
-                  <View style={dynamicStyles.quantityContainer}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, -1)}
-                    >
-                      <Ionicons
-                        name="remove"
-                        size={16}
-                        color={COLORS.primary}
-                      />
-                    </TouchableOpacity>
-                    <Typography
-                      title={item.quantity.toString()}
-                      fontSize={scale(14)}
-                      fontFamily="Roboto-Bold"
-                      color={COLORS.black}
-                      style={[styles.quantityText]}
-                    />
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, 1)}
-                    >
-                      <Ionicons name="add" size={16} color={COLORS.primary} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Delete Button */}
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => removeItem(item.id)}
-                >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={22}
-                    color={COLORS.grey33}
-                  />
-                </TouchableOpacity>
-              </View>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Typography
+                title="Loading cart..."
+                fontSize={scale(16)}
+                color={COLORS.grey29}
+                fontFamily="Roboto-Regular"
+                style={{ marginTop: 10 }}
+              />
             </View>
-          ))}
+          ) : cart?.lines.edges.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Typography
+                title="Your cart is empty"
+                fontSize={scale(18)}
+                color={COLORS.grey29}
+                fontFamily="Poppins-Bold"
+                style={{ textAlign: "center", marginBottom: 20 }}
+              />
+              <Typography
+                title="Add some items to get started"
+                fontSize={scale(14)}
+                color={COLORS.grey29}
+                fontFamily="Roboto-Regular"
+                style={{ textAlign: "center" }}
+              />
+            </View>
+          ) : (
+            cart?.lines.edges.map(({ node: lineItem }, index) => {
+              return (
+                <TouchableOpacity
+                  key={`${lineItem.id}-${index}`}
+                  style={styles.cartCard}
+                  onPress={() => {
+                    const productId = lineItem.merchandise.product.id;
+
+                    if (!productId) {
+                      console.error(
+                        "🛒 Cart: Product ID not found in cart data"
+                      );
+                      Alert.alert(
+                        "Error",
+                        "Product information not found. Please remove and re-add this item."
+                      );
+                      return;
+                    }
+                    router.push({
+                      pathname: "/product-details",
+                      params: {
+                        id: productId,
+                        cartLineId: lineItem.id,
+                        isFromCart: "true",
+                      },
+                    });
+                  }}
+                >
+                  <View style={dynamicStyles.cartItemContent}>
+                    {/* Product Image */}
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{
+                          uri:
+                            lineItem.merchandise.product.featuredImage?.url ||
+                            "https://via.placeholder.com/100x100",
+                        }}
+                        style={styles.productImage}
+                        contentFit="cover"
+                      />
+                    </View>
+
+                    {/* Product Info */}
+                    <View style={styles.productInfo}>
+                      <Typography
+                        title={lineItem.merchandise.product.title}
+                        fontSize={scale(16)}
+                        fontFamily="Poppins-Bold"
+                        color={COLORS.black}
+                        style={[styles.productName, dynamicStyles.textAlign]}
+                        numberOfLines={1}
+                      />
+                      <Typography
+                        title={`${(
+                          parseFloat(
+                            lineItem.merchandise.price?.amount || "0.00"
+                          ) * lineItem.quantity
+                        ).toFixed(2)} ${
+                          lineItem.merchandise.price?.currencyCode || "USD"
+                        }`}
+                        fontSize={scale(16)}
+                        fontFamily="Poppins-Bold"
+                        color={COLORS.grey33}
+                        style={dynamicStyles.textAlign}
+                      />
+                      <View style={dynamicStyles.quantityContainer}>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() =>
+                            handleQuantityChange(
+                              lineItem.id,
+                              lineItem.quantity - 1
+                            )
+                          }
+                          disabled={loading}
+                        >
+                          <Ionicons
+                            name="remove"
+                            size={16}
+                            color={loading ? COLORS.grey4 : COLORS.primary}
+                          />
+                        </TouchableOpacity>
+                        <Typography
+                          title={lineItem.quantity.toString()}
+                          fontSize={scale(16)}
+                          fontFamily="Roboto-Bold"
+                          color={COLORS.black}
+                          style={styles.quantityText}
+                        />
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() =>
+                            handleQuantityChange(
+                              lineItem.id,
+                              lineItem.quantity + 1
+                            )
+                          }
+                          disabled={loading}
+                        >
+                          <Ionicons
+                            name="add"
+                            size={16}
+                            color={loading ? COLORS.grey4 : COLORS.primary}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View style={styles.quantitySection}>
+                      {/* Delete Button */}
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleRemoveItem(lineItem.id)}
+                        disabled={loading}
+                      >
+                        <MaterialCommunityIcons
+                          name="trash-can-outline"
+                          size={24}
+                          color={COLORS.grey33}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
         </View>
 
         {/* Promo Code Section */}
@@ -245,7 +406,10 @@ const ShoppingCart = () => {
             value={promoCode}
             onChangeText={setPromoCode}
           />
-          <TouchableOpacity style={styles.applyButton}>
+          <TouchableOpacity
+            style={styles.applyButton}
+            onPress={handleApplyPromo}
+          >
             <Typography
               title={t("home.apply")}
               fontSize={scale(14)}
@@ -337,15 +501,20 @@ const ShoppingCart = () => {
       <View style={styles.bottomSection}>
         <TouchableOpacity
           style={styles.checkoutButton}
-          onPress={() => router.push("/delivery-address")}
+          onPress={handleCheckout}
+          disabled={loading || !cart || cart.lines.edges.length === 0}
         >
-          <Typography
-            title={t("purchases.proceedToCheckout")}
-            fontSize={scale(16)}
-            color={COLORS.white}
-            fontFamily="Poppins-Bold"
-            style={[styles.checkoutButtonText, dynamicStyles.textAlign]}
-          />
+          {loading ? (
+            <ActivityIndicator size="small" color={COLORS.white} />
+          ) : (
+            <Typography
+              title={t("purchases.proceedToCheckout")}
+              fontSize={scale(16)}
+              color={COLORS.white}
+              fontFamily="Poppins-Bold"
+              style={[styles.checkoutButtonText, dynamicStyles.textAlign]}
+            />
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -400,28 +569,32 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     flex: 1,
-    gap: verticalScale(6),
+    gap: verticalScale(2),
+    justifyContent: "center",
   },
   productName: {
     fontWeight: "600",
-    lineHeight: scale(20),
+    lineHeight: scale(22),
+  },
+  quantitySection: {
+    alignItems: "center",
+    gap: verticalScale(12),
   },
   quantityButton: {
-    width: scale(26),
-    height: scale(26),
+    width: scale(32),
+    height: scale(32),
     borderRadius: scale(16),
     backgroundColor: COLORS.skyBlue,
     alignItems: "center",
     justifyContent: "center",
   },
   quantityText: {
-    minWidth: scale(20),
+    minWidth: scale(24),
     textAlign: "center",
   },
   deleteButton: {
     alignItems: "center",
-    justifyContent: "flex-start",
-    paddingTop: verticalScale(4),
+    justifyContent: "center",
   },
   promoInput: {
     flex: 1,
@@ -496,7 +669,20 @@ const styles = StyleSheet.create({
   emptyCartMessage: {
     textAlign: "center",
     lineHeight: scale(22),
-    paddingHorizontal: scale(16),
+    paddingHorizontal: scale(24),
+    marginTop: verticalScale(10),
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: verticalScale(50),
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: verticalScale(50),
   },
 });
 

@@ -3,39 +3,93 @@ import Input from "@/components/ui/input";
 import { COLORS } from "@/constants/colors";
 import { LensTypeOption, lensTypeOptions } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 
-const LensType: React.FC = () => {
+export interface PrescriptionData {
+  lensType: string;
+  leftEye: string;
+  rightEye: string;
+  lensTint: string;
+  blueLightFilter: string;
+}
+
+interface LensTypeProps {
+  onPrescriptionChange?: (prescription: PrescriptionData | null) => void;
+  initialData?: PrescriptionData;
+}
+
+const LensType: React.FC<LensTypeProps> = ({
+  onPrescriptionChange,
+  initialData,
+}) => {
   const [selectedLensType, setSelectedLensType] = useState<number>(1);
-  const [sphereRight, setSphereRight] = useState<string>("");
-  const [sphereLeft, setSphereLeft] = useState<string>("");
-  const [cylinderRight, setCylinderRight] = useState<string>("");
-  const [cylinderLeft, setCylinderLeft] = useState<string>("");
-  const {isRtl,t}=useLocal();
-  const dynamicStyles=useMemo(()=>StyleSheet.create({
-    inputRow: {
-      flexDirection: isRtl?"row-reverse":"row",
-      gap: scale(12),
-      marginBottom: verticalScale(12),
-    },  
-    inputText: {
-      fontSize: scale(14),
-      color: COLORS.black,
-      textAlign:isRtl?"right":"left"
-    },
-    inputLabel: {
-      marginBottom: verticalScale(6),
-      fontWeight: "500",
-       textAlign:isRtl?"right":"left"
-    },
-    sectionTitle: {
-      marginBottom: verticalScale(12),
-      fontWeight: "600",
-      textAlign:isRtl?"right":"left"
-    },
-  }),[isRtl])
+  const [leftEye, setLeftEye] = useState<string>("");
+  const [rightEye, setRightEye] = useState<string>("");
+  const [lensTint, setLensTint] = useState<string>("Clear");
+  const [blueLightFilter, setBlueLightFilter] = useState<string>("No");
+  const { isRtl, t } = useLocal();
+  const onPrescriptionChangeRef = useRef(onPrescriptionChange);
+  onPrescriptionChangeRef.current = onPrescriptionChange;
+
+  useEffect(() => {
+    if (initialData) {
+      setLeftEye(initialData.leftEye);
+      setRightEye(initialData.rightEye);
+      setLensTint(initialData.lensTint);
+      setBlueLightFilter(initialData.blueLightFilter);
+
+      const lensTypeOption = lensTypeOptions.find(
+        (opt) => opt.name === initialData.lensType
+      );
+      if (lensTypeOption) {
+        setSelectedLensType(lensTypeOption.id);
+      }
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    const prescription: PrescriptionData = {
+      lensType:
+        lensTypeOptions.find((opt) => opt.id === selectedLensType)?.name ||
+        "Single Vision",
+      leftEye,
+      rightEye,
+      lensTint,
+      blueLightFilter,
+    };
+    const isComplete = leftEye.trim() !== "" && rightEye.trim() !== "";
+
+    onPrescriptionChangeRef.current?.(isComplete ? prescription : null);
+  }, [selectedLensType, leftEye, rightEye, lensTint, blueLightFilter]);
+
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        inputRow: {
+          flexDirection: isRtl ? "row-reverse" : "row",
+          gap: scale(12),
+          marginBottom: verticalScale(12),
+        },
+        inputText: {
+          fontSize: scale(14),
+          color: COLORS.black,
+          textAlign: isRtl ? "right" : "left",
+        },
+        inputLabel: {
+          marginBottom: verticalScale(6),
+          fontWeight: "500",
+          textAlign: isRtl ? "right" : "left",
+        },
+        sectionTitle: {
+          marginBottom: verticalScale(12),
+          fontWeight: "600",
+          textAlign: isRtl ? "right" : "left",
+        },
+      }),
+    [isRtl]
+  );
   return (
     <View style={styles.container}>
       {/* Lens Type Section */}
@@ -63,7 +117,6 @@ const LensType: React.FC = () => {
                 color={
                   selectedLensType === option.id ? COLORS.black : COLORS.black
                 }
-                
                 fontFamily="Roboto-Bold"
                 style={styles.lensTypeName}
               />
@@ -71,9 +124,7 @@ const LensType: React.FC = () => {
                 title={t(option.description)}
                 fontSize={scale(12)}
                 color={
-                  selectedLensType === option.id
-                    ? COLORS.grey16
-                    : COLORS.grey16
+                  selectedLensType === option.id ? COLORS.grey16 : COLORS.grey16
                 }
                 fontFamily="Roboto-Regular"
                 style={styles.lensTypeDescription}
@@ -90,22 +141,22 @@ const LensType: React.FC = () => {
           fontSize={scale(16)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
-          textAlign={isRtl?"right":"left"}
+          textAlign={isRtl ? "right" : "left"}
           style={styles.prescriptionTitle}
         />
 
         <View style={dynamicStyles.inputRow}>
           <View style={styles.inputColumn}>
             <Typography
-              title={t("eyeglassesDetails.sphereRight")}
+              title="Left Eye (L)"
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
               style={dynamicStyles.inputLabel}
             />
             <Input
-              value={sphereRight}
-              onChangeText={setSphereRight}
+              value={leftEye}
+              onChangeText={setLeftEye}
               placeholder="-2.50"
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
@@ -117,15 +168,15 @@ const LensType: React.FC = () => {
 
           <View style={styles.inputColumn}>
             <Typography
-              title={t("eyeglassesDetails.sphereLeft")}
+              title="Right Eye (R)"
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
               style={dynamicStyles.inputLabel}
             />
             <Input
-              value={sphereLeft}
-              onChangeText={setSphereLeft}
+              value={rightEye}
+              onChangeText={setRightEye}
               placeholder="-2.75"
               keyboardType="numeric"
               containerStyle={styles.inputContainer}
@@ -139,17 +190,16 @@ const LensType: React.FC = () => {
         <View style={dynamicStyles.inputRow}>
           <View style={styles.inputColumn}>
             <Typography
-              title={t("eyeglassesDetails.cylinderRight")}
+              title="Lens Tint"
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
               style={dynamicStyles.inputLabel}
             />
             <Input
-              value={cylinderRight}
-              onChangeText={setCylinderRight}
-              placeholder="-0.50"
-              keyboardType="numeric"
+              value={lensTint}
+              onChangeText={setLensTint}
+              placeholder="Clear"
               containerStyle={styles.inputContainer}
               inputContainerStyle={styles.inputField}
               inputStyle={dynamicStyles.inputText}
@@ -159,17 +209,16 @@ const LensType: React.FC = () => {
 
           <View style={styles.inputColumn}>
             <Typography
-              title={t("eyeglassesDetails.cylinderLeft")}
+              title="Blue Light Filter"
               fontSize={scale(13)}
               color={COLORS.grey33}
               fontFamily="Roboto-Regular"
               style={dynamicStyles.inputLabel}
             />
             <Input
-              value={cylinderLeft}
-              onChangeText={setCylinderLeft}
-              placeholder="-0.50"
-              keyboardType="numeric"
+              value={blueLightFilter}
+              onChangeText={setBlueLightFilter}
+              placeholder="No"
               containerStyle={styles.inputContainer}
               inputContainerStyle={styles.inputField}
               inputStyle={dynamicStyles.inputText}
@@ -238,7 +287,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(16),
     fontWeight: "600",
   },
-  
+
   inputColumn: {
     flex: 1,
   },
@@ -268,4 +317,3 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
-

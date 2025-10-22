@@ -229,6 +229,83 @@ export type SetDefaultAddressResponse = {
   };
 };
 
+export type CartAttribute = {
+  key: string;
+  value: string;
+};
+
+export type CartLineInput = {
+  merchandiseId: string;
+  quantity: number;
+  attributes?: CartAttribute[];
+};
+
+export type CartLineUpdateInput = {
+  id: string;
+  quantity: number;
+  attributes?: CartAttribute[];
+};
+
+export type CartLineRemoveInput = {
+  id: string;
+};
+
+export type ProductImage = {
+  url: string;
+  altText?: string | null;
+};
+
+
+export type ProductVariant = {
+  id: string;
+  title: string;
+  price: Money;
+  image?: ProductImage | null;
+  product: {
+    id: string; // Added product ID
+    title: string;
+    featuredImage?: ProductImage | null;
+  };
+};
+
+export type CartLine = {
+  id: string;
+  quantity: number;
+  attributes: CartAttribute[];
+  merchandise: ProductVariant;
+};
+
+export type ShopifyCart = {
+  id: string;
+  checkoutUrl: string;
+  lines: {
+    edges: {
+      node: CartLine;
+    }[];
+  };
+};
+
+export type CreateCartResponse = {
+  cartCreate: {
+    cart: ShopifyCart | null;
+    userErrors: CustomerUserError[];
+  };
+};
+
+export type UpdateCartResponse = {
+  cartLinesUpdate: {
+    cart: ShopifyCart | null;
+    userErrors: CustomerUserError[];
+  };
+};
+
+export type RemoveFromCartResponse = {
+  cartLinesRemove: {
+    cart: ShopifyCart | null;
+    userErrors: CustomerUserError[];
+  };
+};
+
 class HomeApi {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -740,6 +817,168 @@ class HomeApi {
       customerAccessToken,
       addressId,
     });
+  }
+
+  /**
+   * Create a new cart with items
+   */
+  async createCart(lines: CartLineInput[]): Promise<CreateCartResponse> {
+    console.log("🔗 HomeApi: createCart called with lines:", JSON.stringify(lines, null, 2));
+    
+    const query = `
+      mutation cartCreate($lines: [CartLineInput!]!) { 
+        cartCreate(input: { lines: $lines }) { 
+          cart { 
+            id 
+            checkoutUrl 
+            lines(first: 10) { 
+              edges { 
+                node { 
+                  id 
+                  quantity 
+                  attributes { key value } 
+                  merchandise { 
+                    ... on ProductVariant { 
+                      id 
+                      title 
+                      price {
+                        amount
+                        currencyCode
+                      }
+                      image {
+                        url
+                        altText
+                      }
+                      product { 
+                        id
+                        title 
+                        featuredImage {
+                          url
+                          altText
+                        }
+                      } 
+                    } 
+                  } 
+                } 
+              } 
+            } 
+          } 
+          userErrors { field message }
+        } 
+      }
+    `;
+
+    const result = await this.executeQuery<CreateCartResponse>(query, { lines });
+    console.log("🔗 HomeApi: createCart result:", JSON.stringify(result, null, 2));
+    return result;
+  }
+
+  /**
+   * Update cart lines (quantity and attributes)
+   */
+  async updateCartLines(cartId: string, lines: CartLineUpdateInput[]): Promise<UpdateCartResponse> {
+    console.log("🔗 HomeApi: updateCartLines called with cartId:", cartId, "lines:", JSON.stringify(lines, null, 2));
+    
+    const query = `
+      mutation cartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) { 
+        cartLinesUpdate(cartId: $cartId, lines: $lines) { 
+          cart { 
+            id 
+            checkoutUrl 
+            lines(first: 10) { 
+              edges { 
+                node { 
+                  id 
+                  quantity 
+                  attributes { key value } 
+                  merchandise { 
+                    ... on ProductVariant { 
+                      id 
+                      title 
+                      price {
+                        amount
+                        currencyCode
+                      }
+                      image {
+                        url
+                        altText
+                      }
+                      product { 
+                        id
+                        title 
+                        featuredImage {
+                          url
+                          altText
+                        }
+                      } 
+                    } 
+                  } 
+                } 
+              } 
+            } 
+          } 
+          userErrors { field message }
+        } 
+      }
+    `;
+
+    const result = await this.executeQuery<UpdateCartResponse>(query, { cartId, lines });
+    console.log("🔗 HomeApi: updateCartLines result:", JSON.stringify(result, null, 2));
+    return result;
+  }
+
+  /**
+   * Remove items from cart
+   */
+  async removeFromCart(cartId: string, lineIds: string[]): Promise<RemoveFromCartResponse> {
+    console.log("🔗 HomeApi: removeFromCart called with cartId:", cartId, "lineIds:", JSON.stringify(lineIds, null, 2));
+    
+    const query = `
+      mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) { 
+        cartLinesRemove(cartId: $cartId, lineIds: $lineIds) { 
+          cart { 
+            id 
+            checkoutUrl 
+            lines(first: 10) { 
+              edges { 
+                node { 
+                  id 
+                  quantity 
+                  attributes { key value } 
+                  merchandise { 
+                    ... on ProductVariant { 
+                      id 
+                      title 
+                      price {
+                        amount
+                        currencyCode
+                      }
+                      image {
+                        url
+                        altText
+                      }
+                      product { 
+                        id
+                        title 
+                        featuredImage {
+                          url
+                          altText
+                        }
+                      } 
+                    } 
+                  } 
+                } 
+              } 
+            } 
+          } 
+          userErrors { field message }
+        } 
+      }
+    `;
+
+    const result = await this.executeQuery<RemoveFromCartResponse>(query, { cartId, lineIds });
+    console.log("🔗 HomeApi: removeFromCart result:", JSON.stringify(result, null, 2));
+    return result;
   }
 }
 
