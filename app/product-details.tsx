@@ -2,6 +2,7 @@ import LensType from "@/components/product/lens-type";
 import VirtualTryOn from "@/components/product/virtual-try-on";
 import Typography from "@/components/ui/custom-typography";
 import { COLOR_MAP, COLORS } from "@/constants/colors";
+import { handleLargerText } from "@/constants/helper";
 import { useLocal } from "@/hooks/use-lang";
 import { homeApi, ProductDetailResponse } from "@/services/home/homeApi";
 import { useCartStore } from "@/store/cartStore";
@@ -31,6 +32,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ProductDetails = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { title } = useLocalSearchParams<{ title: string }>();
+  console.log("title", title);
   const addToCart = useCartStore((state) => state.addToCart);
   const { toggleWishlist, isInWishlist } = useWishlistActions();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -330,7 +333,7 @@ const ProductDetails = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title={t("home.eyeGlasses")}
+            title={title}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -356,7 +359,7 @@ const ProductDetails = () => {
             <Ionicons name="arrow-back" size={24} color={COLORS.black} />
           </TouchableOpacity>
           <Typography
-            title={t("home.eyeGlasses")}
+            title={handleLargerText(title, 20)}
             fontSize={scale(18)}
             fontFamily="Poppins-Bold"
             color={COLORS.black}
@@ -390,7 +393,7 @@ const ProductDetails = () => {
           />
         </TouchableOpacity>
         <Typography
-          title={t("home.eyeGlasses")}
+          title={handleLargerText(title, 20)}
           fontSize={scale(18)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
@@ -476,7 +479,7 @@ const ProductDetails = () => {
           {/* Frame Color Section */}
           <View style={styles.section}>
             <Typography
-              title={t("eyeglassesDetails.frameColor")}
+              title={handleLargerText(title, 16)}
               fontSize={scale(16)}
               fontFamily="Poppins-Bold"
               color={COLORS.black}

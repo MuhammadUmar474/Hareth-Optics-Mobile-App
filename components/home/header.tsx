@@ -46,6 +46,7 @@ const StickyHeader = ({
 
   const { isRtl, t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
+    console.log("categoryId===========>>>>>>",categoryId)
     setSelectedCategories([categoryId]);
   };
 
@@ -201,6 +202,15 @@ const StickyHeader = ({
         contentContainerStyle={dynamicStyles.suggestionContainer}
         style={styles.suggestionScrollView}
       >
+        <SuggestionTab
+          title="All"
+          isSelected={selectedCategories[0] === -1 ? true : false}
+          onPress={() => {
+            handleCategoryPress(-1);
+            setHandle("eyeglasses");
+          }}
+          containerStyle={styles.suggestionTab}
+        />
         {categories.map((category, index) => (
           <SuggestionTab
             key={category.id}
@@ -213,6 +223,16 @@ const StickyHeader = ({
             containerStyle={styles.suggestionTab}
           />
         ))}
+        <SuggestionTab
+          title="Reset"
+          isSelected={selectedCategories[0] === -2 ? true : false}
+          onPress={() => {
+            setHandle("");
+            handleCategoryPress(-2);
+          }}
+          containerStyle={styles.suggestionTab}
+      
+        />
       </ScrollView>
     </View>
   );

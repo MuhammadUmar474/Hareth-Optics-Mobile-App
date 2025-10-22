@@ -110,7 +110,11 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
             <BrandCard
               key={card.id || `product-${index}`}
               data={card.node}
-              onPress={() => router.push(`/(tabs)/(explore)`)}
+              onPress={() => {
+                router.push(
+                  `/product-details?id=${card.node.id}&title=${encodeURIComponent(card.node.title)}`
+                );
+              }}
             />
           ))
         )}

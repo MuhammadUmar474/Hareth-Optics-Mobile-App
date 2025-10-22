@@ -217,7 +217,7 @@ const BestSelling: React.FC = () => {
           <ProductCard
             product={item.node}
             onPress={() => {
-              router.push(`/product-details?id=${item.node.id}`);
+              router.push(`/product-details?id=${item.node.id}&title=${encodeURIComponent(item.node.title)}`);
             }}
             onAddToCart={() => handleAddToCart(item.node)}
             onToggleWishlist={() => handleToggleWishlist(item.node)}

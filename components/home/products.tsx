@@ -10,7 +10,7 @@ import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 interface ProductsProps {
   productCategory: MenuItem[];
-  onProductPress?: (product: MenuItem) => void;
+  onProductPress?: (title: string) => void;
   title: string;
   loading?: boolean;
 }
@@ -23,7 +23,10 @@ const Products: React.FC<ProductsProps> = ({
 }) => {
   if (loading) {
     return <ProductsSkeleton />;
+    
   }
+
+
 
   const renderProduct = ({ item }: { item: MenuItem }) => {
     // Handle cases where image might be null
@@ -33,7 +36,7 @@ const Products: React.FC<ProductsProps> = ({
     return (
       <View>
         <TouchableOpacity
-          onPress={() => onProductPress?.(item)}
+          onPress={() => onProductPress?.(title)}
           activeOpacity={0.8}
         >
           <SimpleOptimizedImage
