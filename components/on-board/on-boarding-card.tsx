@@ -78,10 +78,7 @@ const OnBoardingCard: React.FC<OnBoardingCardProps> = ({
       <Button
         style={[
           styles.categoryCard,
-          {
-            marginRight: isEvenIndex ? scale(8) : 0,
-            marginLeft: isEvenIndex ? 0 : scale(8),
-          },
+          
         ]}
         onPress={onPress}
         onPressIn={handlePressIn}

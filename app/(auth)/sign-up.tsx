@@ -4,12 +4,13 @@ import CustomTextInput from "@/components/ui/custom-text-input";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { useAuthStore } from "@/store/shopifyStore";
 import { AuthMode, SignupFormValues } from "@/types/auth";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
-import React from "react";
+import React, { useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -23,109 +24,117 @@ import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
 
-const emailValidationSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be less than 50 characters")
-    .required("First name is required"),
-  lastName: Yup.string()
-    .min(1, "Last name is required")
-    .max(50, "Last name must be less than 50 characters")
-    .required("Last name is required"),
-  email: Yup.string()
-    .email("Please enter a valid email")
-    .required("Email is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-});
+const emailValidationSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    firstName: Yup.string()
+      .min(2, t("auth.nameError"))
+      .max(50, t("signUp.fnameLength"))
+      .required(t("auth.nameReq")),
+    lastName: Yup.string()
+      .min(1, t("auth.lnameReq"))
+      .max(50, t("auth.lnameLength"))
+      .required(t("auth.lnameReq")),
+    email: Yup.string()
+      .email(t("auth.validEmail"))
+      .required(t("auth.reqEmail")),
+    password: Yup.string()
+      .min(8, t("auth.pswrdLengthError"))
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        t("auth.pswrdRegexError")
+      )
+      .required(t("auth.pswrdReqError")),
+  });
 
-const phoneValidationSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be less than 50 characters")
-    .required("First name is required"),
-  lastName: Yup.string()
-    .min(1, "Last name is required")
-    .max(50, "Last name must be less than 50 characters")
-    .required("Last name is required"),
-  phone: Yup.string()
-    .matches(/^[0-9+\-\s()]+$/, "Please enter a valid phone number")
-    .min(10, "Phone number must be at least 10 digits")
-    .required("Phone number is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-});
+const phoneValidationSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    firstName: Yup.string()
+      .min(2, t("auth.nameError"))
+      .max(50, t("signUp.fnameLength"))
+      .required(t("login.nameReq")),
+    lastName: Yup.string()
+      .min(1, t("login.lnameReq"))
+      .max(50, t("auth.lnameLength"))
+      .required(t("auth.lnameReq")),
+    phone: Yup.string()
+      .matches(/^[0-9+\-\s()]+$/, t("auth.numberValidErr"))
+      .min(10, t("auth.numberLengthError"))
+      .required(t("auth.numberError")),
+    password: Yup.string()
+      .min(8, t("auth.pswrdLengthError"))
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        t("auth.pswrdRegexError")
+      )
+      .required(t("auth.pswrdReqError")),
+  });
 
-const whatsappValidationSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be less than 50 characters")
-    .required("First name is required"),
-  lastName: Yup.string()
-    .min(1, "Last name is required")
-    .max(50, "Last name must be less than 50 characters")
-    .required("Last name is required"),
-  whatsapp: Yup.string()
-    .matches(/^[0-9+\-\s()]+$/, "Please enter a valid WhatsApp number")
-    .min(10, "WhatsApp number must be at least 10 digits")
-    .required("WhatsApp number is required"),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-    )
-    .required("Password is required"),
-});
+const whatsappValidationSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    firstName: Yup.string()
+      .min(2, t("auth.nameError"))
+      .max(50, t("signUp.fnameLength"))
+      .required(t("auth.nameReq")),
+    lastName: Yup.string()
+      .min(1, t("auth.lnameReq"))
+      .max(50, t("auth.lnameLength"))
+      .required(t("auth.lnameReq")),
+    whatsapp: Yup.string()
+      .matches(/^[0-9+\-\s()]+$/, t("auth.whatsValidError"))
+      .min(10, t("auth.waNumberLengthError"))
+      .required(t("auth.waRequiredError")),
+    password: Yup.string()
+      .min(8, t("auth.pswrdLengthError"))
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        t("auth.pswrdRegexError")
+      )
+      .required(t("auth.pswrdReqError")),
+  });
 
 const SignUp = () => {
   const [mode, setMode] = React.useState<AuthMode>("email");
   const { signup, loading, error, clearError } = useAuthStore();
   const toast = useToast();
-  const scrollViewRef = React.useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const { t, isRtl } = useLocal();
+
+  // ---------- RTL-aware dynamic styles ----------
+  const dyn = useMemo(
+    () =>
+      StyleSheet.create({
+        textAlign: { textAlign: isRtl ? "right" : "left" },
+        rowReverse: { flexDirection: isRtl ? "row-reverse" : "row" },
+      }),
+    [isRtl]
+  );
 
   React.useEffect(() => {
-    if (error) {
-      clearError();
-    }
+    if (error) clearError();
   }, [mode, error, clearError]);
 
+  // Scroll to bottom when keyboard opens
   React.useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 200);
+    const sub = Keyboard.addListener("keyboardDidShow", () => {
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 200);
     });
-
-    return () => {
-      showSubscription.remove();
-    };
+    return () => sub.remove();
   }, []);
 
   const getValidationSchema = () => {
     switch (mode) {
       case "email":
-        return emailValidationSchema;
+        return emailValidationSchema(t);
       case "phone":
-        return phoneValidationSchema;
+        return phoneValidationSchema(t);
       case "whatsapp":
-        return whatsappValidationSchema;
+        return whatsappValidationSchema(t);
       default:
-        return emailValidationSchema;
+        return emailValidationSchema(t);
     }
   };
 
-  const getInitialValues = () => {
+  const getInitialValues = (): SignupFormValues => {
     switch (mode) {
       case "email":
         return { firstName: "", lastName: "", email: "", password: "" };
@@ -140,18 +149,7 @@ const SignUp = () => {
 
   const handleSubmit = async (values: SignupFormValues) => {
     if (mode !== "email") {
-      toast.show("Only email signup is supported with Shopify API", {
-        type: "danger",
-        placement: "top",
-      });
-      return;
-    }
-
-    if (!values.email) {
-      toast.show("Email is required", {
-        type: "danger",
-        placement: "top",
-      });
+      toast.show(t("signUp.supportedSignup"), { type: "danger", placement: "top" });
       return;
     }
 
@@ -159,24 +157,16 @@ const SignUp = () => {
       await signup({
         firstName: values.firstName,
         lastName: values.lastName,
-        email: values.email,
+        email: values.email!,
         password: values.password,
         acceptsMarketing: true,
       });
 
-      toast.show("Welcome! You have been automatically logged in.", {
-        type: "success",
-        placement: "top",
-      });
-
+      toast.show(t("signUp.autoLogin"), { type: "success", placement: "top" });
       router.push("/(tabs)/(a-home)");
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Please try again";
-      toast.show(errorMessage, {
-        type: "danger",
-        placement: "top",
-      });
+      const msg = err instanceof Error ? err.message : t("common.tryagain");
+      toast.show(msg, { type: "danger", placement: "top" });
     }
   };
 
@@ -199,91 +189,24 @@ const SignUp = () => {
           style={styles.logo}
           contentFit="contain"
         />
+
         <Typography
-          title="Create Account"
+          title={t("signUp.createAcc")}
           fontSize={SIZES.h3}
-          style={styles.title}
+          style={[styles.title, dyn.textAlign]}
         />
         <Typography
-          title="Create an account and see the difference"
+          title={t("signUp.createAccount")}
           fontSize={SIZES.body}
-          style={styles.subtitle}
+          style={[styles.subtitle, dyn.textAlign]}
         />
 
-        {/* TODO: Might be need in future */}
-
-        {/* <View style={styles.segmentContainer}>
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setMode("email")}
-            style={[
-              styles.segment,
-              { borderTopLeftRadius: 5, borderBottomLeftRadius: 5 },
-              mode === "email" && styles.segmentActive,
-            ]}
-          >
-            <Feather
-              name="mail"
-              size={16}
-              color={mode === "email" ? COLORS.white : COLORS.grey22}
-              style={{ marginRight: 8 }}
-            />
-            <Typography
-              title="Email"
-              fontSize={SIZES.body}
-              color={mode === "email" ? COLORS.white : COLORS.grey22}
-              style={{ fontWeight: "600" }}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setMode("phone")}
-            style={[styles.segment, mode === "phone" && styles.segmentActive]}
-          >
-            <Feather
-              name="phone"
-              size={16}
-              color={mode === "phone" ? COLORS.white : COLORS.grey22}
-              style={{ marginRight: 8 }}
-            />
-            <Typography
-              title="Phone"
-              fontSize={SIZES.body}
-              color={mode === "phone" ? COLORS.white : COLORS.grey22}
-              style={{ fontWeight: "600" }}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setMode("whatsapp")}
-            style={[
-              styles.segment,
-              { borderTopRightRadius: 5, borderBottomRightRadius: 5 },
-              mode === "whatsapp" && styles.segmentActive,
-            ]}
-          >
-            <FontAwesome
-              name="whatsapp"
-              size={16}
-              color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
-              style={{ marginRight: 8 }}
-            />
-            <Typography
-              title="WhatsApp"
-              fontSize={SIZES.body}
-              color={mode === "whatsapp" ? COLORS.white : COLORS.grey22}
-              style={{ fontWeight: "600" }}
-            />
-          </TouchableOpacity>
-        </View> */}
         <View style={styles.formContainer}>
           <Formik
             initialValues={getInitialValues()}
             validationSchema={getValidationSchema()}
             onSubmit={handleSubmit}
-            enableReinitialize={true}
+            enableReinitialize
           >
             {({
               handleChange,
@@ -295,112 +218,106 @@ const SignUp = () => {
               isValid,
             }) => (
               <>
-                <View style={styles.nameColumn}>
-                  <CustomTextInput
-                    label="First Name"
-                    placeholder="First name"
-                    height={45}
-                    value={values.firstName}
-                    onChangeText={handleChange("firstName")}
-                    onBlur={handleBlur("firstName")}
-                    error={
-                      touched.firstName && errors.firstName
-                        ? errors.firstName
-                        : undefined
-                    }
-                  />
-                </View>
-                <View style={styles.nameColumn}>
-                  <CustomTextInput
-                    label="Last Name"
-                    placeholder="Last name"
-                    height={45}
-                    value={values.lastName}
-                    onChangeText={handleChange("lastName")}
-                    onBlur={handleBlur("lastName")}
-                    error={
-                      touched.lastName && errors.lastName
-                        ? errors.lastName
-                        : undefined
-                    }
-                  />
-                </View>
+                {/* ----- First Name ----- */}
+                <CustomTextInput
+                  label={t("auth.fname")}
+                  placeholder={t("auth.fname")}
+                  height={45}
+                  value={values.firstName}
+                  onChangeText={handleChange("firstName")}
+                  onBlur={handleBlur("firstName")}
+                  error={touched.firstName && errors.firstName ? errors.firstName : undefined}
+                  textAlign={isRtl ? "right" : "left"}
+                  labelStyles={dyn.textAlign}
+                />
 
+                {/* ----- Last Name ----- */}
+                <CustomTextInput
+                  label={t("auth.lname")}
+                  placeholder={t("auth.lname")}
+                  height={45}
+                  value={values.lastName}
+                  onChangeText={handleChange("lastName")}
+                  onBlur={handleBlur("lastName")}
+                  error={touched.lastName && errors.lastName ? errors.lastName : undefined}
+                  textAlign={isRtl ? "right" : "left"}
+                  labelStyles={dyn.textAlign}
+                />
+
+                {/* ----- Email / Phone / WhatsApp ----- */}
                 {mode === "email" ? (
                   <CustomTextInput
-                    label="Email"
+                    label={t("auth.email")}
                     email
-                    placeholder="Enter your email"
-                    containerStyle={{ marginBottom: 20, marginTop: 20 }}
+                    placeholder={t("login.emailPlaceholder")}
+                    containerStyle={{ marginVertical: 20 }}
                     height={45}
                     value={values.email}
                     onChangeText={handleChange("email")}
                     onBlur={handleBlur("email")}
-                    error={
-                      touched.email && errors.email ? errors.email : undefined
-                    }
+                    error={touched.email && errors.email ? errors.email : undefined}
+                    textAlign={isRtl ? "right" : "left"}
+                    labelStyles={dyn.textAlign}
                   />
                 ) : mode === "phone" ? (
                   <CustomTextInput
-                    label="Phone"
-                    placeholder="Enter your phone number"
+                    label={t("login.phone")}
+                    placeholder={t("login.phoneNumber")}
                     number
                     iconName="phone"
-                    containerStyle={{ marginBottom: 20, marginTop: 20 }}
+                    containerStyle={{ marginVertical: 20 }}
                     height={45}
                     value={values.phone}
                     onChangeText={handleChange("phone")}
                     onBlur={handleBlur("phone")}
-                    error={
-                      touched.phone && errors.phone ? errors.phone : undefined
-                    }
+                    error={touched.phone && errors.phone ? errors.phone : undefined}
+                    textAlign={isRtl ? "right" : "left"}
+                    labelStyles={dyn.textAlign}
                   />
                 ) : (
                   <CustomTextInput
-                    label="WhatsApp Number"
-                    placeholder="Enter your WhatsApp number"
+                    label={t("login.waNumber")}
+                    placeholder={t("login.enterWaNumber")}
                     number
                     iconName="phone"
-                    containerStyle={{ marginBottom: 20, marginTop: 20 }}
+                    containerStyle={{ marginVertical: 20 }}
                     height={45}
                     value={values.whatsapp}
                     onChangeText={handleChange("whatsapp")}
                     onBlur={handleBlur("whatsapp")}
-                    error={
-                      touched.whatsapp && errors.whatsapp
-                        ? errors.whatsapp
-                        : undefined
-                    }
+                    error={touched.whatsapp && errors.whatsapp ? errors.whatsapp : undefined}
+                    textAlign={isRtl ? "right" : "left"}
+                    labelStyles={dyn.textAlign}
                   />
                 )}
 
+                {/* ----- Password ----- */}
                 <CustomTextInput
-                  label="Password"
-                  placeholder="Enter your password"
+                  label={t("login.password")}
+                  placeholder={t("login.enterPassword")}
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
                   isSecure
-                  value={values.password}
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
-                  error={
-                    touched.password && errors.password
-                      ? errors.password
-                      : undefined
-                  }
+                  error={touched.password && errors.password ? errors.password : undefined}
+                  labelStyles={dyn.textAlign}
+                  textAlign={isRtl ? "right" : "left"}
                 />
 
+                {/* ----- Server error ----- */}
                 {error && (
                   <View style={styles.errorContainer}>
                     <Typography
-                      title={error}
+                      title={t(error)}
                       fontSize={SIZES.body}
                       color={COLORS.red}
-                      style={styles.errorText}
+                      style={[styles.errorText, dyn.textAlign]}
                     />
                   </View>
                 )}
 
+                {/* ----- Submit ----- */}
                 <Button
                   color="primary"
                   style={{ marginTop: 30, borderRadius: 10, height: 45 }}
@@ -411,9 +328,9 @@ const SignUp = () => {
                     <ActivityIndicator size="small" color={COLORS.white} />
                   ) : (
                     <Typography
-                      title="Create Account"
+                      title={t("signUp.createAcc")}
                       fontSize={SIZES.body}
-                      style={{ fontWeight: "700" }}
+                      style={[styles.buttonText, dyn.textAlign]}
                       color={COLORS.white}
                     />
                   )}
@@ -422,33 +339,18 @@ const SignUp = () => {
             )}
           </Formik>
 
-          {/* TODO: Might need in future */}
-          {/* <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <Typography
-            title="Or Continue with"
-            fontSize={SIZES.body}
-            style={{ fontWeight: "500" }}
-          />
-          <View style={styles.divider} />
-        </View>
-        <View style={styles.socialContainer}>
-          <AntDesign name="apple" size={24} color="black" />
-          <AntDesign name="google" size={24} color="green" />
-        </View> */}
-          <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
+          {/* ----- Already have account ----- */}
+          <View style={[styles.alreadyRow, dyn.rowReverse, { gap: 5, marginTop: 20 }]}>
             <Typography
-              title="Already have an account? "
+              title={t("signUp.alreadAcc")}
               fontSize={SIZES.body}
               style={{ fontWeight: "500" }}
             />
             <Typography
-              title="Login"
+              title={t("auth.login")}
               fontSize={SIZES.body}
               style={{ fontWeight: "500", color: COLORS.primary }}
-              onPress={() => {
-                router.push("/(auth)/login");
-              }}
+              onPress={() => router.push("/(auth)/login")}
             />
           </View>
         </View>
@@ -460,84 +362,22 @@ const SignUp = () => {
 export default SignUp;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    paddingTop: verticalScale(20),
-    paddingBottom: verticalScale(10),
-  },
-  title: {
-    marginBottom: 5,
-    fontWeight: "bold",
-    alignSelf: "center",
-    color: COLORS.primary,
-  },
-  subtitle: {
-    fontWeight: "500",
-    alignSelf: "center",
-    color: COLORS.black,
-  },
-  formContainer: {
-    padding: 20,
-    borderRadius: SIZES.radius,
-  },
-  nameColumn: {
-    flex: 1,
-    marginTop: 20,
-  },
-  segmentContainer: {
-    flexDirection: "row",
-    marginVertical: 16,
-    marginHorizontal: 20,
-  },
-  segment: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    backgroundColor: COLORS.white4,
-    flex: 1,
-  },
-  segmentActive: {
-    backgroundColor: COLORS.primary,
-  },
-  dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 20,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.gray,
-    width: "30%",
-  },
-  socialContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-    gap: 20,
-  },
-  logo: {
-    width: scale(80),
-    height: verticalScale(50),
-    alignSelf: "center",
-  },
+  container: { flex: 1, backgroundColor: COLORS.white },
+  scrollView: { flex: 1 },
+  scrollContainer: { paddingTop: verticalScale(20), paddingBottom: verticalScale(10) },
+  title: { marginBottom: 5, fontWeight: "bold", alignSelf: "center", color: COLORS.primary },
+  subtitle: { fontWeight: "500", alignSelf: "center", color: COLORS.black },
+  formContainer: { padding: 20, borderRadius: SIZES.radius },
+  logo: { width: scale(80), height: verticalScale(50), alignSelf: "center" },
   errorContainer: {
-    backgroundColor: COLORS.red + "10",
+    backgroundColor: `${COLORS.red}10`,
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: COLORS.red + "30",
+    borderColor: `${COLORS.red}30`,
   },
-  errorText: {
-    textAlign: "center",
-  },
+  errorText: { textAlign: "center" },
+  buttonText: { fontWeight: "700" },
+  alreadyRow: { alignSelf: "center", alignItems: "center" },
 });

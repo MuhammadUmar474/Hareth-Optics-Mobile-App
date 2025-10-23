@@ -82,6 +82,7 @@ const Login = () => {
           flexDirection: isRtl ? "row-reverse" : "row",
           marginBottom: 16,
         },
+        dontHave:{ flexDirection:isRtl? "row-reverse" :"row", alignSelf: "center", marginTop: 20 ,gap :5 },
         segment: {
           flexDirection: isRtl ? "row-reverse" : "row",
           alignItems: "center",
@@ -301,7 +302,7 @@ const Login = () => {
               <>
                 {mode === "email" ? (
                   <CustomTextInput
-                    label={t("login.email")}
+                    label={t("auth.email")}
                     email
                     placeholder={t("login.emailPlaceholder")}
                     containerStyle={{ marginBottom: 20 }}
@@ -415,15 +416,16 @@ const Login = () => {
         </View> */}
 
           <View
-            style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}
+            style={dynamicStyles.dontHave}
           >
+            
             <Typography
               title={t("login.dontHaveAccount")}
               fontSize={SIZES.body}
               style={{ fontWeight: "500" }}
             />
             <Typography
-              title=" Sign up"
+              title={t(`auth.signUp`)}
               fontSize={SIZES.body}
               style={{ fontWeight: "500", color: COLORS.primary }}
               onPress={() => {

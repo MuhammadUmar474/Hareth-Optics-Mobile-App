@@ -4,21 +4,23 @@ import CustomTextInput from "@/components/ui/custom-text-input";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLocal } from "@/hooks/use-lang";
 import { authApi } from "@/services/auth/authApi";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Formik } from "formik";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";
 
-const forgotPasswordSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Please enter a valid email")
-    .required("Email is required"),
-});
+const forgotPasswordSchema = (t: (key: string) => string) =>
+  Yup.object().shape({
+    email: Yup.string()
+      .email(t("auth.validEmail"))
+      .required(t("auth.reqEmail")),
+  });
 
 interface ForgotPasswordFormValues {
   email: string;
@@ -27,16 +29,27 @@ interface ForgotPasswordFormValues {
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const toast = useToast();
+  const { t, isRtl } = useLocal();
+
+  // Dynamic RTL-aware styles
+  const dynStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        textAlign: { textAlign: isRtl ? "right" : "left" },
+        rowReverse: { flexDirection: isRtl ? "row-reverse" : "row" },
+      }),
+    [isRtl]
+  );
 
   const handleResetPassword = async (values: ForgotPasswordFormValues) => {
     setLoading(true);
 
     try {
       await authApi.forgotPassword(values.email);
-      
+
       Alert.alert(
-        "Password Reset Email Sent",
-        "We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.",
+        t("forgot.resetEmailSentTitle"),
+        t("forgot.resetEmailSentMessage"),
         [
           {
             text: "OK",
@@ -47,7 +60,7 @@ const ForgotPassword = () => {
         ]
       );
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to send reset email. Please try again.";
+      const errorMessage = err instanceof Error ? err.message : t("forgot.resetEmailFailed");
       toast.show(errorMessage, {
         type: "danger",
         placement: "top",
@@ -58,40 +71,41 @@ const ForgotPassword = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
         <BackButton />
+
         <Image
           source={require("@/assets/images/hareth-icon.png")}
           style={styles.logo}
           contentFit="contain"
         />
-        
+
         <Typography
-          title="Forgot Password?"
+          title={t("forgot.title")}
           fontSize={SIZES.h3}
-          style={styles.title}
+          style={[styles.title, dynStyles.textAlign]}
         />
-        
+
         <Typography
-          title="Enter your email address and we'll send you a link to reset your password"
+          title={t("forgot.subtitle")}
           fontSize={SIZES.body}
-          style={styles.subtitle}
+          style={[styles.subtitle, dynStyles.textAlign]}
         />
 
         <View style={styles.formContainer}>
           <Formik<ForgotPasswordFormValues>
             initialValues={{ email: "" }}
-            validationSchema={forgotPasswordSchema}
+            validationSchema={() => forgotPasswordSchema(t)}
             onSubmit={handleResetPassword}
           >
             {({
@@ -105,9 +119,9 @@ const ForgotPassword = () => {
             }) => (
               <>
                 <CustomTextInput
-                  label="Email"
+                  label={t("auth.email")}
                   email
-                  placeholder="Enter your email"
+                  placeholder={t("forgot.emailPlaceholder")}
                   containerStyle={{ marginBottom: 20 }}
                   height={45}
                   value={values.email}
@@ -117,6 +131,8 @@ const ForgotPassword = () => {
                   autoCapitalize="none"
                   keyboardType="email-address"
                   returnKeyType="done"
+                  textAlign={isRtl ? "right" : "left"}
+                  labelStyles={dynStyles.textAlign}
                 />
 
                 <Button
@@ -129,9 +145,9 @@ const ForgotPassword = () => {
                     <ActivityIndicator size="small" color={COLORS.white} />
                   ) : (
                     <Typography
-                      title="Reset Password"
+                      title={t("forgot.resetPassword")}
                       fontSize={SIZES.body}
-                      style={{ fontWeight: "700" }}
+                      style={[styles.buttonText, dynStyles.textAlign]}
                       color={COLORS.white}
                     />
                   )}
@@ -140,14 +156,14 @@ const ForgotPassword = () => {
             )}
           </Formik>
 
-            <View style={{ flexDirection: "row", alignSelf: "center", marginTop: 20 }}>
+          <View style={[styles.linkRow, dynStyles.rowReverse, { marginTop: 20,gap:5 }]}>
             <Typography
-              title="Remember your password? "
+              title={t("forgot.rememberPassword")}
               fontSize={SIZES.body}
               style={{ fontWeight: "500" }}
             />
             <Typography
-              title="Back to Login"
+              title={t("forgot.backToLogin")}
               fontSize={SIZES.body}
               style={{ fontWeight: "500", color: COLORS.primary }}
               onPress={() => {
@@ -185,7 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     alignSelf: "center",
     color: COLORS.black,
-    textAlign: "center",
     paddingHorizontal: 20,
     marginBottom: 20,
   },
@@ -198,5 +213,12 @@ const styles = StyleSheet.create({
     height: verticalScale(50),
     alignSelf: "center",
     marginTop: verticalScale(16),
+  },
+  buttonText: {
+    fontWeight: "700",
+  },
+  linkRow: {
+    alignSelf: "center",
+    alignItems: "center",
   },
 });

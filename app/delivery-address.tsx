@@ -247,7 +247,7 @@ const DeliveryAddress = () => {
           onPress={() => router.push("/delivery")}
         >
           <Typography
-            title={t("address.continue")}
+            title={t("common.continue")}
             fontSize={scale(16)}
             color={COLORS.white}
             fontFamily="Poppins-Bold"

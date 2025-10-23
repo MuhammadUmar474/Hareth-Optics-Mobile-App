@@ -1,5 +1,6 @@
 {
-    "common": {
+  "common": {
+      "continue":"Continue",
       "profile": "Profile",
       "settingsAndServices": "Settings & Services",
       "trackOrder": "Track Order",
@@ -13,7 +14,8 @@
       "viewAll":"View All",
       "home":"Home",
       "noProduct":"No products found",
-      "currency":"KD"
+      "currency":"KD",
+      "tryagain":"Please try again"
     },
     "profile": {
       "menu": {
@@ -130,7 +132,6 @@
       "state":"State",
       "zipCode":"Zip Code",
       "setdefaultAddress":"Set as default address",
-      "continue":"Continue",
       "country":"Country",
       "addressLabel":"Address Label",
       "shippingAddress":"Shipping Address",
@@ -232,6 +233,8 @@
     },
     "auth":{
       "login":"Login",
+      "signUp":"Sign up",
+      "email":"Email",
       "validEmail":"Please enter a valid email",
       "reqEmail":"Email is required",
       "pswrdReqError":"Password is required",
@@ -242,7 +245,10 @@
       "waRequiredError":"WhatsApp number is required",
       "numberValidErr":"Please enter a valid phone number",
       "numberError":"Phone number is required",
-      "numberLengthError":"Phone number must be at least 10 digits"
+      "numberLengthError":"Phone number must be at least 10 digits",
+      "nameError":"First name must be at least 2 characters",
+      "fname":"First Name",
+      "lname":"Last Name"
     },
     "login":{
       
@@ -251,7 +257,6 @@
        "checkCred":"Please check your credentials and try again",
        "signInAccount":"Sign in to your account to continue",
        "emailPlaceholder":"Enter your email",
-       "email":"Email",
        "phone":"Phone",
        "phoneNumber":"Enter your phone number",
        "waNumber":"WhatsApp Number",
@@ -259,7 +264,29 @@
        "password":"Password",
        "enterPassword":"Enter your password",
        "dontHaveAccount":"Don't have an account?",
-       "forgotPswrd":"Forgot your password?"
-    }
+       "forgotPswrd":"Forgot your password?",
+       "nameReq":"First name is required",
+       "lnameReq":"Last name is required",
+       "lnameLength":"Last name must be less than 50 characters"
+    },
+    "signUp":{
+      "fnameLength":"First name must be less than 50 characters",
+      "supportedSignup":"Only email signup is supported with Shopify API",
+      "autoLogin":"Welcome! You have been automatically logged in.",
+      "createAcc":"Create Account",
+      "createAccount":"Create an account and see the difference",
+      "alreadAcc":"Already have an account?"
+    },
+    "forgot": {
+    "title": "Forgot Password?",
+    "subtitle": "Enter your email address and we'll send you a link to reset your password",
+    "emailPlaceholder": "Enter your email",
+    "resetPassword": "Reset Password",
+    "rememberPassword": "Remember your password?",
+    "backToLogin": "Back to Login",
+    "resetEmailSentTitle": "Password Reset Email Sent",
+    "resetEmailSentMessage": "We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.",
+    "resetEmailFailed": "Failed to send reset email. Please try again."
+  }
   }
   
