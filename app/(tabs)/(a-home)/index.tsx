@@ -36,11 +36,11 @@ import {
   FlatList,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+
 type ExploreProduct = {
   id: string;
   name: string;
@@ -120,13 +120,23 @@ const HomeScreen = () => {
     });
   };
 
-  const fetchProducts = useCallback(
-    async (loadMore = false) => {
-      setLoading(true);
+  const fetchProducts = async (
+    categoryHandle: string,
+    loadMore = false,
+    cursor?: string | null
+  ) => {
+    if (!categoryHandle) {
+      console.log("No category handle, skipping fetch");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
       const { collection } = await homeApi.getProductsByCollection(
-        handle,
+        categoryHandle,
         20,
-        loadMore ? endCursor ?? undefined : undefined
+        loadMore && cursor ? cursor : undefined
       );
 
       const edges = collection?.products.edges ?? [];
@@ -141,17 +151,32 @@ const HomeScreen = () => {
       }));
 
       setProducts((prev) => (loadMore ? [...prev, ...mapped] : mapped));
-
       setEndCursor(collection?.products.pageInfo?.endCursor ?? null);
       setHasNextPage(collection?.products.pageInfo?.hasNextPage ?? false);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      setProducts([]);
+      setEndCursor(null);
+      setHasNextPage(false);
+    } finally {
       setLoading(false);
-    },
-    [handle, endCursor]
-  );
+      console.log("Loading set to false");
+    }
+  };
 
   useEffect(() => {
-    fetchProducts(false); // initial load
-  }, [fetchProducts]);
+    if (handle) {
+      console.log("Resetting and fetching products for handle:", handle);
+      setProducts([]);
+      setEndCursor(null);
+      setHasNextPage(false);
+      fetchProducts(handle, false);
+    } else {
+      console.log("Handle is empty, clearing products");
+      setProducts([]);
+      setLoading(false);
+    }
+  }, [handle]);
 
   const renderProduct = ({
     item,
@@ -159,14 +184,7 @@ const HomeScreen = () => {
   }: {
     item: ExploreProduct;
     index: number;
-  }) => (
-    <AnimatedProductCard
-      item={item}
-      index={index}
-      // onToggleFavorite={toggleFavorite}
-      // isFavorite={favorites.has(item.id)}
-    />
-  );
+  }) => <AnimatedProductCard item={item} index={index} />;
 
   // Show initial loading skeleton while data is being fetched
   if (initialLoading) {
@@ -220,47 +238,54 @@ const HomeScreen = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {products.length > 0 ? (
+          {handle ? (
+            // When a category is selected, only show products or "no data" message
             <Animated.View
               style={[styles.content, { opacity: headerFadeAnim }]}
             >
-              <FlatList
-                data={products}
-                renderItem={renderProduct}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.productRow}
-                contentContainerStyle={styles.productsContainer}
-                showsVerticalScrollIndicator={false}
-                onEndReachedThreshold={0.5}
-                ListEmptyComponent={
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {loading ? (
-                      <ActivityIndicator size="large" color={COLORS.primary} />
-                    ) : (
-                      <Text>No products found</Text>
-                    )}
-                  </View>
-                }
-                onEndReached={() => {
-                  if (hasNextPage && !loading) {
-                    fetchProducts(true); // load more
+              {loading && products.length === 0 ? (
+                <View style={styles.centerContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                </View>
+              ) : products.length > 0 ? (
+                <FlatList
+                  data={products}
+                  renderItem={renderProduct}
+                  keyExtractor={(item, index) => `${item.id}-${index}`}
+                  numColumns={2}
+                  columnWrapperStyle={styles.productRow}
+                  contentContainerStyle={styles.productsContainer}
+                  showsVerticalScrollIndicator={false}
+                  onEndReachedThreshold={0.5}
+                  onEndReached={() => {
+                    if (hasNextPage && !loading) {
+                      fetchProducts(handle, true, endCursor);
+                    }
+                  }}
+                  ListFooterComponent={
+                    loading ? (
+                      <ActivityIndicator size="small" color={COLORS.primary} />
+                    ) : null
                   }
-                }}
-                ListFooterComponent={
-                  loading ? (
-                    <ActivityIndicator size="small" color={COLORS.primary} />
-                  ) : null
-                }
-              />
+                />
+              ) : (
+                <View style={styles.centerContainer}>
+                  <Ionicons
+                    name="folder-open-outline"
+                    size={64}
+                    color={COLORS.grey3}
+                  />
+                  <Typography
+                    title="No Products Found"
+                    fontSize={moderateScale(18)}
+                    color={COLORS.black}
+                    style={{ marginTop: verticalScale(16) }}
+                  />
+                </View>
+              )}
             </Animated.View>
           ) : (
+            // When no category is selected, show all home components
             <>
               <TrendingNow />
 
@@ -402,7 +427,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-
   content: {
     flex: 1,
   },
@@ -427,5 +451,10 @@ const styles = StyleSheet.create({
     height: verticalScale(36),
     backgroundColor: COLORS.grey4,
     borderRadius: scale(8),
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: verticalScale(50),
   },
 });

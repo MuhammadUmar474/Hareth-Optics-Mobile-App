@@ -18,10 +18,10 @@ export const AnimatedProductCard = ({ item, index }: any) => {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0)).current;
-
   const buttonScaleAnim = useRef(new Animated.Value(1)).current;
   const checkmarkScaleAnim = useRef(new Animated.Value(0)).current;
   const checkmarkOpacityAnim = useRef(new Animated.Value(0)).current;
+  const buttonColorAnim = useRef(new Animated.Value(0)).current;
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showCheckmark, setShowCheckmark] = useState(false);
@@ -46,21 +46,28 @@ export const AnimatedProductCard = ({ item, index }: any) => {
   }, [index]);
 
   const handlePress = () => {
-    router.push(`/product-details?id=${item.id}`);
+    router.push(
+      `/product-details?id=${item.id}&title=${encodeURIComponent(
+        item.category
+      )}`
+    );
+    // router.push(`/product-details?id=${item.id}`);
   };
 
   const handleAddToCart = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
 
-    // Button bounce
+    // Button pulse animation
     Animated.sequence([
-      Animated.spring(buttonScaleAnim, {
-        toValue: 0.9,
+      Animated.timing(buttonScaleAnim, {
+        toValue: 0.95,
+        duration: 100,
         useNativeDriver: true,
       }),
-      Animated.spring(buttonScaleAnim, {
+      Animated.timing(buttonScaleAnim, {
         toValue: 1,
+        duration: 100,
         useNativeDriver: true,
       }),
     ]).start();
@@ -100,12 +107,21 @@ export const AnimatedProductCard = ({ item, index }: any) => {
 
       if (success) {
         setShowCheckmark(true);
+
+        // Color transition to green
+        Animated.timing(buttonColorAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
+
+        // Checkmark spring animation
         Animated.parallel([
           Animated.spring(checkmarkScaleAnim, {
             toValue: 1,
+            friction: 4,
+            tension: 100,
             useNativeDriver: true,
-            tension: 80,
-            friction: 5,
           }),
           Animated.timing(checkmarkOpacityAnim, {
             toValue: 1,
@@ -114,7 +130,7 @@ export const AnimatedProductCard = ({ item, index }: any) => {
           }),
         ]).start();
 
-        // Hide after 1.2s
+        // Reset after 2 seconds
         setTimeout(() => {
           Animated.parallel([
             Animated.timing(checkmarkScaleAnim, {
@@ -127,11 +143,16 @@ export const AnimatedProductCard = ({ item, index }: any) => {
               duration: 200,
               useNativeDriver: true,
             }),
+            Animated.timing(buttonColorAnim, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: false,
+            }),
           ]).start(() => {
             setShowCheckmark(false);
             setIsAnimating(false);
           });
-        }, 1200);
+        }, 2000);
       } else {
         console.error(
           "❌ AnimatedProductCard: Failed to add to cart - success was false"
@@ -159,13 +180,14 @@ export const AnimatedProductCard = ({ item, index }: any) => {
     });
   };
 
+  // Interpolate background color
+  const backgroundColor = buttonColorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [COLORS.primary, "#4CAF50"],
+  });
+
   return (
-    <Animated.View
-      style={[
-        styles.productCard,
-        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-      ]}
-    >
+    <View style={[styles.productCard]}>
       <TouchableOpacity activeOpacity={1} onPress={handlePress}>
         <View style={styles.productImageContainer}>
           <SimpleOptimizedImage
@@ -226,44 +248,51 @@ export const AnimatedProductCard = ({ item, index }: any) => {
               { transform: [{ scale: buttonScaleAnim }] },
             ]}
           >
-            <TouchableOpacity
-              style={styles.addToCartButton}
-              disabled={isAnimating}
-              onPress={handleAddToCart}
-              activeOpacity={0.8}
+            <Animated.View
+              style={[styles.addToCartButton, { backgroundColor }]}
             >
-              {/* Hide text when checkmark is visible */}
-              {!showCheckmark && (
-                <Typography
-                  title={t("purchases.addtoCart")}
-                  fontSize={moderateScale(14)}
-                  color={COLORS.white}
-                  fontFamily="Inter-SemiBold"
-                />
-              )}
-
-              {/* Checkmark animation (centered) */}
-              {showCheckmark && (
-                <Animated.View
-                  style={{
-                    opacity: checkmarkOpacityAnim,
-                    transform: [{ scale: checkmarkScaleAnim }],
-                    position: "absolute",
-                    alignSelf: "center",
-                  }}
-                >
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={moderateScale(26)}
+              <TouchableOpacity
+                style={styles.addToCartTouchable}
+                disabled={isAnimating}
+                onPress={handleAddToCart}
+                activeOpacity={0.8}
+              >
+                {showCheckmark ? (
+                  <Animated.View
+                    style={{
+                      opacity: checkmarkOpacityAnim,
+                      transform: [{ scale: checkmarkScaleAnim }],
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: scale(6),
+                    }}
+                  >
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={moderateScale(20)}
+                      color={COLORS.white}
+                    />
+                    <Typography
+                      title="Added!"
+                      fontSize={moderateScale(14)}
+                      color={COLORS.white}
+                      fontFamily="Inter-SemiBold"
+                    />
+                  </Animated.View>
+                ) : (
+                  <Typography
+                    title={t("purchases.addtoCart")}
+                    fontSize={moderateScale(14)}
                     color={COLORS.white}
+                    fontFamily="Inter-SemiBold"
                   />
-                </Animated.View>
-              )}
-            </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
           </Animated.View>
         </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -303,11 +332,13 @@ const styles = StyleSheet.create({
   },
   addToCartButtonContainer: { position: "relative" },
   addToCartButton: {
-    backgroundColor: COLORS.primary,
     paddingVertical: verticalScale(10),
     borderRadius: moderateScale(10),
+    minHeight: verticalScale(35),
+    overflow: "hidden",
+  },
+  addToCartTouchable: {
     alignItems: "center",
     justifyContent: "center",
-    minHeight: verticalScale(35),
   },
 });

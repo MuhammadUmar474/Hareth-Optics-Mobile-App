@@ -6,7 +6,7 @@ import { useLoadingStore } from "@/store/loadingStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -30,7 +30,7 @@ interface ProductCardProps {
   onToggleWishlist: () => void;
   isFavorited: boolean;
   isLoading?: boolean;
-  showCheckmark?: boolean;
+  showSuccess?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -40,9 +40,61 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onToggleWishlist,
   isFavorited,
   isLoading = false,
-  showCheckmark = false,
+  showSuccess = false,
 }) => {
   const { isInWishlist } = useWishlistActions();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
+  const checkmarkOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showSuccess) {
+      // Button pulse animation
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Checkmark animation
+      Animated.parallel([
+        Animated.spring(checkmarkScale, {
+          toValue: 1,
+          friction: 4,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(checkmarkOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Hide checkmark after delay
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(checkmarkScale, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(checkmarkOpacity, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 1500);
+    }
+  }, [showSuccess]);
 
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.card}>
@@ -100,28 +152,51 @@ const ProductCard: React.FC<ProductCardProps> = ({
               style={styles.originalPrice}
             />
           </View>
-          <TouchableOpacity
-            style={[styles.addToCart, isLoading && styles.addToCartDisabled]}
-            onPress={onAddToCart}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color={COLORS.white} />
-            ) : showCheckmark ? (
-              <Ionicons
-                name="checkmark-circle"
-                size={scale(20)}
-                color={COLORS.white}
-              />
-            ) : (
-              <Typography
-                title="Add to Cart"
-                fontSize={scale(12)}
-                color={COLORS.white}
-                fontFamily="Roboto-Bold"
-              />
-            )}
-          </TouchableOpacity>
+
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+              style={[
+                styles.addToCart,
+                isLoading && styles.addToCartDisabled,
+                showSuccess && styles.addToCartSuccess,
+              ]}
+              onPress={onAddToCart}
+              disabled={isLoading || showSuccess}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color={COLORS.white} />
+              ) : showSuccess ? (
+                <Animated.View
+                  style={{
+                    transform: [{ scale: checkmarkScale }],
+                    opacity: checkmarkOpacity,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: scale(6),
+                  }}
+                >
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={scale(18)}
+                    color={COLORS.white}
+                  />
+                  <Typography
+                    title="Added!"
+                    fontSize={scale(12)}
+                    color={COLORS.white}
+                    fontFamily="Roboto-Bold"
+                  />
+                </Animated.View>
+              ) : (
+                <Typography
+                  title="Add to Cart"
+                  fontSize={scale(12)}
+                  color={COLORS.white}
+                  fontFamily="Roboto-Bold"
+                />
+              )}
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </View>
     </TouchableOpacity>
@@ -138,7 +213,9 @@ const BestSelling: React.FC = () => {
   const [loadingProducts, setLoadingProducts] = useState<Set<string>>(
     new Set()
   );
-  const [showCheckmarks, setShowCheckmarks] = useState<Set<string>>(new Set());
+  const [successProducts, setSuccessProducts] = useState<Set<string>>(
+    new Set()
+  );
 
   const handleAddToCart = async (product: any) => {
     const productId = product.id;
@@ -151,7 +228,6 @@ const BestSelling: React.FC = () => {
         return;
       }
 
-      // Create cart line with optional prescription attributes
       const cartLine = {
         merchandiseId: firstVariant.id,
         quantity: 1,
@@ -170,9 +246,9 @@ const BestSelling: React.FC = () => {
       const success = await createCart([cartLine]);
 
       if (success) {
-        setShowCheckmarks((prev) => new Set(prev).add(productId));
+        setSuccessProducts((prev) => new Set(prev).add(productId));
         setTimeout(() => {
-          setShowCheckmarks((prev) => {
+          setSuccessProducts((prev) => {
             const newSet = new Set(prev);
             newSet.delete(productId);
             return newSet;
@@ -290,7 +366,7 @@ const BestSelling: React.FC = () => {
             onToggleWishlist={() => handleToggleWishlist(item.node)}
             isFavorited={isInWishlist(item.node.id)}
             isLoading={loadingProducts.has(item.node.id)}
-            showCheckmark={showCheckmarks.has(item.node.id)}
+            showSuccess={successProducts.has(item.node.id)}
           />
         )}
         ListEmptyComponent={isLoadingBestSelling ? <CardSkeleton /> : null}
@@ -438,16 +514,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: COLORS.white,
   },
-  newBadge: {
-    position: "absolute",
-    top: scale(12),
-    right: scale(12),
-    backgroundColor: COLORS.grey20,
-    paddingHorizontal: scale(8),
-    paddingVertical: scale(2),
-    borderRadius: scale(6),
-    zIndex: 10,
-  },
   productImage: {
     width: "100%",
     height: scale(112),
@@ -471,22 +537,6 @@ const styles = StyleSheet.create({
   originalPrice: {
     textDecorationLine: "line-through",
   },
-  viewButton: {
-    backgroundColor: COLORS.white,
-    paddingVertical: verticalScale(10),
-    borderRadius: scale(10),
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: COLORS.grey4,
-  },
-  buttonSecondaryContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    gap: 10,
-  },
   addToCart: {
     backgroundColor: COLORS.primary,
     paddingVertical: verticalScale(10),
@@ -496,13 +546,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
     marginTop: verticalScale(4),
+    minHeight: verticalScale(38),
   },
   addToCartDisabled: {
     backgroundColor: COLORS.grey4,
     borderColor: COLORS.grey4,
   },
+  addToCartSuccess: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
   viewAllButtons: {
-    // flexDirection: "row",
     gap: scale(16),
     marginHorizontal: scale(16),
     marginTop: verticalScale(20),
@@ -530,7 +584,6 @@ const styles = StyleSheet.create({
   buttonGradient: {
     flex: 1,
     paddingHorizontal: scale(14),
-    // paddingVertical: scale(26),
     justifyContent: "center",
   },
   buttonContent: {
@@ -579,6 +632,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  buttonSecondaryContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: 10,
   },
 });
 
