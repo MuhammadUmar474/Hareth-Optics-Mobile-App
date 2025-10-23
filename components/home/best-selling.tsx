@@ -1,13 +1,14 @@
 import { COLORS } from "@/constants/colors";
 import { BestSellingProduct } from "@/constants/data";
 import { executeHomeQuery, MenuItem } from "@/services/home/homeApi";
-import { useCartStore } from "@/store/cartStore";
+import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useLoadingStore } from "@/store/loadingStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Dimensions,
   FlatList,
@@ -28,6 +29,8 @@ interface ProductCardProps {
   onAddToCart: () => void;
   onToggleWishlist: () => void;
   isFavorited: boolean;
+  isLoading?: boolean;
+  showCheckmark?: boolean;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -36,6 +39,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart,
   onToggleWishlist,
   isFavorited,
+  isLoading = false,
+  showCheckmark = false,
 }) => {
   const { isInWishlist } = useWishlistActions();
 
@@ -95,13 +100,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
               style={styles.originalPrice}
             />
           </View>
-          <TouchableOpacity style={styles.addToCart} onPress={onAddToCart}>
-            <Typography
-              title="Add to Cart"
-              fontSize={scale(12)}
-              color={COLORS.white}
-              fontFamily="Roboto-Bold"
-            />
+          <TouchableOpacity
+            style={[styles.addToCart, isLoading && styles.addToCartDisabled]}
+            onPress={onAddToCart}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            ) : showCheckmark ? (
+              <Ionicons
+                name="checkmark-circle"
+                size={scale(20)}
+                color={COLORS.white}
+              />
+            ) : (
+              <Typography
+                title="Add to Cart"
+                fontSize={scale(12)}
+                color={COLORS.white}
+                fontFamily="Roboto-Bold"
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -110,23 +129,67 @@ const ProductCard: React.FC<ProductCardProps> = ({
 };
 
 const BestSelling: React.FC = () => {
-  const addToCart = useCartStore((state) => state.addToCart);
+  const { createCart } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistActions();
   const { isLoadingBestSelling, setLoadingBestSelling } = useLoadingStore();
   const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>(
     []
   );
+  const [loadingProducts, setLoadingProducts] = useState<Set<string>>(
+    new Set()
+  );
+  const [showCheckmarks, setShowCheckmarks] = useState<Set<string>>(new Set());
 
-  const handleAddToCart = (product: any) => {
-    const price = parseFloat(
-      product.priceRange?.minVariantPrice?.amount || "0"
-    );
-    addToCart({
-      id: product.id,
-      name: product.title,
-      price: price,
-      image: { uri: product.featuredImage?.url },
-    });
+  const handleAddToCart = async (product: any) => {
+    const productId = product.id;
+    setLoadingProducts((prev) => new Set(prev).add(productId));
+
+    try {
+      const firstVariant = product.variants?.edges?.[0]?.node;
+      if (!firstVariant) {
+        console.error("No variants available for product:", product.title);
+        return;
+      }
+
+      // Create cart line with optional prescription attributes
+      const cartLine = {
+        merchandiseId: firstVariant.id,
+        quantity: 1,
+        attributes: prescriptionToCartAttributes(
+          {
+            lensType: "Single Vision",
+            leftEye: "",
+            rightEye: "",
+            lensTint: "Clear",
+            blueLightFilter: "No",
+          },
+          product.id
+        ),
+      };
+
+      const success = await createCart([cartLine]);
+
+      if (success) {
+        setShowCheckmarks((prev) => new Set(prev).add(productId));
+        setTimeout(() => {
+          setShowCheckmarks((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(productId);
+            return newSet;
+          });
+        }, 2000);
+      } else {
+        console.error("❌ BestSelling: Failed to add to cart");
+      }
+    } catch (error) {
+      console.error("❌ BestSelling: Error adding to cart:", error);
+    } finally {
+      setLoadingProducts((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+    }
   };
 
   const handleToggleWishlist = (product: any) => {
@@ -217,11 +280,17 @@ const BestSelling: React.FC = () => {
           <ProductCard
             product={item.node}
             onPress={() => {
-              router.push(`/product-details?id=${item.node.id}&title=${encodeURIComponent(item.node.title)}`);
+              router.push(
+                `/product-details?id=${item.node.id}&title=${encodeURIComponent(
+                  item.node.title
+                )}`
+              );
             }}
             onAddToCart={() => handleAddToCart(item.node)}
             onToggleWishlist={() => handleToggleWishlist(item.node)}
             isFavorited={isInWishlist(item.node.id)}
+            isLoading={loadingProducts.has(item.node.id)}
+            showCheckmark={showCheckmarks.has(item.node.id)}
           />
         )}
         ListEmptyComponent={isLoadingBestSelling ? <CardSkeleton /> : null}
@@ -238,15 +307,14 @@ const BestSelling: React.FC = () => {
         >
           <View style={styles.buttonGradient}>
             <View style={styles.buttonContent}>
-             
               <View style={styles.buttonSecondaryContent}>
-              <View style={styles.iconContainer}>
-                <MaterialIcons
-                  name="visibility"
-                  size={24}
-                  color={COLORS.white}
-                />
-              </View>
+                <View style={styles.iconContainer}>
+                  <MaterialIcons
+                    name="visibility"
+                    size={24}
+                    color={COLORS.white}
+                  />
+                </View>
                 <View style={styles.textContainer}>
                   <Typography
                     title="Eyeglasses"
@@ -282,12 +350,14 @@ const BestSelling: React.FC = () => {
         >
           <View style={styles.buttonGradient}>
             <View style={styles.buttonContent}>
-             
               <View style={styles.buttonSecondaryContent}>
-              <View style={styles.iconContainer}>
-              <MaterialIcons name="wb-sunny" size={24} color={COLORS.white} />
-
-              </View>
+                <View style={styles.iconContainer}>
+                  <MaterialIcons
+                    name="wb-sunny"
+                    size={24}
+                    color={COLORS.white}
+                  />
+                </View>
                 <View style={styles.textContainer}>
                   <Typography
                     title="Sunglasses"
@@ -415,7 +485,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    gap:10
+    gap: 10,
   },
   addToCart: {
     backgroundColor: COLORS.primary,
@@ -426,6 +496,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
     marginTop: verticalScale(4),
+  },
+  addToCartDisabled: {
+    backgroundColor: COLORS.grey4,
+    borderColor: COLORS.grey4,
   },
   viewAllButtons: {
     // flexDirection: "row",
