@@ -292,6 +292,13 @@ export type CreateCartResponse = {
   };
 };
 
+export type AddToCartResponse = {
+  cartLinesAdd: {
+    cart: ShopifyCart | null;
+    userErrors: CustomerUserError[];
+  };
+};
+
 export type UpdateCartResponse = {
   cartLinesUpdate: {
     cart: ShopifyCart | null;
@@ -870,6 +877,60 @@ class HomeApi {
 
     const result = await this.executeQuery<CreateCartResponse>(query, { lines });
     console.log("🔗 HomeApi: createCart result:", JSON.stringify(result, null, 2));
+    return result;
+  }
+
+  /**
+   * Add lines to existing cart
+   */
+  async addToCart(cartId: string, lines: CartLineInput[]): Promise<AddToCartResponse> {
+    console.log("🔗 HomeApi: addToCart called with cartId:", cartId, "lines:", JSON.stringify(lines, null, 2));
+    
+    const query = `
+      mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) { 
+        cartLinesAdd(cartId: $cartId, lines: $lines) { 
+          cart { 
+            id 
+            checkoutUrl 
+            lines(first: 10) { 
+              edges { 
+                node { 
+                  id 
+                  quantity 
+                  attributes { key value } 
+                  merchandise { 
+                    ... on ProductVariant { 
+                      id 
+                      title 
+                      price {
+                        amount
+                        currencyCode
+                      }
+                      image {
+                        url
+                        altText
+                      }
+                      product { 
+                        id
+                        title 
+                        featuredImage {
+                          url
+                          altText
+                        }
+                      } 
+                    } 
+                  } 
+                } 
+              } 
+            } 
+          } 
+          userErrors { field message }
+        } 
+      }
+    `;
+
+    const result = await this.executeQuery<AddToCartResponse>(query, { cartId, lines });
+    console.log("🔗 HomeApi: addToCart result:", JSON.stringify(result, null, 2));
     return result;
   }
 

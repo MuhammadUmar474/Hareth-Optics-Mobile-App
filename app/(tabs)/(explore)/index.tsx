@@ -20,6 +20,7 @@ type ExploreProduct = {
   price: string;
   image: string;
   category: string;
+  variantId?: string;
 };
 
 const Explore = () => {
@@ -88,6 +89,7 @@ const Explore = () => {
         image:
           node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
         category: node.productType || selectedFilter,
+        variantId: node.variants?.edges?.[0]?.node?.id,
       }));
 
       // If loading more, append to current list

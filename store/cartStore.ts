@@ -19,6 +19,7 @@ interface CartState {
 interface CartActions {
   // Actions
   createCart: (lines: CartLineInput[]) => Promise<boolean>;
+  addToCart: (lines: CartLineInput[]) => Promise<boolean>;
   updateCartLines: (lines: CartLineUpdateInput[]) => Promise<boolean>;
   removeFromCart: (lineIds: string[]) => Promise<boolean>;
 
@@ -57,6 +58,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   createCart: async (lines: CartLineInput[]) => {
+    const { cart } = get();
+    if (cart) {
+      const result = await get().addToCart(lines);
+      return result;
+    }
+
     set({ loading: true, error: null });
 
     try {
@@ -92,6 +99,58 @@ export const useCartStore = create<CartStore>((set, get) => ({
       set({
         loading: false,
         error: error instanceof Error ? error.message : "Failed to create cart",
+      });
+      return false;
+    }
+  },
+
+  addToCart: async (lines: CartLineInput[]) => {
+    const { cart } = get();
+    if (!cart) {
+      console.error("🛒 Cart Store: No cart found for addToCart");
+      set({ error: "No cart found" });
+      return false;
+    }
+
+    set({ loading: true, error: null });
+
+    try {
+      const response = await homeApi.addToCart(cart.id, lines);
+
+      if (response.cartLinesAdd.userErrors.length > 0) {
+        const errorMessage = response.cartLinesAdd.userErrors
+          .map((error: any) => error.message)
+          .join(", ");
+        console.error("🛒 Cart Store: API user errors:", errorMessage);
+        set({
+          loading: false,
+          error: errorMessage,
+        });
+        return false;
+      }
+
+      if (response.cartLinesAdd.cart) {
+        set({
+          cart: response.cartLinesAdd.cart,
+          loading: false,
+          error: null,
+        });
+        get().updateCartCount(response.cartLinesAdd.cart);
+        await get().saveCart();
+        return true;
+      }
+
+      console.error("🛒 Cart Store: No cart returned from API");
+      set({
+        loading: false,
+        error: "Failed to add to cart",
+      });
+      return false;
+    } catch (error) {
+      console.error("🛒 Cart Store: addToCart error:", error);
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : "Failed to add to cart",
       });
       return false;
     }

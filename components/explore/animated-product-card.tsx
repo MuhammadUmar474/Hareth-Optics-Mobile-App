@@ -1,6 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { useLocal } from "@/hooks/use-lang";
-import { useCartStore } from "@/store/cartStore";
+import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,7 +12,7 @@ import Typography from "../ui/custom-typography";
 import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 export const AnimatedProductCard = ({ item, index }: any) => {
-  const addToCart = useCartStore((state) => state.addToCart);
+  const { createCart, loading: cartLoading, error: cartError } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistActions();
   const { t, isRtl } = useLocal();
 
@@ -49,7 +49,7 @@ export const AnimatedProductCard = ({ item, index }: any) => {
     router.push(`/product-details?id=${item.id}`);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (isAnimating) return;
     setIsAnimating(true);
 
@@ -65,48 +65,89 @@ export const AnimatedProductCard = ({ item, index }: any) => {
       }),
     ]).start();
 
-    // Add to cart action
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: parseFloat(item.price),
-      image: { uri: item.image },
-    });
-
-    // Show checkmark animation
-    setShowCheckmark(true);
-    Animated.parallel([
-      Animated.spring(checkmarkScaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 5,
-      }),
-      Animated.timing(checkmarkOpacityAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Hide after 1.2s
-    setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(checkmarkScaleAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(checkmarkOpacityAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setShowCheckmark(false);
+    try {
+      let variantId = item.variantId || item.id;
+      if (item.variantId) {
+        variantId = item.variantId;
+      } else if (item.variants && item.variants.length > 0) {
+        variantId = item.variants[0].id;
+      } else {
+        console.error(
+          "❌ AnimatedProductCard: No variant information available for product:",
+          item.id
+        );
+        console.error("❌ AnimatedProductCard: Item structure:", item);
         setIsAnimating(false);
+        return;
+      }
+
+      const cartLine = {
+        merchandiseId: variantId,
+        quantity: 1,
+        attributes: prescriptionToCartAttributes(
+          {
+            lensType: "Single Vision",
+            leftEye: "",
+            rightEye: "",
+            lensTint: "Clear",
+            blueLightFilter: "No",
+          },
+          item.id
+        ),
+      };
+
+      const success = await createCart([cartLine]);
+
+      if (success) {
+        setShowCheckmark(true);
+        Animated.parallel([
+          Animated.spring(checkmarkScaleAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            tension: 80,
+            friction: 5,
+          }),
+          Animated.timing(checkmarkOpacityAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        // Hide after 1.2s
+        setTimeout(() => {
+          Animated.parallel([
+            Animated.timing(checkmarkScaleAnim, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(checkmarkOpacityAnim, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setShowCheckmark(false);
+            setIsAnimating(false);
+          });
+        }, 1200);
+      } else {
+        console.error(
+          "❌ AnimatedProductCard: Failed to add to cart - success was false"
+        );
+        console.error("❌ AnimatedProductCard: Cart error:", cartError);
+        setIsAnimating(false);
+      }
+    } catch (error) {
+      console.error("❌ AnimatedProductCard: Error adding to cart:", error);
+      console.error("❌ AnimatedProductCard: Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        item: item,
       });
-    }, 1200);
+      setIsAnimating(false);
+    }
   };
 
   const handleToggleWishlist = () => {
@@ -256,7 +297,10 @@ const styles = StyleSheet.create({
     ...COLORS.shadow,
   },
   productInfo: { padding: scale(12) },
-  productDetails: { marginTop: verticalScale(4), marginBottom: verticalScale(12) },
+  productDetails: {
+    marginTop: verticalScale(4),
+    marginBottom: verticalScale(12),
+  },
   addToCartButtonContainer: { position: "relative" },
   addToCartButton: {
     backgroundColor: COLORS.primary,
@@ -264,6 +308,6 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(10),
     alignItems: "center",
     justifyContent: "center",
-    minHeight:verticalScale(35)
+    minHeight: verticalScale(35),
   },
 });
