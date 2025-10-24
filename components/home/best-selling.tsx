@@ -210,6 +210,7 @@ const BestSelling: React.FC = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>(
     []
   );
+
   const [loadingProducts, setLoadingProducts] = useState<Set<string>>(
     new Set()
   );
@@ -285,42 +286,66 @@ const BestSelling: React.FC = () => {
       setLoadingBestSelling(true);
       const query = `
         query GetBestSellingEyeglasses {
-          products(first: 20, sortKey: BEST_SELLING, query: "product_type:eyeglasses") {
+    products(first: 20, sortKey: BEST_SELLING, query: \"product_type:eyeglasses\") {
+      edges {
+        node {
+          id
+          title
+          handle
+          description
+          createdAt
+          featuredImage {
+            url
+            altText
+          }
+          images(first: 5) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          variants(first: 10) {
+            edges {
+              node {
+                title
+                sku
+                availableForSale
+                selectedOptions {
+                  name
+                  value
+                }
+                price {
+                  amount
+                  currencyCode
+                }
+                compareAtPrice {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+          collections(first: 1) {
             edges {
               node {
                 id
                 title
                 handle
-                description
-                vendor
-                productType
-                tags
-                totalInventory
-                availableForSale
-                featuredImage { url altText }
-                images(first: 5) { edges { node { url altText } } }
-                variants(first: 10) {
-                  edges {
-                    node {
-                      id
-                      title
-                      sku
-                      availableForSale
-                      price { amount currencyCode }
-                      compareAtPrice { amount currencyCode }
-                      selectedOptions { name value }
-                      image { url altText }
-                    }
-                  }
-                }
-                priceRange {
-                  minVariantPrice { amount currencyCode }
-                  maxVariantPrice { amount currencyCode }
-                }
               }
             }
           }
         }
+      }
+    }
+}
       `;
 
       const data = await executeHomeQuery<{ products: { edges: any[] } }>(
@@ -358,7 +383,7 @@ const BestSelling: React.FC = () => {
             onPress={() => {
               router.push(
                 `/product-details?id=${item.node.id}&title=${encodeURIComponent(
-                  item.node.title
+                  item.node.collections.edges[0].node.title
                 )}`
               );
             }}

@@ -260,6 +260,36 @@
        "enterPassword":"Enter your password",
        "dontHaveAccount":"Don't have an account?",
        "forgotPswrd":"Forgot your password?"
+    },
+    "storeLocator":{
+       "Ahmadi":"Ahmadi",
+       "Al-Aqeela":"Al-Aqeela",
+       "Sulaibikhat":"Sulaibikhat",
+       "Seville":"Seville",
+       "Saad Al-Abdullah":"Saad Al-Abdullah",
+       "Hiawin":"Hiawin",
+       "We find":"We find",
+       "Andalusia 10th century":"Andalusia 10th century",
+       "Khan Khalili":"Khan Khalili",
+       "Wara Complex":"Wara Complex",
+       "Jaber Al-Ahmad":"Jaber Al-Ahmad",
+       "Andalusia 3rd century":"Andalusia 3rd century",
+       "Descendant":"Descendant",
+       "Al- Bairaq Mall, 85 Street 250 - Block 5 - Floor 1 Basement - Shop B7":"Al- Bairaq Mall, 85 Street 250 - Block 5 - Floor 1 Basement - Shop B7",
+       "East Ahmadi-Block 6 -Parcel 900010 - Ground Floor- Shop 1 -PACI Unit NO":"East Ahmadi-Block 6 -Parcel 900010 - Ground Floor- Shop 1 -PACI Unit NO",
+       "Unit BO1 Ghornata - Block 3 - Jahra Ewy - Parcel 900016 - Mall - Floor 1 Basement - Unit BO1 - PACI Unit NO 19091897":"Unit BO1 Ghornata - Block 3 - Jahra Ewy - Parcel 900016 - Mall - Floor 1 Basement - Unit BO1 - PACI Unit NO 19091897",
+       "Eshbiliya - Block 3 - St 315 - Ground Floor - Shop 24 - Unit NO 19951965":"Eshbiliya - Block 3 - St 315 - Ground Floor - Shop 24 - Unit NO 19951965",
+       "Aljahra - Saad Al Abdullah City - Block 1 -St 22":"Aljahra - Saad Al Abdullah City - Block 1 -St 22",
+       "Aljahra - Block 4 - Street 4 - Commercial Building - Ground Floor - Shop 15":"Aljahra - Block 4 - Street 4 - Commercial Building - Ground Floor - Shop 15",
+       "Jahra - Block 2 - St 2 Lane 1 Parcel 2121 - Building 31 - Ground Floor -":"Jahra - Block 2 - St 2 Lane 1 Parcel 2121 - Building 31 - Ground Floor -",
+       "#9 Ground floor، 200 6 St, Andalous - Block 10":"#9 Ground floor، 200 6 St, Andalous - Block 10",
+       "Aljahra - Ain galout street - Khan Khalili":"Aljahra - Ain galout street - Khan Khalili",
+       "Aljahra - Block 5 - Marzouq Al Miteb St - Wara Complex":"Aljahra - Block 5 - Marzouq Al Miteb St - Wara Complex",
+       "aber Al-Ahmad - Block 5 - St 430 - Parcel 900001 - House - Ground Floor - Shop 7 - PACI Unit NO 20644532":"aber Al-Ahmad - Block 5 - St 430 - Parcel 900001 - House - Ground Floor - Shop 7 - PACI Unit NO 20644532",
+       "Andalus - Block 3 - St 1 - Parcel 219 - Ground Floor - Shop 12":"Andalus - Block 3 - St 1 - Parcel 219 - Ground Floor - Shop 12",
+       "Jahra - Block 1 - Sulaiyel Mall - Ground Floor - Shop 22 - PACI Unit NO":"Jahra - Block 1 - Sulaiyel Mall - Ground Floor - Shop 22 - PACI Unit NO",
+       "Directions":"Directions",
+       "Call":"Call"
     }
   }
   

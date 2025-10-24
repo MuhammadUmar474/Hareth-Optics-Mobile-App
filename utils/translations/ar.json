@@ -259,5 +259,36 @@
     "enterPassword": "أدخل كلمة المرور",
     "dontHaveAccount": "ليس لديك حساب؟ سجّل الآن",
     "forgotPswrd": "هل نسيت كلمة المرور؟"
+  },
+  "storeLocator":{
+    "Ahmadi":"الاحمدي",
+    "Al-Aqeela":"العقيلة",
+    "Sulaibikhat":"الصليبخات",
+    "Seville":"اشبيلية",
+    "Saad Al-Abdullah":"السعد العبدالله",
+    "Hiawin":"هياوين",
+    "We find":"نجد",
+    "Andalusia 10th century":"الاندلس ق 10",
+    "Khan Khalili":"خان خليلي",
+    "Wara Complex":"مجمع وارة",
+    "Jaber Al-Ahmad":"جابر الأحمد",
+    "Andalusia 3rd century":"الاندلس ق 3",
+    "Descendant":"سليل",
+    "East Ahmadi-Block 6 -Parcel 900010 - Ground Floor- Shop 1 -PACI Unit NO":"الاحمدي - جمعية الاحمدي - قطعة 6",
+"Al- Bairaq Mall, 85 Street 250 - Block 5 - Floor 1 Basement - Shop B7":"العقيلة - قطعة 5 - مجمع البيرق - الدور الارضي - سرداب",
+"Unit BO1 Ghornata - Block 3 - Jahra Ewy - Parcel 900016 - Mall - Floor 1 Basement - Unit BO1 - PACI Unit NO 19091897":"الصليبخات - مجمع سما مول",
+"Eshbiliya - Block 3 - St 315 - Ground Floor - Shop 24 - Unit NO 19951965":"اشبيلية - جمعية اشبيلية",
+"Aljahra - Saad Al Abdullah City - Block 1 -St 22":"الجهراء - جمعية سعد العبد الله - قطعة 1 - شارع 22",
+"Aljahra - Block 4 - Street 4 - Commercial Building - Ground Floor - Shop 15":"الجهراء - قطعة 4 - شارع 4 -مجمع هياوين",
+"Jahra - Block 2 - St 2 Lane 1 Parcel 2121 - Building 31 - Ground Floor -":"الجهراء - قطعة 2 - شارع 2 - جادة 1- مجمع نجد - الدور الأرضي",
+"#9 Ground floor، 200 6 St, Andalous - Block 10":"الاندلس - قطعة 10 - شارع 6 - الدور الارضي",
+"Aljahra - Ain galout street - Khan Khalili":"الجهراء - شارع عين جالوت - مجمع خان الخليلي",
+"Aljahra - Block 5 - Marzouq Al Miteb St - Wara Complex":"الجهراء - قطعة ٥ - شارع مرزق المتعب - مجمع واره",
+"Jaber Al-Ahmad - Block 5 - St 430 - Parcel 900001 - House - Ground Floor - Shop 7 - PACI Unit NO 20644532":"جابر الأحمد - جمعيه جابر الاحمد - الدور الأرضي - محل 7 - الرقم الآلي للوحدة 20644532",
+"Andalus - Block 3 - St 1 - Parcel 219 - Ground Floor - Shop 12":"الأندلس - قطعة 3 - شارع 1 - قسيمة 219 - الدور الأرضي - محل 12",
+"Jahra - Block 1 - Sulaiyel Mall - Ground Floor - Shop 22 - PACI Unit NO":"الجهراء - قطعة 1 - مجمع سليل - الدور الأرضي - محل 22 - الرقم الآلي 17656961",
+"Directions":"الاتجاهات",
+"Call":"الاتصال"
+
   }
 }
