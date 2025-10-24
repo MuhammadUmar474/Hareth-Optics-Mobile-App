@@ -1,8 +1,10 @@
 import { COLORS } from "@/constants/colors";
 import { SIZES } from "@/constants/sizes";
+import { useLangStore } from "@/store/langStore";
 import { Ionicons } from "@expo/vector-icons";
 import React, { memo } from "react";
-import { Linking, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { Alert, Linking, StyleSheet, TouchableOpacity, View } from "react-native";
 import Typography from "../ui/custom-typography";
 
 export interface StoreItem {
@@ -10,40 +12,39 @@ export interface StoreItem {
   name: string;
   address: string;
   phone: string;
-  distanceKm?: number;
-  lat?: number;
-  lng?: number;
+  distanceKm?: string;
 }
 
 interface StoreCardProps {
   store: StoreItem;
-  onPressDirections?: (store: StoreItem) => void;
-  onPressCall?: (store: StoreItem) => void;
+ 
 }
 
-const StoreCard: React.FC<StoreCardProps> = ({ store, onPressDirections, onPressCall }) => {
-  const handleCall = () => {
-    if (onPressCall) return onPressCall(store);
-    if (store.phone) {
-      Linking.openURL(`tel:${store.phone}`);
-    }
-  };
-
+const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
+  const lang = useLangStore((state) => state.language);
+  const rtl = lang === "ar";
+  const { t } = useTranslation();
   const handleDirections = () => {
-    if (onPressDirections) return onPressDirections(store);
-    const { lat, lng, address } = store;
-    const query = lat && lng ? `${lat},${lng}` : encodeURIComponent(address);
-    const url = Platform.select({
-      ios: `maps://?q=${query}`,
-      android: `geo:0,0?q=${query}`,
-      default: `https://www.google.com/maps/search/?api=1&query=${query}`,
-    });
-    if (url) Linking.openURL(url);
+   
+      Linking.openURL(store.distanceKm!)
+        .catch(() => {
+          Alert.alert("Error", "Unable to open map.");
+        });
+    
   };
+  
+  const handleCall = () => {
+    Linking.openURL(`tel:${store.phone}`)
+      .catch(() => {
+        Alert.alert("Error", "Unable to open dial pad.");
+      });
+  };
+  
+
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
+      <View style={[styles.headerRow, { flexDirection: rtl ? "row-reverse" : "row" }]}>
         <Typography
           title={store.name}
           fontSize={SIZES.title}
@@ -64,30 +65,31 @@ const StoreCard: React.FC<StoreCardProps> = ({ store, onPressDirections, onPress
       </View>
 
       <Typography
+        style={{ textAlign: rtl ? "right" : "left" }}
         title={store.address}
         fontSize={SIZES.desc}
         color={COLORS.grayText}
-        style={{ marginTop: 4 }}
+        style={{ marginTop: 4, textAlign: rtl ? "right" : "left" }}
       />
 
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleCall} activeOpacity={0.8}>
+      <View style={[styles.actionsRow, { flexDirection: rtl ? "row-reverse" : "row" }]}>
+        <TouchableOpacity style={[styles.actionBtn, { flexDirection: rtl ? "row-reverse" : "row" }]} onPress={handleCall} activeOpacity={0.8}>
           <Ionicons name="call" size={16} color={COLORS.white} />
           <Typography
-            title="Call"
+            title={t("storeLocator.Call")}
             fontSize={SIZES.caption}
             color={COLORS.white}
-            style={{ marginLeft: 6, fontWeight: "700" }}
+            style={{ marginLeft: 6, fontWeight: "700", textAlign: rtl ? "right" : "left" }}
           />
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionBtn, styles.secondaryBtn]} onPress={handleDirections} activeOpacity={0.8}>
+        <TouchableOpacity style={[styles.actionBtn, styles.secondaryBtn, { flexDirection: rtl ? "row-reverse" : "row" }]} onPress={handleDirections} activeOpacity={0.8}>
           <Ionicons name="navigate" size={16} color={COLORS.primary} />
           <Typography
-            title="Directions"
+            title={t("storeLocator.Directions")}
             fontSize={SIZES.caption}
             color={COLORS.primary}
-            style={{ marginLeft: 6, fontWeight: "700" }}
+            style={{ marginLeft: 6, fontWeight: "700", textAlign: rtl ? "right" : "left" }}
           />
         </TouchableOpacity>
       </View>

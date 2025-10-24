@@ -76,6 +76,8 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
     fetchLatestProducts();
   }, [setLoadingLatestProducts]);
 
+
+
   return (
     <View style={styles.container}>
       {latest ? (
@@ -112,7 +114,7 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
               data={card.node}
               onPress={() => {
                 router.push(
-                  `/product-details?id=${card.node.id}&title=${encodeURIComponent(card.node.title)}`
+                  `/product-details?id=${card.node.id}&title=${encodeURIComponent(card.node.collections.edges[0].node.title)}`
                 );
               }}
             />
