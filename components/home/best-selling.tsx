@@ -1,5 +1,5 @@
 import { COLORS } from "@/constants/colors";
-import { BestSellingProduct } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { executeHomeQuery, MenuItem } from "@/services/home/homeApi";
 import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useLoadingStore } from "@/store/loadingStore";
@@ -23,15 +23,13 @@ import SimpleOptimizedImage from "../ui/simple-optimized-image";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-interface ProductCardProps {
-  product: BestSellingProduct;
-  onPress?: () => void;
-  onAddToCart: () => void;
-  onToggleWishlist: () => void;
-  isFavorited: boolean;
-  isLoading?: boolean;
-  showSuccess?: boolean;
-}
+// Helper function to generate RTL-aware styles
+const getRtlStyles = (isRtl: boolean) => ({
+  flexDirection: isRtl ? "row-reverse" : "row",
+  textAlign: isRtl ? "right" : "left",
+  favoriteButtonPosition: isRtl ? { left: scale(12) } : { right: scale(12) },
+  arrowIcon: isRtl ? "arrow-back" : "arrow-forward",
+});
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
@@ -46,10 +44,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const checkmarkScale = useRef(new Animated.Value(0)).current;
   const checkmarkOpacity = useRef(new Animated.Value(0)).current;
+  const { t, isRtl } = useLocal();
+  const rtlStyles = getRtlStyles(isRtl);
 
   useEffect(() => {
     if (showSuccess) {
-      // Button pulse animation
       Animated.sequence([
         Animated.timing(scaleAnim, {
           toValue: 0.95,
@@ -63,7 +62,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }),
       ]).start();
 
-      // Checkmark animation
       Animated.parallel([
         Animated.spring(checkmarkScale, {
           toValue: 1,
@@ -78,7 +76,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }),
       ]).start();
 
-      // Hide checkmark after delay
       setTimeout(() => {
         Animated.parallel([
           Animated.timing(checkmarkScale, {
@@ -100,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.card}>
       <View style={styles.cardContent}>
         <TouchableOpacity
-          style={styles.favoriteButton}
+          style={[styles.favoriteButton, rtlStyles.favoriteButtonPosition]}
           onPress={onToggleWishlist}
         >
           <Animated.View>
@@ -127,10 +124,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
             fontSize={scale(12)}
             fontFamily="Roboto-Bold"
             color={COLORS.black7}
-            style={styles.productName}
+            style={[styles.productName, { textAlign: rtlStyles.textAlign }]}
             numberOfLines={2}
           />
-          <View style={styles.priceContainer}>
+          <View style={[styles.priceContainer, { flexDirection: rtlStyles.flexDirection }]}>
             <Typography
               title={
                 product.priceRange.minVariantPrice.amount +
@@ -170,7 +167,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                   style={{
                     transform: [{ scale: checkmarkScale }],
                     opacity: checkmarkOpacity,
-                    flexDirection: "row",
+                    flexDirection: rtlStyles.flexDirection,
                     alignItems: "center",
                     gap: scale(6),
                   }}
@@ -181,7 +178,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     color={COLORS.white}
                   />
                   <Typography
-                    title="Added!"
+                    title={t("home.added") + "!"}
                     fontSize={scale(12)}
                     color={COLORS.white}
                     fontFamily="Roboto-Bold"
@@ -205,17 +202,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
 const BestSelling: React.FC = () => {
   const { createCart } = useCartStore();
+  const { t, isRtl } = useLocal();
   const { toggleWishlist, isInWishlist } = useWishlistActions();
   const { isLoadingBestSelling, setLoadingBestSelling } = useLoadingStore();
-  const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>(
-    []
-  );
-  const [loadingProducts, setLoadingProducts] = useState<Set<string>>(
-    new Set()
-  );
-  const [successProducts, setSuccessProducts] = useState<Set<string>>(
-    new Set()
-  );
+  const [bestSellingProducts, setBestSellingProducts] = useState<MenuItem[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState<Set<string>>(new Set());
+  const [successProducts, setSuccessProducts] = useState<Set<string>>(new Set());
+  const rtlStyles = getRtlStyles(isRtl);
 
   const handleAddToCart = async (product: any) => {
     const productId = product.id;
@@ -233,7 +226,7 @@ const BestSelling: React.FC = () => {
         quantity: 1,
         attributes: prescriptionToCartAttributes(
           {
-            lensType: "Single Vision",
+            lensType: t("eyeglassesDetails.singleVision"),
             leftEye: "",
             rightEye: "",
             lensTint: "Clear",
@@ -323,9 +316,7 @@ const BestSelling: React.FC = () => {
         }
       `;
 
-      const data = await executeHomeQuery<{ products: { edges: any[] } }>(
-        query
-      );
+      const data = await executeHomeQuery<{ products: { edges: any[] } }>(query);
       setBestSellingProducts(data.products.edges);
     } catch (error) {
       console.error("Failed to fetch best selling products:", error);
@@ -340,13 +331,13 @@ const BestSelling: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { flexDirection: rtlStyles.flexDirection }]}>
         <Typography
-          title="Bestselling Eyeglasses"
+          title={t("home.bestSellingEyeGlasses")}
           fontSize={scale(17)}
           fontFamily="Poppins-Bold"
           color={COLORS.secondary}
-          style={styles.headerTitle}
+          style={[styles.headerTitle, { textAlign: rtlStyles.textAlign }]}
         />
       </View>
 
@@ -372,7 +363,8 @@ const BestSelling: React.FC = () => {
         ListEmptyComponent={isLoadingBestSelling ? <CardSkeleton /> : null}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={[styles.listContainer, { flexDirection: rtlStyles.flexDirection }]}
+        inverted={isRtl} // Invert FlatList for RTL
       />
 
       <View style={styles.viewAllButtons}>
@@ -384,6 +376,45 @@ const BestSelling: React.FC = () => {
           <View style={styles.buttonGradient}>
             <View style={styles.buttonContent}>
               <View style={styles.buttonSecondaryContent}>
+                {
+                  isRtl &&
+                  <>
+                  <View style={styles.arrowContainer}>
+                  <Ionicons
+                    name={rtlStyles.arrowIcon}
+                    size={18}
+                    color={COLORS.white}
+                  />
+                </View>
+                <View style={[styles.textContainer, { alignItems:"flex-end",gap:0}]}>
+                 <Typography
+                   title={t("home.eyeGlasses")}
+                   fontSize={scale(16)}
+                   color={COLORS.white}
+                   fontFamily="Roboto-Bold"
+                   style={styles.buttonTitle}
+                 />
+                 <Typography
+                   title={t("home.bestSellers")}
+                   fontSize={scale(12)}
+                   color={COLORS.white}
+                   fontFamily="Roboto-Regular"
+                   style={[styles.buttonSubtitle,]}
+                 />
+               </View>
+               
+               </>
+                }
+                <View style={styles.iconContainer}>
+                  <MaterialIcons
+                    name="visibility"
+                    size={24}
+                    color={COLORS.white}
+                  />
+                </View>
+                {
+                !isRtl &&
+                <>
                 <View style={styles.iconContainer}>
                   <MaterialIcons
                     name="visibility"
@@ -393,27 +424,29 @@ const BestSelling: React.FC = () => {
                 </View>
                 <View style={styles.textContainer}>
                   <Typography
-                    title="Eyeglasses"
+                    title={t("home.eyeGlasses")}
                     fontSize={scale(16)}
                     color={COLORS.white}
                     fontFamily="Roboto-Bold"
                     style={styles.buttonTitle}
                   />
                   <Typography
-                    title="Best Sellers"
+                    title={t("home.bestSellers")}
                     fontSize={scale(12)}
                     color={COLORS.white}
                     fontFamily="Roboto-Regular"
-                    style={styles.buttonSubtitle}
+                    style={[styles.buttonSubtitle,]}
                   />
                 </View>
                 <View style={styles.arrowContainer}>
                   <Ionicons
-                    name="arrow-forward"
+                    name={rtlStyles.arrowIcon}
                     size={18}
                     color={COLORS.white}
                   />
                 </View>
+                </>
+                }
               </View>
             </View>
           </View>
@@ -426,7 +459,38 @@ const BestSelling: React.FC = () => {
         >
           <View style={styles.buttonGradient}>
             <View style={styles.buttonContent}>
+              {/*  */}
               <View style={styles.buttonSecondaryContent}>
+                 
+                 {
+                  isRtl &&
+                  <>
+                <View style={styles.arrowContainer}>
+                  <Ionicons
+                    name={rtlStyles.arrowIcon}
+                    size={18}
+                    color={COLORS.white}
+                  />
+                </View>
+                <View style={[styles.textContainer, { alignItems:"flex-end",gap:2}]}>
+                  <Typography
+                  title={t("home.sunGlasses")}
+                  fontSize={scale(16)}
+                  color={COLORS.white}
+                  fontFamily="Roboto-Bold"
+                  style={[styles.buttonTitle]}
+                />
+                <Typography
+                  title={t("home.bestSellers")}
+                  fontSize={scale(12)}
+                  color={COLORS.white}
+                  fontFamily="Roboto-Regular"
+                  style={styles.buttonSubtitle}
+                />
+              </View>
+              </>
+                 }
+                
                 <View style={styles.iconContainer}>
                   <MaterialIcons
                     name="wb-sunny"
@@ -434,29 +498,24 @@ const BestSelling: React.FC = () => {
                     color={COLORS.white}
                   />
                 </View>
-                <View style={styles.textContainer}>
+               {!isRtl && <View style={styles.textContainer}>
                   <Typography
-                    title="Sunglasses"
+                    title={t("home.sunGlasses")}
                     fontSize={scale(16)}
                     color={COLORS.white}
                     fontFamily="Roboto-Bold"
-                    style={styles.buttonTitle}
+                    style={[styles.buttonTitle]}
                   />
                   <Typography
-                    title="Best Sellers"
+                    title={t("home.bestSellers")}
                     fontSize={scale(12)}
                     color={COLORS.white}
                     fontFamily="Roboto-Regular"
                     style={styles.buttonSubtitle}
                   />
-                </View>
-                <View style={styles.arrowContainer}>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={18}
-                    color={COLORS.white}
-                  />
-                </View>
+                </View>}
+
+                
               </View>
             </View>
           </View>
@@ -509,7 +568,6 @@ const styles = StyleSheet.create({
     zIndex: 10,
     borderRadius: scale(8),
     top: scale(12),
-    right: scale(12),
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.white,
@@ -530,7 +588,6 @@ const styles = StyleSheet.create({
     minHeight: scale(22),
   },
   priceContainer: {
-    flexDirection: "row",
     alignItems: "center",
     gap: scale(8),
   },

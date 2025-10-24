@@ -38,13 +38,15 @@
       }
     },
     "home":{
+      "added":"Added",
       "getFasterDel":"Get Faster Delivery",
       "selectLocation":"Select Location",
       "city":"City / Area",
       "useYourCurrentLocation":"Use your current location",
       "useMyCurrentLocation":"Use my current location",
       "lookingFor":"What you are looking for?",
-      "eyeGlasses":"Eye Glasses",
+      "eyeGlasses":"Eyeglasses",
+      "sunGlasses":"Sunglasses",
       "contactLenses":"Contact Lenses",
       "screenGlasses":"Screen Glasses",
       "showNow":"Shop Now",
@@ -52,8 +54,9 @@
       "noQuestionAskedReturns":"No Question Asked Returns",
       "easyExchange":"Easy 14 day exchange",
       "freeShipping":"FREE Shipping",
-      "bestSellingEyeGlasses":"Best Selling Eyeglasses",
+      "bestSellers":"Best Sellers",
       "bestSellingSunglasses":"Best Selling Sunglasses",
+      "bestSellingEyeGlasses":"Best Selling Eyeglasses",
       "latestGreatest":"Latest and Greatest",
       "dropAlert":"Drop Alert",
       "nearbyStores":"Nearby Stores",
@@ -63,7 +66,11 @@
       "freeEyeTest":"Free eye test",
       "freeRepair":"Free repair",
       "apply":"Apply",
-      "fromFactory":"FROM THE FACTORY STRAIGHT TO YOU"
+      "yearWarrenty":"1 year Warranty",
+      "fromFactory":"FROM THE FACTORY STRAIGHT TO YOU",
+      "premium":"Premium",
+      "classic":"Classic",
+      "onSale":"On Sale"
     },
     "purchases":{
       "paymentMethods":"Payment Methods",

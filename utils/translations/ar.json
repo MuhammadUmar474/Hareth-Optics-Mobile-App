@@ -38,13 +38,14 @@
     }
   },
   "home": {
+    "added":"تمت الإضافة",
     "getFasterDel": "احصل على توصيل أسرع",
     "selectLocation": "اختر الموقع",
     "city": "المدينة / المنطقة",
     "useYourCurrentLocation": "استخدم موقعك الحالي",
     "useMyCurrentLocation": "استخدم موقعي الحالي",
     "lookingFor": "ما الذي تبحث عنه؟",
-    "eyeGlasses": "النظارات الطبية",
+    "eyeGlasses": "النظاراتالطبية",
     "contactLenses": "العدسات اللاصقة",
     "screenGlasses": "نظارات الشاشة",
     "showNow": "تسوق الآن",
@@ -52,8 +53,10 @@
     "noQuestionAskedReturns": "إرجاع بدون أسئلة",
     "easyExchange": "تبديل سهل خلال 14 يومًا",
     "freeShipping": "شحن مجاني",
-    "bestSellingEyeGlasses": "النظارات الطبية الأكثر مبيعًا",
+    "bestSellers": "الأكثر مبيعًا",
     "bestSellingSunglasses": "النظارات الشمسية الأكثر مبيعًا",
+    "sunGlasses": "نظارات شمسية",
+    "bestSellingEyeGlasses": "النظارات الطبية الأكثر مبيعًا",
     "latestGreatest": "الأحدث والأفضل",
     "dropAlert": "تنبيه الإصدارات",
     "nearbyStores": "المتاجر القريبة",
@@ -63,7 +66,10 @@
     "freeEyeTest": "فحص النظر مجانًا",
     "freeRepair": "إصلاح مجاني",
     "apply": "تطبيق",
-    "fromFactory": "من المصنع إليك مباشرة"
+    "fromFactory": "من المصنع إليك مباشرة",
+    "oneYearWarranty": "ضمان لمدة سنة واحدة",
+    "premium": "مميز",
+    "onSale": "تخفيضات"
   },
   "purchases": {
     "paymentMethods": "طرق الدفع",

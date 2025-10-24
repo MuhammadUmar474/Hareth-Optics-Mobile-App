@@ -276,7 +276,7 @@ const HomeScreen = () => {
                     color={COLORS.grey3}
                   />
                   <Typography
-                    title="No Products Found"
+                    title={("common.noProduct")}
                     fontSize={moderateScale(18)}
                     color={COLORS.black}
                     style={{ marginTop: verticalScale(16) }}
@@ -305,7 +305,7 @@ const HomeScreen = () => {
 
               <OurPromiseComponent
                 promises={ourPromiseData}
-                title="Hareth Optics Promise"
+                title={t("home.harethOptics")}
               />
 
               <BestSelling />
@@ -316,7 +316,7 @@ const HomeScreen = () => {
 
               <OurPromiseComponent
                 promises={storeBenefits}
-                title="Store Benefits"
+                title={"home.storeBenefits"}
               />
 
               <View style={styles.videoContainer}>
@@ -344,7 +344,7 @@ const HomeScreen = () => {
                         </View>
                       </TouchableOpacity>
                       <Typography
-                        title="FROM THE FACTORY STRAIGHT TO YOU"
+                        title={t("home.fromFactory")}
                         fontSize={moderateScale(14)}
                         color={COLORS.white}
                         style={styles.overlayText}

@@ -1,5 +1,6 @@
 import { COLORS } from "@/constants/colors";
 import { GlassesBrand } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { homeApi, MenuItem } from "@/services/home/homeApi";
 import { useLoadingStore } from "@/store/loadingStore";
 import { Feather } from "@expo/vector-icons";
@@ -22,6 +23,7 @@ interface BrandCardProps {
 }
 
 const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
+  const {t,isRtl}=useLocal();
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.card}>
       <Image
@@ -45,7 +47,7 @@ const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
           onPress={() => router.push(`/(tabs)/(explore)`)}
         >
           <Typography
-            title="Shop Now"
+            title={t("home.dropAlert")}
             fontSize={scale(10)}
             color={COLORS.white}
             fontFamily="Roboto-Bold"
@@ -60,7 +62,7 @@ const BrandCard: React.FC<BrandCardProps> = ({ data, onPress }) => {
 const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
   const [latestProducts, setLatestProducts] = useState<MenuItem[]>([]);
   const { isLoadingLatestProducts, setLoadingLatestProducts } = useLoadingStore();
-
+ const {t,isRtl}=useLocal();
   useEffect(() => {
     const fetchLatestProducts = async () => {
       try {
@@ -79,9 +81,9 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
   return (
     <View style={styles.container}>
       {latest ? (
-        <View style={styles.header}>
+        <View style={[styles.header,{flexDirection:isRtl?"row-reverse":"row"}]}>
           <Typography
-            title="Latest and Greatest"
+            title={t("home.latestGreatest")}
             fontSize={scale(17)}
             color={COLORS.black}
             fontFamily="Roboto-Bold"
@@ -89,7 +91,7 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
           />
           <View style={styles.subtitleContainer}>
             <Typography
-              title="Drop alert"
+              title={t("home.dropAlert")}
               fontSize={scale(10)}
               color={COLORS.black}
               fontFamily="Roboto-Bold"
@@ -101,6 +103,7 @@ const Brands: React.FC<BrandsProps> = ({ brands, latest }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        
         contentContainerStyle={styles.scrollContainer}
       >
         {isLoadingLatestProducts ? (

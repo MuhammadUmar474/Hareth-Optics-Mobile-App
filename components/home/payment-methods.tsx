@@ -1,7 +1,8 @@
 import { COLORS } from "@/constants/colors";
 import { PaymentMethod } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { Image } from "expo-image";
-import React from "react";
+import React, { useMemo } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
@@ -9,6 +10,12 @@ interface PaymentMethodsProps {
   paymentMethods: PaymentMethod[];
 }
 const PaymentMethods: React.FC<PaymentMethodsProps> = ({ paymentMethods }) => {
+   const {t,isRtl}=useLocal();
+   const dynStyles = useMemo(() =>
+    StyleSheet.create({
+      textAlign: { textAlign: isRtl ? "right" : "left" },
+    })
+    , [isRtl])
   const renderPaymentMethodItem = (item: PaymentMethod) => {
     return (
       <TouchableOpacity style={styles.paymentMethodItem}>
@@ -29,14 +36,16 @@ const PaymentMethods: React.FC<PaymentMethodsProps> = ({ paymentMethods }) => {
   return (
     <View style={styles.container}>
       <Typography
-        title="Payment Methods"
+        title={t("purchases.paymentMethods")}
         fontSize={scale(14)}
         fontFamily="Poppins-Bold"
         color={COLORS.secondary}
+        textAlign={dynStyles.textAlign.textAlign}
         style={styles.title}
       />
       <FlatList
         data={paymentMethods}
+        inverted={isRtl}
         renderItem={({ item }) => renderPaymentMethodItem(item)}
         horizontal
         showsHorizontalScrollIndicator={false}

@@ -1,36 +1,54 @@
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { Feather } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
 import Input from "../ui/input";
 
 const NearByStores = () => {
+  const { t, isRtl } = useLocal();
+  const dynStyles = (useMemo(() =>
+    StyleSheet.create({
+      textAlign: { textAlign: isRtl ? "right" : "left" },
+    })
+    , [isRtl]))
   return (
     <View style={styles.container}>
       <Typography
-        title="Nearby stores"
+        title={t("home.nearbyStores")}
         fontSize={scale(17)}
         fontFamily="Poppins-Bold"
         color={COLORS.secondary}
+        textAlign={dynStyles.textAlign.textAlign}
         style={styles.headerTitle}
       />
 
       <View style={styles.locationContainer}>
         <Input
-          placeholder="Find stores nearby"
+          placeholder={t("home.findStores")}
           containerStyle={styles.inputContainer}
+          textAlign={dynStyles.textAlign.textAlign}
           inputContainerStyle={styles.inputContainerStyle}
-          leftAccessory={
-            <Feather name="search" size={20} color={COLORS.primary} />
-          }
+          {...(isRtl
+            ? {
+              rightAccessory: (
+                <Feather name="search" size={20} color={COLORS.primary} />
+              ),
+            }
+            : {
+              leftAccessory: (
+                <Feather name="search" size={20} color={COLORS.primary} />
+              ),
+            })}
         />
         <Typography
-          title="Use your current location"
+          title={t("home.useYourCurrentLocation")}
           fontSize={scale(12)}
           fontFamily="Roboto-Regular"
           color={COLORS.black}
+          textAlign={dynStyles.textAlign.textAlign}
           style={styles.inputTitle}
         />
       </View>

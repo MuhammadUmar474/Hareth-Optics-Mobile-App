@@ -110,7 +110,7 @@ export const categoryOptions: CategoryOption[] = [
   },
   {
     id: 6,
-    title: "Premium",
+    title: "home.premium",
     iconName: "diamond-outline",
     iconLibrary: "ionicons",
     handle: "color-contact-lenses",
@@ -118,7 +118,7 @@ export const categoryOptions: CategoryOption[] = [
   },
   {
     id: 7,
-    title: "Classic",
+    title: "home.classic",
     iconName: "medal-outline",
     iconLibrary: "ionicons",
     handle: "clear-contact-lenses",
@@ -126,7 +126,7 @@ export const categoryOptions: CategoryOption[] = [
   },
   {
     id: 8,
-    title: "On Sale",
+    title: "home.onSale",
     iconName: "pricetag-outline",
     iconLibrary: "ionicons",
     handle: "monthly-colored-contact-lenses",
@@ -134,7 +134,7 @@ export const categoryOptions: CategoryOption[] = [
   },
   {
     id: 9,
-    title: "Contact Lens",
+    title: "home.contactLenses",
     iconName: "eye-outline",
     iconLibrary: "ionicons",
     handle: "contact-lenses",
@@ -426,14 +426,14 @@ export const glassesBrandsData: GlassesBrand[] = [
 export const ourPromiseData: OurPromise[] = [
   {
     id: 1,
-    name: "No Questions Asked Returns",
+    name: "home.harethOptics",
     iconLibrary: "fontisto",
     iconName: "arrow-return-left",
     onPress: () => router.push("/return-policy"),
   },
   {
     id: 2,
-    name: "Easy 14 day Exchange",
+    name: "home.easyExchange",
     iconLibrary: "fontawesome",
     iconName: "exchange",
     onPress: () => router.push("/exchange-policy"),
@@ -441,14 +441,14 @@ export const ourPromiseData: OurPromise[] = [
   },
   {
     id: 3,
-    name: "FREE Shipping",
+    name: "home.freeShipping",
     iconLibrary: "fontawesome5",
     iconName: "shipping-fast",
     onPress: () => router.push("/shipping-policy"),
   },
   {
     id: 4,
-    name: "1 year Warranty",
+    name: "home.oneYearWarranty",
     iconLibrary: "MaterialCommunityIcons",
     iconName: "shield-check",
     onPress: () => router.push("/warranty-policy"),
@@ -489,19 +489,19 @@ export const bestSellingProducts: BestSellingProduct[] = [
 export const storeBenefits: OurPromise[] = [
   {
     id: 1,
-    name: "Free lens cleaner",
+    name: "home.freeLensCleaner",
     iconLibrary: "fontawesome5",
     iconName: "spray-can",
   },
   {
     id: 2,
-    name: "Free eye test",
+    name: "home.freeEyeTest",
     iconLibrary: "fontawesome5",
     iconName: "eye",
   },
   {
     id: 3,
-    name: "Free repair",
+    name: "home.freeEyeTest",
     iconLibrary: "fontawesome5",
     iconName: "tools",
   },

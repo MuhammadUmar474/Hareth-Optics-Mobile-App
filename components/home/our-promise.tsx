@@ -1,7 +1,8 @@
 import { COLORS } from "@/constants/colors";
 import { OurPromise } from "@/constants/data";
+import { useLocal } from "@/hooks/use-lang";
 import { FontAwesome, FontAwesome5, Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
@@ -15,10 +16,10 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
   promises,
   title,
 }) => {
+  const {t,isRtl}=useLocal()
   const renderIcon = (promise: OurPromise) => {
     const iconSize = scale(24);
     const iconColor = COLORS.primary;
-
     switch (promise.iconLibrary) {
       case "fontisto":
         return (
@@ -56,18 +57,28 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
         return null;
     }
   };
-
+  const dynStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        textAlign: { textAlign: isRtl ? "right" : "left" },
+        promisBox:{
+          flexDirection: isRtl?"row-reverse": "row",
+        }
+      }),
+    [isRtl]
+  );
   return (
     <View style={styles.container}>
       <Typography
-        title={title || "Hareth Optics Promise"}
+        title={t(title || "home.harethOptics")}
         fontSize={scale(17)}
         color={COLORS.secondary}
         fontFamily="Roboto-Bold"
+        textAlign={dynStyles.textAlign.textAlign}
         style={styles.title}
       />
 
-      <View style={styles.promiseBox}>
+      <View style={[styles.promiseBox,dynStyles.promisBox]}>
         {promises.map((promise, index) => (
          <TouchableOpacity
          key={promise.id}
@@ -78,14 +89,16 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
        >
        
             <View style={styles.iconContainer}>{renderIcon(promise)}</View>
+            {isRtl&& index < promises.length - 1 && <View style={styles.divider} />}
+
             <Typography
-              title={promise.name}
+              title={t(promise.name)}
               fontSize={scale(10)}
               color={COLORS.secondary}
               fontFamily="Roboto-Bold"
               style={styles.promiseText}
             />
-            {index < promises.length - 1 && <View style={styles.divider} />}
+            {!isRtl && index < promises.length - 1 && <View style={styles.divider} />}
           </TouchableOpacity>
         ))}
       </View>
@@ -99,7 +112,6 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(16),
   },
   promiseBox: {
-    flexDirection: "row",
     backgroundColor: COLORS.white,
     borderRadius: scale(12),
     padding: scale(16),
