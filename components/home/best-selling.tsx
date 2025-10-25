@@ -118,6 +118,7 @@ const BestSelling: React.FC = () => {
           title
           handle
           description
+          productType
           createdAt
           featuredImage {
             url
