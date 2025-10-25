@@ -120,7 +120,7 @@ export type ProductsByCollectionResponse = {
     handle: string;
     description: string;
     image: Image | null;
-    products: { 
+    products: {
       edges: { node: CollectionProductNode }[];
       pageInfo: { hasNextPage: boolean; endCursor: string | null };
     };
@@ -254,7 +254,6 @@ export type ProductImage = {
   url: string;
   altText?: string | null;
 };
-
 
 export type ProductVariant = {
   id: string;
@@ -536,7 +535,7 @@ class HomeApi {
         }
       }
     `;
-  
+
     return await this.executeQuery<ProductsByCollectionResponse>(query, {
       handle,
       first,
@@ -650,7 +649,7 @@ class HomeApi {
   async getMainMenu(): Promise<Menu> {
     const query = `
       query GetMainMenu { menu(handle: \"mega-menu\") { id title items { id title url type resource { ... on Collection { id title handle image { url altText } } ... on Product { id title handle featuredImage { url altText } } } items { id title url type resource { ... on Collection { id title handle image { url altText } } ... on Product { id title handle featuredImage { url altText } } } } } } }
-    `
+    `;
 
     const response = await fetch(this.baseUrl, {
       method: "POST",
@@ -686,7 +685,9 @@ class HomeApi {
   /**
    * Get customer addresses
    */
-  async getCustomerAddresses(customerAccessToken: string): Promise<GetAddressesResponse> {
+  async getCustomerAddresses(
+    customerAccessToken: string
+  ): Promise<GetAddressesResponse> {
     const query = `
       query GetCustomerAddresses($customerAccessToken: String!) {
         customer(customerAccessToken: $customerAccessToken) {
@@ -862,8 +863,6 @@ class HomeApi {
    * Create a new cart with items
    */
   async createCart(lines: CartLineInput[]): Promise<CreateCartResponse> {
-    console.log("🔗 HomeApi: createCart called with lines:", JSON.stringify(lines, null, 2));
-    
     const query = `
       mutation cartCreate($lines: [CartLineInput!]!) { 
         cartCreate(input: { lines: $lines }) { 
@@ -907,17 +906,19 @@ class HomeApi {
       }
     `;
 
-    const result = await this.executeQuery<CreateCartResponse>(query, { lines });
-    console.log("🔗 HomeApi: createCart result:", JSON.stringify(result, null, 2));
+    const result = await this.executeQuery<CreateCartResponse>(query, {
+      lines,
+    });
     return result;
   }
 
   /**
    * Add lines to existing cart
    */
-  async addToCart(cartId: string, lines: CartLineInput[]): Promise<AddToCartResponse> {
-    console.log("🔗 HomeApi: addToCart called with cartId:", cartId, "lines:", JSON.stringify(lines, null, 2));
-    
+  async addToCart(
+    cartId: string,
+    lines: CartLineInput[]
+  ): Promise<AddToCartResponse> {
     const query = `
       mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) { 
         cartLinesAdd(cartId: $cartId, lines: $lines) { 
@@ -961,17 +962,20 @@ class HomeApi {
       }
     `;
 
-    const result = await this.executeQuery<AddToCartResponse>(query, { cartId, lines });
-    console.log("🔗 HomeApi: addToCart result:", JSON.stringify(result, null, 2));
+    const result = await this.executeQuery<AddToCartResponse>(query, {
+      cartId,
+      lines,
+    });
     return result;
   }
 
   /**
    * Update cart lines (quantity and attributes)
    */
-  async updateCartLines(cartId: string, lines: CartLineUpdateInput[]): Promise<UpdateCartResponse> {
-    console.log("🔗 HomeApi: updateCartLines called with cartId:", cartId, "lines:", JSON.stringify(lines, null, 2));
-    
+  async updateCartLines(
+    cartId: string,
+    lines: CartLineUpdateInput[]
+  ): Promise<UpdateCartResponse> {
     const query = `
       mutation cartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) { 
         cartLinesUpdate(cartId: $cartId, lines: $lines) { 
@@ -1015,17 +1019,20 @@ class HomeApi {
       }
     `;
 
-    const result = await this.executeQuery<UpdateCartResponse>(query, { cartId, lines });
-    console.log("🔗 HomeApi: updateCartLines result:", JSON.stringify(result, null, 2));
+    const result = await this.executeQuery<UpdateCartResponse>(query, {
+      cartId,
+      lines,
+    });
     return result;
   }
 
   /**
    * Remove items from cart
    */
-  async removeFromCart(cartId: string, lineIds: string[]): Promise<RemoveFromCartResponse> {
-    console.log("🔗 HomeApi: removeFromCart called with cartId:", cartId, "lineIds:", JSON.stringify(lineIds, null, 2));
-    
+  async removeFromCart(
+    cartId: string,
+    lineIds: string[]
+  ): Promise<RemoveFromCartResponse> {
     const query = `
       mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) { 
         cartLinesRemove(cartId: $cartId, lineIds: $lineIds) { 
@@ -1069,8 +1076,10 @@ class HomeApi {
       }
     `;
 
-    const result = await this.executeQuery<RemoveFromCartResponse>(query, { cartId, lineIds });
-    console.log("🔗 HomeApi: removeFromCart result:", JSON.stringify(result, null, 2));
+    const result = await this.executeQuery<RemoveFromCartResponse>(query, {
+      cartId,
+      lineIds,
+    });
     return result;
   }
 }

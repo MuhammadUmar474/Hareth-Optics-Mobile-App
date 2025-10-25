@@ -9,6 +9,7 @@ import {
   LoginCredentials,
   SignupCredentials,
 } from "../types/auth";
+import { useCartStore } from "./cartStore";
 import { useWishlistStore } from "./wishlistStore";
 
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -102,8 +103,9 @@ export const useAuthStore = create<AuthStore>()(
               error: null,
             });
 
-            // Set current user in wishlist store
-            useWishlistStore.getState().setCurrentUser(credentials.email);
+            // Set current user in wishlist and cart stores
+            await useWishlistStore.getState().setCurrentUser(credentials.email);
+            await useCartStore.getState().setCurrentUser(credentials.email);
 
             scheduleTokenRefresh(expiresAt);
 
@@ -232,8 +234,9 @@ export const useAuthStore = create<AuthStore>()(
             error: null,
           });
 
-          // Clear wishlist user
-          useWishlistStore.getState().setCurrentUser(null);
+          // Clear wishlist and cart user
+          await useWishlistStore.getState().setCurrentUser(null);
+          await useCartStore.getState().setCurrentUser(null);
         }
       },
 

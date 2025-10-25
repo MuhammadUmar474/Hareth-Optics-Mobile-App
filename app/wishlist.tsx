@@ -1,31 +1,36 @@
+import ProductCard, { ProductData } from "@/components/home/product-card";
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { useLocal } from "@/hooks/use-lang";
-import { useCartStore } from "@/store/cartStore";
+import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/shopifyStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Animated,
   Dimensions,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
-import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+import { scale, verticalScale } from "react-native-size-matters";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const Wishlist = () => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
-  const { wishlistItems, removeFromWishlist, setCurrentUser } = useWishlistStore();
+  const { wishlistItems, setCurrentUser } = useWishlistStore();
   const { t, isRtl } = useLocal();
-  const addToCart = useCartStore((state) => state.addToCart);
+  const { createCart } = useCartStore();
+  const { isInWishlist, toggleWishlist } = useWishlistActions();
+  const [loadingProducts, setLoadingProducts] = useState<Set<string>>(new Set());
+  const [successProducts, setSuccessProducts] = useState<Set<string>>(new Set());
+  const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
   const dynamicStyles = useMemo(
     () =>
@@ -59,77 +64,138 @@ const Wishlist = () => {
     }
   }, [isAuthenticated, router]);
 
-  // ==========================
-  // ADD TO CART WITH ANIMATION
-  // ==========================
-  const buttonScaleAnim = useRef(new Animated.Value(1)).current;
-  const checkmarkScaleAnim = useRef(new Animated.Value(0)).current;
-  const checkmarkOpacityAnim = useRef(new Animated.Value(0)).current;
+  // Convert wishlist item to ProductData format
+  const convertToProductData = (item: any): ProductData => {
 
-  const [showCheckmark, setShowCheckmark] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const handleAddToCart = (item: any) => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-
-    // Bounce animation
-    Animated.sequence([
-      Animated.spring(buttonScaleAnim, {
-        toValue: 0.9,
-        useNativeDriver: true,
-      }),
-      Animated.spring(buttonScaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Add to cart action
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: parseFloat(item.price),
-      image: item.image,
-    });
-
-    // Show checkmark animation
-    setShowCheckmark(true);
-    Animated.parallel([
-      Animated.spring(checkmarkScaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 5,
-      }),
-      Animated.timing(checkmarkOpacityAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Hide checkmark after delay
-    setTimeout(() => {
-      Animated.parallel([
-        Animated.timing(checkmarkScaleAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(checkmarkOpacityAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setShowCheckmark(false);
-        setIsAnimating(false);
-      });
-    }, 1200);
+    
+    const currentPrice = parseFloat(item.price.toString());
+    const compareAtPrice = (currentPrice * 1.2).toFixed(2); // 20% higher for discount
+    
+    const variantId = item.variantId || `gid://shopify/ProductVariant/${item.id}V1`;
+    
+    const productData = {
+      id: `gid://shopify/Product/${item.id}`,
+      title: item.name,
+      handle: item.id.toString(),
+      description: `Premium ${item.name} with high-quality materials and modern design.`,
+      vendor: 'Hareth Optics',
+      productType: 'Eyeglasses',
+      tags: ['premium', 'designer', 'eyeglasses'],
+      totalInventory: 10,
+      availableForSale: true,
+      featuredImage: {
+        url: item.image.uri,
+        altText: item.name
+      },
+      images: {
+        edges: [{
+          node: {
+            url: item.image.uri,
+            altText: item.name
+          }
+        }]
+      },
+      variants: {
+        edges: [{
+          node: {
+            id: variantId,
+            title: 'Default',
+            sku: `SKU-${item.id}`,
+            availableForSale: true,
+            price: {
+              amount: item.price.toString(),
+              currencyCode: 'KD'
+            },
+            compareAtPrice: {
+              amount: compareAtPrice,
+              currencyCode: 'KD'
+            },
+            selectedOptions: [],
+            image: {
+              url: item.image.uri,
+              altText: item.name
+            }
+          }
+        }]
+      },
+      priceRange: {
+        minVariantPrice: {
+          amount: item.price.toString(),
+          currencyCode: 'KD'
+        },
+        maxVariantPrice: {
+          amount: item.price.toString(),
+          currencyCode: 'KD'
+        }
+      }
+    };
+    
+    return productData;
   };
 
-  // ==========================
+  const handleAddToCart = async (product: ProductData) => {
+    const productId = product.id;
+    setLoadingProducts((prev) => new Set(prev).add(productId));
+
+    try {
+      const firstVariant = product.variants?.edges?.[0]?.node;
+      if (!firstVariant) {
+        console.error("No variants available for product:", product.title);
+        return;
+      }
+
+      const cartLine = {
+        merchandiseId: firstVariant.id,
+        quantity: 1,
+        attributes: prescriptionToCartAttributes(
+          {
+            lensType: "Single Vision",
+            leftEye: "",
+            rightEye: "",
+            lensTint: "Clear",
+            blueLightFilter: "No",
+          },
+          product.id
+        ),
+      };
+
+      const success = await createCart([cartLine]);
+
+      if (success) {
+        setSuccessProducts((prev) => new Set(prev).add(productId));
+        setTimeout(() => {
+          setSuccessProducts((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(productId);
+            return newSet;
+          });
+          setAddedProducts((prev) => new Set(prev).add(productId));
+        }, 2000);
+      } else {
+        console.error("❌ Wishlist: Failed to add to cart");
+      }
+    } catch (error) {
+      console.error("❌ Wishlist: Error adding to cart:", error);
+    } finally {
+      setLoadingProducts((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleToggleWishlist = (product: ProductData) => {
+    const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
+    const numericId = parseInt(product.id.replace(/\D/g, ""), 10);
+    toggleWishlist({
+      id: numericId,
+      name: product.title,
+      price: price,
+      image: { uri: product.featuredImage?.url || "" },
+    });
+  };
+
 
   if (wishlistItems.length === 0) {
     return (
@@ -210,81 +276,25 @@ const Wishlist = () => {
         contentContainerStyle={styles.listContainer}
         columnWrapperStyle={styles.columnWrapper}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.productCard}>
-            <TouchableOpacity
-              style={styles.favoriteButton}
-              onPress={() => removeFromWishlist(item.id)}
-            >
-              <Ionicons name="heart" size={20} color={COLORS.danger} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
+        ListEmptyComponent={() => null}
+        renderItem={({ item }) => {
+          const productData = convertToProductData(item);
+          const numericId = parseInt(item.id.toString().replace(/\D/g, ""), 10);
+          return (
+            <View style={{ width: (SCREEN_WIDTH - scale(48)) / 2 }}>
+              <ProductCard
+                product={productData}
               onPress={() => router.push(`/product-details?id=${item.id}`)}
-            >
-              <Image source={item.image} style={styles.productImage} />
-            </TouchableOpacity>
-
-            <View style={styles.productInfo}>
-              <Typography
-                title={item.name}
-                fontSize={scale(12)}
-                fontFamily="Roboto-Bold"
-                color={COLORS.black}
-                numberOfLines={2}
-                style={[styles.productName, dynamicStyles.textAlign]}
+                onAddToCart={() => handleAddToCart(productData)}
+                onToggleWishlist={() => handleToggleWishlist(productData)}
+                isFavorited={isInWishlist(numericId)}
+                isLoading={loadingProducts.has(productData.id)}
+                showSuccess={successProducts.has(productData.id)}
+                isAdded={addedProducts.has(productData.id)}
               />
-              <Typography
-                title={`$${item.price.toFixed(2)}`}
-                fontSize={scale(14)}
-                fontFamily="Roboto-Bold"
-                color={COLORS.primary}
-                style={[styles.productPrice, dynamicStyles.textAlign]}
-              />
-
-              {/* ==== Animated Add to Cart Button ==== */}
-              <Animated.View
-                style={[
-                  styles.addToCartButtonContainer,
-                  { transform: [{ scale: buttonScaleAnim }] },
-                ]}
-              >
-                <TouchableOpacity
-                  style={styles.addToCartButton}
-                  onPress={() => handleAddToCart(item)}
-                  disabled={isAnimating}
-                  activeOpacity={0.8}
-                >
-                  {!showCheckmark && (
-                    <Typography
-                      title={t("purchases.addtoCart")}
-                      fontSize={moderateScale(12)}
-                      color={COLORS.white}
-                      fontFamily="Roboto-Bold"
-                    />
-                  )}
-
-                  {showCheckmark && (
-                    <Animated.View
-                      style={{
-                        opacity: checkmarkOpacityAnim,
-                        transform: [{ scale: checkmarkScaleAnim }],
-                        position: "absolute",
-                        alignSelf: "center",
-                      }}
-                    >
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={moderateScale(24)}
-                        color={COLORS.white}
-                      />
-                    </Animated.View>
-                  )}
-                </TouchableOpacity>
-              </Animated.View>
             </View>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -325,41 +335,6 @@ const styles = StyleSheet.create({
   columnWrapper: {
     justifyContent: "space-between",
     marginBottom: verticalScale(16),
-  },
-  productCard: {
-    width: (SCREEN_WIDTH - scale(48)) / 2,
-    backgroundColor: COLORS.white,
-    borderRadius: scale(16),
-    overflow: "hidden",
-    elevation: 4,
-    borderWidth: 0.5,
-    borderColor: COLORS.grey4,
-  },
-  favoriteButton: {
-    position: "absolute",
-    top: scale(12),
-    right: scale(12),
-    zIndex: 10,
-    width: scale(32),
-    height: scale(32),
-    borderRadius: scale(16),
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  productImage: { width: "100%", height: scale(120), resizeMode: "cover" },
-  productInfo: { padding: scale(12), gap: scale(6) },
-  productName: { fontWeight: "600", minHeight: scale(32) },
-  productPrice: { fontWeight: "600" },
-  addToCartButtonContainer: { position: "relative" },
-  addToCartButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: verticalScale(10),
-    borderRadius: scale(10),
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: scale(4),
-    minHeight: verticalScale(35),
   },
 });
 

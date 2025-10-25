@@ -1,5 +1,5 @@
 import AddAddressModal, {
-  AddressData,
+    AddressData,
 } from "@/components/modals/add-address-modal";
 import AddressCard from "@/components/profile/address-card";
 import Button from "@/components/ui/custom-button";

@@ -1,11 +1,14 @@
 import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
-import { DeliveryOption, deliveryOptions } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
+import { ShippingRate } from "@/services/checkout-api";
+import { useCheckoutStore } from "@/store/checkoutStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -16,7 +19,18 @@ import { scale, verticalScale } from "react-native-size-matters";
 const Delivery = () => {
   const { t, isRtl } = useLocal();
   const router = useRouter();
-  const [options, setOptions] = useState<DeliveryOption[]>(deliveryOptions);
+  const {
+    availableShippingRates,
+    getShippingRates,
+    selectShippingRate,
+    associateCustomer,
+    loading,
+    error,
+    clearError,
+    checkout,
+  } = useCheckoutStore();
+  const [selectedShippingRate, setSelectedShippingRate] =
+    useState<ShippingRate | null>(null);
 
   const dynamicStyles = useMemo(
     () =>
@@ -43,13 +57,55 @@ const Delivery = () => {
     [isRtl]
   );
 
-  const handleSelectOption = (id: number) => {
-    setOptions((prev) =>
-      prev.map((option) => ({
-        ...option,
-        isSelected: option.id === id,
-      }))
-    );
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Error", error, [{ text: "OK", onPress: clearError }]);
+    }
+  }, [error, clearError]);
+
+  useEffect(() => {
+    if (!checkout) {
+      router.back();
+    }
+  }, [checkout, router]);
+
+  useEffect(() => {
+    const fetchShippingRates = async () => {
+      if (checkout) {
+        await getShippingRates();
+      }
+    };
+
+    fetchShippingRates();
+  }, [checkout, getShippingRates]);
+
+  const handleSelectShippingRate = (rate: any) => {
+    setSelectedShippingRate(rate);
+  };
+
+  const handleContinue = async () => {
+    if (!selectedShippingRate) {
+      Alert.alert("Error", "Please select a shipping option");
+      return;
+    }
+
+    try {
+      // Select shipping rate
+      const success = await selectShippingRate(selectedShippingRate);
+      if (!success) {
+        Alert.alert("Error", "Failed to select shipping rate");
+        return;
+      }
+
+      // Associate customer if logged in
+      await associateCustomer();
+
+      // Navigate to payment page
+      router.push("/payment");
+    } catch (error) {
+      console.error("Shipping rate selection error:", error);
+      Alert.alert("Error", "Failed to process shipping selection");
+    }
   };
 
   return (
@@ -91,46 +147,81 @@ const Delivery = () => {
           />
 
           <View style={styles.optionsList}>
-            {options.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                style={[
-                  styles.optionCard,
-                  option.isSelected && styles.optionCardSelected,
-                ]}
-                onPress={() => handleSelectOption(option.id)}
-              >
-                <View style={dynamicStyles.optionContent}>
-                  <View style={styles.optionInfo}>
-                    <Typography
-                      title={t(option.title)}
-                      fontSize={scale(16)}
-                      fontFamily="Poppins-Bold"
-                      color={COLORS.black}
-                      style={[styles.optionTitle, dynamicStyles.textAlign]}
-                    />
-                    <Typography
-                      title={t(option.description)}
-                      fontSize={scale(13)}
-                      color={COLORS.grey29}
-                      fontFamily="Roboto-Regular"
-                      style={[styles.optionDescription, dynamicStyles.textAlign]}
-                    />
-                  </View>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+                <Typography
+                  title="Loading shipping options..."
+                  fontSize={scale(14)}
+                  color={COLORS.grey29}
+                  fontFamily="Roboto-Regular"
+                  style={[styles.loadingText, dynamicStyles.textAlign]}
+                />
+              </View>
+            ) : availableShippingRates.length > 0 ? (
+              availableShippingRates.map((rate, index) => (
+                <TouchableOpacity
+                  key={rate.handle}
+                  style={[
+                    styles.optionCard,
+                    selectedShippingRate?.handle === rate.handle &&
+                      styles.optionCardSelected,
+                  ]}
+                  onPress={() => handleSelectShippingRate(rate)}
+                >
+                  <View style={dynamicStyles.optionContent}>
+                    <View style={styles.optionInfo}>
+                      <Typography
+                        title={rate.title}
+                        fontSize={scale(16)}
+                        fontFamily="Poppins-Bold"
+                        color={COLORS.black}
+                        style={[styles.optionTitle, dynamicStyles.textAlign]}
+                      />
+                      <Typography
+                        title={`${rate.price.amount} ${rate.price.currencyCode}`}
+                        fontSize={scale(13)}
+                        color={COLORS.grey29}
+                        fontFamily="Roboto-Regular"
+                        style={[
+                          styles.optionDescription,
+                          dynamicStyles.textAlign,
+                        ]}
+                      />
+                    </View>
 
-                  <View
-                    style={[
-                      styles.radioButton,
-                      option.isSelected && styles.radioButtonActive,
-                    ]}
-                  >
-                    {option.isSelected && (
-                      <View style={styles.radioButtonSelected} />
-                    )}
+                    <View
+                      style={[
+                        styles.radioButton,
+                        selectedShippingRate?.handle === rate.handle &&
+                          styles.radioButtonActive,
+                      ]}
+                    >
+                      {selectedShippingRate?.handle === rate.handle && (
+                        <View style={styles.radioButtonSelected} />
+                      )}
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.noOptionsContainer}>
+                <Typography
+                  title="No shipping options available"
+                  fontSize={scale(14)}
+                  color={COLORS.grey29}
+                  fontFamily="Roboto-Regular"
+                  style={[styles.noOptionsText, dynamicStyles.textAlign]}
+                />
+                <Typography
+                  title="Please try again or contact support"
+                  fontSize={scale(12)}
+                  color={COLORS.grey29}
+                  fontFamily="Roboto-Regular"
+                  style={[styles.noOptionsSubtext, dynamicStyles.textAlign]}
+                />
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -139,15 +230,20 @@ const Delivery = () => {
       <View style={styles.bottomSection}>
         <TouchableOpacity
           style={styles.continueButton}
-          onPress={() => router.push("/payment")}
+          onPress={handleContinue}
+          disabled={loading}
         >
-          <Typography
-            title={t("purchases.continuePayment")}
-            fontSize={scale(16)}
-            color={COLORS.white}
-            fontFamily="Poppins-Bold"
-            style={[styles.continueButtonText, dynamicStyles.textAlign]}
-          />
+          {loading ? (
+            <ActivityIndicator size="small" color={COLORS.white} />
+          ) : (
+            <Typography
+              title={t("purchases.continuePayment")}
+              fontSize={scale(16)}
+              color={COLORS.white}
+              fontFamily="Poppins-Bold"
+              style={[styles.continueButtonText, dynamicStyles.textAlign]}
+            />
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -243,6 +339,28 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     fontWeight: "600",
+  },
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: scale(8),
+    paddingVertical: verticalScale(20),
+  },
+  loadingText: {
+    marginLeft: scale(8),
+  },
+  noOptionsContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: verticalScale(20),
+    gap: verticalScale(8),
+  },
+  noOptionsText: {
+    fontWeight: "600",
+  },
+  noOptionsSubtext: {
+    opacity: 0.7,
   },
 });
 

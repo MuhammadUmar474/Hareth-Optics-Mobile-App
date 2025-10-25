@@ -154,7 +154,7 @@ const TryOnViewer = () => {
             }}
             {...(Platform.OS === "android"
               ? {
-                  onPermissionRequest: (event) => {
+                  onPermissionRequest: (event: any) => {
                     event.grant(event.resources);
                   },
                 }

@@ -2,6 +2,8 @@ import Typography from "@/components/ui/custom-typography";
 import { COLORS } from "@/constants/colors";
 import { useLocal } from "@/hooks/use-lang";
 import { useCartStore } from "@/store/cartStore";
+import { useCheckoutStore } from "@/store/checkoutStore";
+import { useAuthStore } from "@/store/shopifyStore";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -20,15 +22,33 @@ import { scale, verticalScale } from "react-native-size-matters";
 const ShoppingCart = () => {
   const { t, isRtl } = useLocal();
   const router = useRouter();
+  const { accessToken, isAuthenticated, user } = useAuthStore();
+  
+
+  // Conditionally import useShopifyCheckoutSheet for future enhancements
+  // let checkout: any = null;
+  // try {
+  //   const checkoutKit = require("@shopify/checkout-sheet-kit");
+  //   checkout = checkoutKit.useShopifyCheckoutSheet();
+  // } catch (error) {
+  //   console.warn("useShopifyCheckoutSheet not available in Expo Go");
+  // }
   const {
     cart,
-    loading,
+    loading: cartLoading,
     error,
     updateCartLines,
     removeFromCart,
     clearError,
     loadCart,
+    setCurrentUser,
   } = useCartStore();
+  const {
+    createCheckout,
+    loading: checkoutLoading,
+    error: checkoutError,
+    clearError: clearCheckoutError,
+  } = useCheckoutStore();
   const [promoCode, setPromoCode] = useState<string>("");
 
   const memoizedLoadCart = useCallback(() => {
@@ -36,8 +56,13 @@ const ShoppingCart = () => {
   }, [loadCart]);
 
   useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      setCurrentUser(user.email);
+    } else {
+      setCurrentUser(null);
+    }
     memoizedLoadCart();
-  }, [memoizedLoadCart]);
+  }, [memoizedLoadCart, isAuthenticated, user?.email, setCurrentUser]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,6 +75,12 @@ const ShoppingCart = () => {
       Alert.alert("Error", error, [{ text: "OK", onPress: clearError }]);
     }
   }, [error, clearError]);
+
+  useEffect(() => {
+    if (checkoutError) {
+      Alert.alert("Checkout Error", checkoutError, [{ text: "OK", onPress: clearCheckoutError }]);
+    }
+  }, [checkoutError, clearCheckoutError]);
 
   const handleQuantityChange = async (lineId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -94,13 +125,43 @@ const ShoppingCart = () => {
     Alert.alert("Promo Code", "Promo code functionality coming soon!");
   };
 
-  const handleCheckout = () => {
-    if (!cart?.checkoutUrl) {
-      Alert.alert("Error", "Checkout URL not available");
+  const handleCheckout = async () => {
+    
+    if (!cart || cart.lines.edges.length === 0) {
+      Alert.alert("Error", "No items in cart");
       return;
     }
-    // TODO: Implement checkout navigation
-    Alert.alert("Checkout", "Checkout functionality coming soon!");
+
+    // Check if user is logged in
+    if (!isAuthenticated || !accessToken) {
+      Alert.alert(
+        "Login Required", 
+        "Please login to perform checkout",
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Login", 
+            onPress: () => router.push("/login") 
+          }
+        ]
+      );
+      return;
+    }
+
+    try {
+      
+      const success = await createCheckout(accessToken);
+      if (!success) {
+        Alert.alert("Error", "Failed to create checkout session");
+        return;
+      }
+
+      // Navigate to delivery address page for address collection
+      router.push("/delivery-address");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      Alert.alert("Error", "Failed to start checkout process");
+    }
   };
 
   // Dynamic styles for RTL support
@@ -239,18 +300,7 @@ const ShoppingCart = () => {
       >
         {/* Cart Items */}
         <View style={styles.cartItemsContainer}>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-              <Typography
-                title="Loading cart..."
-                fontSize={scale(16)}
-                color={COLORS.grey29}
-                fontFamily="Roboto-Regular"
-                style={{ marginTop: 10 }}
-              />
-            </View>
-          ) : cart?.lines.edges.length === 0 ? (
+          {cart?.lines.edges.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Typography
                 title="Your cart is empty"
@@ -342,12 +392,12 @@ const ShoppingCart = () => {
                               lineItem.quantity - 1
                             )
                           }
-                          disabled={loading}
+                          disabled={cartLoading}
                         >
                           <Ionicons
                             name="remove"
                             size={16}
-                            color={loading ? COLORS.grey4 : COLORS.primary}
+                            color={COLORS.primary}
                           />
                         </TouchableOpacity>
                         <Typography
@@ -365,12 +415,12 @@ const ShoppingCart = () => {
                               lineItem.quantity + 1
                             )
                           }
-                          disabled={loading}
+                          disabled={cartLoading}
                         >
                           <Ionicons
                             name="add"
                             size={16}
-                            color={loading ? COLORS.grey4 : COLORS.primary}
+                            color={COLORS.primary}
                           />
                         </TouchableOpacity>
                       </View>
@@ -381,7 +431,7 @@ const ShoppingCart = () => {
                       <TouchableOpacity
                         style={styles.deleteButton}
                         onPress={() => handleRemoveItem(lineItem.id)}
-                        disabled={loading}
+                        disabled={cartLoading}
                       >
                         <MaterialCommunityIcons
                           name="trash-can-outline"
@@ -502,13 +552,13 @@ const ShoppingCart = () => {
         <TouchableOpacity
           style={styles.checkoutButton}
           onPress={handleCheckout}
-          disabled={loading || !cart || cart.lines.edges.length === 0}
+          disabled={cartLoading || checkoutLoading || !cart || cart.lines.edges.length === 0}
         >
-          {loading ? (
+          {checkoutLoading ? (
             <ActivityIndicator size="small" color={COLORS.white} />
           ) : (
             <Typography
-              title={t("purchases.proceedToCheckout")}
+              title="Proceed To Checkout"
               fontSize={scale(16)}
               color={COLORS.white}
               fontFamily="Poppins-Bold"
@@ -687,3 +737,4 @@ const styles = StyleSheet.create({
 });
 
 export default ShoppingCart;
+

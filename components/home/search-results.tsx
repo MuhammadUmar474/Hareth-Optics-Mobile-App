@@ -1,20 +1,23 @@
+import ProductCard, { ProductData } from "@/components/home/product-card";
 import { COLORS } from "@/constants/colors";
 import { executeHomeQuery } from "@/services/home/homeApi";
-import { useCartStore } from "@/store/cartStore";
+import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   View
 } from "react-native";
-import { moderateScale, scale, verticalScale } from "react-native-size-matters";
+import { scale, verticalScale } from "react-native-size-matters";
 import Typography from "../ui/custom-typography";
-import SimpleOptimizedImage from "../ui/simple-optimized-image";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 type SearchProduct = {
   id: string;
@@ -25,6 +28,8 @@ type SearchProduct = {
   image: string;
   productType: string;
   vendor: string;
+  compareAtPrice?: string;
+  variantId?: string;
 };
 
 interface SearchResultsProps {
@@ -38,8 +43,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ searchQuery, onClose, onC
   const [loading, setLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(false);
   const endCursorRef = useRef<string | null>(null);
-  const addToCart = useCartStore((state) => state.addToCart);
+  const { createCart } = useCartStore();
   const { toggleWishlist, isInWishlist } = useWishlistActions();
+  const [loadingProducts, setLoadingProducts] = useState<Set<string>>(new Set());
+  const [successProducts, setSuccessProducts] = useState<Set<string>>(new Set());
+  const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
   const searchProducts = useCallback(async (query: string, loadMore = false) => {
     if (!query.trim()) return;
@@ -72,6 +80,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ searchQuery, onClose, onC
                       availableForSale
                       selectedOptions { name value }
                       price { amount currencyCode }
+                      compareAtPrice { amount currencyCode }
                     }
                   }
                 }
@@ -97,6 +106,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ searchQuery, onClose, onC
         image: node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
         productType: node.productType || "",
         vendor: node.vendor || "",
+        compareAtPrice: node.variants?.edges?.[0]?.node?.compareAtPrice?.amount,
+        variantId: node.variants?.edges?.[0]?.node?.id,
       }));
 
       if (loadMore) {
@@ -134,94 +145,153 @@ const SearchResults: React.FC<SearchResultsProps> = ({ searchQuery, onClose, onC
     }
   }, [searchQuery, searchProducts]);
 
-  const handleAddToCart = (product: SearchProduct) => {
-    const price = parseFloat(product.price);
-    addToCart({
-      id: parseInt(product.id),
-      name: product.title,
-      price: price,
-      image: { uri: product.image },
-    });
+  // Convert SearchProduct to ProductData format
+  const convertToProductData = (item: SearchProduct): ProductData => {
+    return {
+      id: item.id,
+      title: item.title,
+      handle: item.handle,
+      description: '',
+      vendor: item.vendor,
+      productType: item.productType,
+      tags: [],
+      totalInventory: 0,
+      availableForSale: true,
+      featuredImage: {
+        url: item.image,
+        altText: item.title
+      },
+      images: {
+        edges: [{
+          node: {
+            url: item.image,
+            altText: item.title
+          }
+        }]
+      },
+      variants: {
+        edges: [{
+          node: {
+            id: item.variantId || `gid://shopify/ProductVariant/${item.id}V1`,
+            title: 'Default',
+            sku: '',
+            availableForSale: true,
+            price: {
+              amount: item.price,
+              currencyCode: item.currency
+            },
+            compareAtPrice: {
+              amount: item.compareAtPrice || item.price,
+              currencyCode: item.currency
+            },
+            selectedOptions: [],
+            image: {
+              url: item.image,
+              altText: item.title
+            }
+          }
+        }]
+      },
+      priceRange: {
+        minVariantPrice: {
+          amount: item.price,
+          currencyCode: item.currency
+        },
+        maxVariantPrice: {
+          amount: item.price,
+          currencyCode: item.currency
+        }
+      }
+    };
   };
 
-  const handleToggleWishlist = (product: SearchProduct) => {
-    const price = parseFloat(product.price);
+  const handleAddToCart = async (product: ProductData) => {
+    const productId = product.id;
+    setLoadingProducts((prev) => new Set(prev).add(productId));
+
+    try {
+      const firstVariant = product.variants?.edges?.[0]?.node;
+      if (!firstVariant) {
+        console.error("No variants available for product:", product.title);
+        return;
+      }
+
+      const cartLine = {
+        merchandiseId: firstVariant.id,
+        quantity: 1,
+        attributes: prescriptionToCartAttributes(
+          {
+            lensType: "Single Vision",
+            leftEye: "",
+            rightEye: "",
+            lensTint: "Clear",
+            blueLightFilter: "No",
+          },
+          product.id
+        ),
+      };
+
+      const success = await createCart([cartLine]);
+
+      if (success) {
+        setSuccessProducts((prev) => new Set(prev).add(productId));
+        setTimeout(() => {
+          setSuccessProducts((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(productId);
+            return newSet;
+          });
+          setAddedProducts((prev) => new Set(prev).add(productId));
+        }, 2000);
+      } else {
+        console.error("❌ SearchResults: Failed to add to cart");
+      }
+    } catch (error) {
+      console.error("❌ SearchResults: Error adding to cart:", error);
+    } finally {
+      setLoadingProducts((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleToggleWishlist = (product: ProductData) => {
+    const price = parseFloat(product.priceRange?.minVariantPrice?.amount || "0");
+    const numericId = parseInt(product.id.replace(/\D/g, ""), 10);
+    const firstVariant = product.variants?.edges?.[0]?.node;
     toggleWishlist({
-      id: parseInt(product.id),
+      id: numericId,
       name: product.title,
       price: price,
-      image: { uri: product.image },
+      image: { uri: product.featuredImage?.url || "" },
+      variantId: firstVariant?.id,
     });
   };
 
-  const renderProduct = ({ item }: { item: SearchProduct }) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => router.push({
-        pathname: "/product-details",
-        params: { id: item.id, title: encodeURIComponent(item.title) }
-      })}
-      activeOpacity={0.8}
-    >
-      <View style={styles.productImageContainer}>
-        <SimpleOptimizedImage
-          source={{ uri: item.image }}
-          style={styles.productImage}
-          contentFit="cover"
-          priority="high"
+  const renderProduct = ({ item }: { item: SearchProduct }) => {
+    const productData = convertToProductData(item);
+    const numericId = parseInt(item.id.replace(/\D/g, ""), 10);
+    
+    return (
+      <View style={{ width: (SCREEN_WIDTH - scale(34)) / 2 }}>
+        <ProductCard
+          product={productData}
+          onPress={() => router.push({
+            pathname: "/product-details",
+            params: { id: item.id, title: encodeURIComponent(item.title) }
+          })}
+          onAddToCart={() => handleAddToCart(productData)}
+          onToggleWishlist={() => handleToggleWishlist(productData)}
+          isFavorited={isInWishlist(numericId)}
+          isLoading={loadingProducts.has(productData.id)}
+          showSuccess={successProducts.has(productData.id)}
+          isAdded={addedProducts.has(productData.id)}
         />
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => handleToggleWishlist(item)}
-        >
-          <Ionicons
-            name={isInWishlist(parseInt(item.id)) ? "heart" : "heart-outline"}
-            size={moderateScale(18)}
-            color={isInWishlist(parseInt(item.id)) ? COLORS.danger : COLORS.secondary}
-          />
-        </TouchableOpacity>
       </View>
-      
-      <View style={styles.productInfo}>
-        <Typography
-          title={item.title}
-          fontSize={scale(12)}
-          fontFamily="Roboto-Bold"
-          color={COLORS.black7}
-          style={styles.productTitle}
-          numberOfLines={2}
-        />
-        
-        <Typography
-          title={item.vendor}
-          fontSize={scale(10)}
-          color={COLORS.grey10}
-          style={styles.productVendor}
-        />
-        
-        <View style={styles.priceContainer}>
-          <Typography
-            title={`${item.price} ${item.currency}`}
-            fontSize={scale(14)}
-            fontFamily="Roboto-Bold"
-            color={COLORS.primary}
-          />
-        </View>
-        
-        <TouchableOpacity
-          style={styles.addToCartButton}
-          onPress={() => handleAddToCart(item)}
-        >
-          <Typography
-            title="Add to Cart"
-            fontSize={scale(11)}
-            color={COLORS.white}
-            fontFamily="Roboto-Bold"
-          />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   if (!searchQuery.trim()) {
     return null;
@@ -336,60 +406,6 @@ const styles = StyleSheet.create({
   productRow: {
     justifyContent: "space-between",
     marginBottom: verticalScale(16),
-  },
-  productCard: {
-    width: "48%",
-    backgroundColor: COLORS.white,
-    borderRadius: scale(12),
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: "hidden",
-  },
-  productImageContainer: {
-    position: "relative",
-  },
-  productImage: {
-    width: "100%",
-    height: verticalScale(120),
-  },
-  favoriteButton: {
-    position: "absolute",
-    top: scale(8),
-    right: scale(8),
-    width: scale(28),
-    height: scale(28),
-    borderRadius: scale(14),
-    backgroundColor: COLORS.white,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  productInfo: {
-    padding: scale(12),
-  },
-  productTitle: {
-    fontWeight: "600",
-    marginBottom: verticalScale(4),
-  },
-  productVendor: {
-    marginBottom: verticalScale(6),
-  },
-  priceContainer: {
-    marginBottom: verticalScale(8),
-  },
-  addToCartButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: verticalScale(8),
-    borderRadius: scale(6),
-    alignItems: "center",
-    justifyContent: "center",
   },
   footerLoading: {
     paddingVertical: verticalScale(20),

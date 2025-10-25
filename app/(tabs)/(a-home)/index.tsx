@@ -1,10 +1,10 @@
-import { AnimatedProductCard } from "@/components/explore/animated-product-card";
 import BestSelling from "@/components/home/best-selling";
 import Brands from "@/components/home/brands";
 import StickyHeader from "@/components/home/header";
 import NearByStores from "@/components/home/near-by-stores";
 import OurPromiseComponent from "@/components/home/our-promise";
 import PaymentMethods from "@/components/home/payment-methods";
+import ProductCard, { ProductData } from "@/components/home/product-card";
 import Products from "@/components/home/products";
 import SearchResults from "@/components/home/search-results";
 import TrendingNow from "@/components/home/trending-now";
@@ -22,10 +22,13 @@ import {
   storeBenefits,
 } from "@/constants/data";
 import { handleLargerText } from "@/constants/helper";
-import { useLocal } from "@/hooks/use-lang";
 import { MenuItem, homeApi } from "@/services/home/homeApi";
+import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useCommonStore } from "@/store/commonStore";
 import { useLoadingStore } from "@/store/loadingStore";
+import { useAuthStore } from "@/store/shopifyStore";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
@@ -47,10 +50,11 @@ type ExploreProduct = {
   price: string;
   image: string;
   category: string;
+  variantId?: string;
+  compareAtPrice?: string;
 };
 
 const HomeScreen = () => {
-  const { t } = useLocal();
   const [isPlaying, setIsPlaying] = useState(false);
   const [mainCategories, setMainCategories] = useState<MenuItem[]>([]);
   const [handle, setHandle] = useState<string>("");
@@ -65,6 +69,13 @@ const HomeScreen = () => {
   const clearSearchRef = useRef<(() => void) | null>(null);
   const setCategories = useCommonStore((state) => state.setCategories);
   const { isLoadingCategories, setLoadingCategories } = useLoadingStore();
+  const { initializeCart, createCart } = useCartStore();
+  const { initializeWishlist, setCurrentUser: setWishlistCurrentUser } = useWishlistStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const { isInWishlist, toggleWishlist } = useWishlistActions();
+  const [loadingProducts, setLoadingProducts] = useState<Set<string>>(new Set());
+  const [successProducts, setSuccessProducts] = useState<Set<string>>(new Set());
+  const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
   const handleGetCategories = useCallback(async () => {
     try {
@@ -86,6 +97,18 @@ const HomeScreen = () => {
   useEffect(() => {
     handleGetCategories();
   }, [handleGetCategories]);
+
+  useEffect(() => {
+    const initializeStores = async () => {
+      if (isAuthenticated && user?.email) {
+        await initializeCart();
+        await setWishlistCurrentUser(user.email);
+        initializeWishlist();
+      }
+    };
+    
+    initializeStores();
+  }, [isAuthenticated, user?.email, initializeCart, setWishlistCurrentUser, initializeWishlist]);
 
   useEffect(() => {
     Animated.timing(headerFadeAnim, {
@@ -126,7 +149,6 @@ const HomeScreen = () => {
     cursor?: string | null
   ) => {
     if (!categoryHandle) {
-      console.log("No category handle, skipping fetch");
       setLoading(false);
       return;
     }
@@ -148,6 +170,8 @@ const HomeScreen = () => {
         image:
           node.featuredImage?.url || node.images?.edges?.[0]?.node?.url || "",
         category: node.productType ?? "",
+        variantId: node.variants?.edges?.[0]?.node?.id,
+        compareAtPrice: node.variants?.edges?.[0]?.node?.compareAtPrice?.amount,
       }));
 
       setProducts((prev) => (loadMore ? [...prev, ...mapped] : mapped));
@@ -160,23 +184,147 @@ const HomeScreen = () => {
       setHasNextPage(false);
     } finally {
       setLoading(false);
-      console.log("Loading set to false");
     }
   };
 
   useEffect(() => {
     if (handle) {
-      console.log("Resetting and fetching products for handle:", handle);
       setProducts([]);
       setEndCursor(null);
       setHasNextPage(false);
       fetchProducts(handle, false);
     } else {
-      console.log("Handle is empty, clearing products");
       setProducts([]);
       setLoading(false);
     }
   }, [handle]);
+
+  // Convert ExploreProduct to ProductData format
+  const convertToProductData = (item: ExploreProduct): ProductData => {
+    return {
+      id: item.id,
+      title: item.name,
+      handle: item.id.replace('gid://shopify/Product/', ''),
+      description: '',
+      vendor: '',
+      productType: item.category,
+      tags: [],
+      totalInventory: 0,
+      availableForSale: true,
+      featuredImage: {
+        url: item.image,
+        altText: item.name
+      },
+      images: {
+        edges: [{
+          node: {
+            url: item.image,
+            altText: item.name
+          }
+        }]
+      },
+      variants: {
+        edges: [{
+          node: {
+            id: item.variantId || item.id,
+            title: 'Default',
+            sku: '',
+            availableForSale: true,
+            price: {
+              amount: item.price,
+              currencyCode: 'KD'
+            },
+            compareAtPrice: {
+              amount: item.compareAtPrice || item.price,
+              currencyCode: 'KD'
+            },
+            selectedOptions: [],
+            image: {
+              url: item.image,
+              altText: item.name
+            }
+          }
+        }]
+      },
+      priceRange: {
+        minVariantPrice: {
+          amount: item.price,
+          currencyCode: 'KD'
+        },
+        maxVariantPrice: {
+          amount: item.price,
+          currencyCode: 'KD'
+        }
+      }
+    };
+  };
+
+  const handleAddToCart = async (product: ProductData) => {
+    const productId = product.id;
+    setLoadingProducts((prev) => new Set(prev).add(productId));
+
+    try {
+      const firstVariant = product.variants?.edges?.[0]?.node;
+      if (!firstVariant) {
+        console.error("No variants available for product:", product.title);
+        return;
+      }
+
+      const cartLine = {
+        merchandiseId: firstVariant.id,
+        quantity: 1,
+        attributes: prescriptionToCartAttributes(
+          {
+            lensType: "Single Vision",
+            leftEye: "",
+            rightEye: "",
+            lensTint: "Clear",
+            blueLightFilter: "No",
+          },
+          product.id
+        ),
+      };
+
+      const success = await createCart([cartLine]);
+
+      if (success) {
+        setSuccessProducts((prev) => new Set(prev).add(productId));
+        setTimeout(() => {
+          setSuccessProducts((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(productId);
+            return newSet;
+          });
+          setAddedProducts((prev) => new Set(prev).add(productId));
+        }, 2000);
+      } else {
+        console.error("❌ Home: Failed to add to cart");
+      }
+    } catch (error) {
+      console.error("❌ Home: Error adding to cart:", error);
+    } finally {
+      setLoadingProducts((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleToggleWishlist = (product: ProductData) => {
+    const price = parseFloat(
+      product.priceRange?.minVariantPrice?.amount || "0"
+    );
+    const numericId = parseInt(product.id.replace(/\D/g, ""), 10);
+    const firstVariant = product.variants?.edges?.[0]?.node;
+    toggleWishlist({
+      id: numericId,
+      name: product.title,
+      price: price,
+      image: { uri: product.featuredImage?.url || "" },
+      variantId: firstVariant?.id,
+    });
+  };
 
   const renderProduct = ({
     item,
@@ -184,7 +332,31 @@ const HomeScreen = () => {
   }: {
     item: ExploreProduct;
     index: number;
-  }) => <AnimatedProductCard item={item} index={index} />;
+  }) => {
+    const productData = convertToProductData(item);
+    const numericId = parseInt(item.id.replace(/\D/g, ""), 10);
+    
+    return (
+      <View style={{ width: '50%', paddingHorizontal: 8 }}>
+        <ProductCard
+          product={productData}
+          onPress={() => {
+            router.push(
+              `/product-details?id=${item.id}&title=${encodeURIComponent(
+                item.name
+              )}`
+            );
+          }}
+          onAddToCart={() => handleAddToCart(productData)}
+          onToggleWishlist={() => handleToggleWishlist(productData)}
+          isFavorited={isInWishlist(numericId)}
+          isLoading={loadingProducts.has(item.id)}
+          showSuccess={successProducts.has(item.id)}
+          isAdded={addedProducts.has(item.id)}
+        />
+      </View>
+    );
+  };
 
   // Show initial loading skeleton while data is being fetched
   if (initialLoading) {

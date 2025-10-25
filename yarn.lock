@@ -2641,6 +2641,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@shopify/checkout-sheet-kit@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "@shopify/checkout-sheet-kit@npm:3.4.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10/7d3a7ce0f155dde7a0b62e4ed396cd52fc090985055c9cac0b09031d079da599f52886f117568bf495ca0fdfb2caa4a93466fbe552ee7e33149504974437e96b
+  languageName: node
+  linkType: hard
+
 "@sinclair/typebox@npm:^0.27.8":
   version: 0.27.8
   resolution: "@sinclair/typebox@npm:0.27.8"
@@ -5002,30 +5012,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-dev-client@npm:~6.0.13":
-  version: 6.0.15
-  resolution: "expo-dev-client@npm:6.0.15"
+"expo-dev-client@npm:~6.0.16":
+  version: 6.0.16
+  resolution: "expo-dev-client@npm:6.0.16"
   dependencies:
-    expo-dev-launcher: "npm:6.0.15"
-    expo-dev-menu: "npm:7.0.14"
+    expo-dev-launcher: "npm:6.0.16"
+    expo-dev-menu: "npm:7.0.15"
     expo-dev-menu-interface: "npm:2.0.0"
     expo-manifests: "npm:~1.0.8"
     expo-updates-interface: "npm:~2.0.0"
   peerDependencies:
     expo: "*"
-  checksum: 10/fee3ad013acdb247f1de5fc45b21310d4e385a8e5150556eeb2c8d9b0ef7cecd177ce4cef043794b561d373bfdca2a5cd7736e39fcccad2f007b551520019bbe
+  checksum: 10/26ed81100d8e85a3998aa272fa196fbb8f3a12148e4b556833a45c128779294914608d2d84fcf10844f2ab82c33ea530fb542b14d41e5dad2be3eac762eb8df5
   languageName: node
   linkType: hard
 
-"expo-dev-launcher@npm:6.0.15":
-  version: 6.0.15
-  resolution: "expo-dev-launcher@npm:6.0.15"
+"expo-dev-launcher@npm:6.0.16":
+  version: 6.0.16
+  resolution: "expo-dev-launcher@npm:6.0.16"
   dependencies:
-    expo-dev-menu: "npm:7.0.14"
+    expo-dev-menu: "npm:7.0.15"
     expo-manifests: "npm:~1.0.8"
   peerDependencies:
     expo: "*"
-  checksum: 10/b6c82d50a9df4b84a87b1c497d7e4a53a13b840174cd76530aca57dc29221643ea98abef1fc15fa662cdef2135865a9de95f2ac8c59b2236b79b46584493e762
+  checksum: 10/aeb39d2d75928232bf52f85e6b1662ebed68c42179d135cc8d71df6fe9006101949da46c626692832c1465553c802eb4ecab46894dcf14a6490f7cb6ffbd453a
   languageName: node
   linkType: hard
 
@@ -5038,14 +5048,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-dev-menu@npm:7.0.14":
-  version: 7.0.14
-  resolution: "expo-dev-menu@npm:7.0.14"
+"expo-dev-menu@npm:7.0.15":
+  version: 7.0.15
+  resolution: "expo-dev-menu@npm:7.0.15"
   dependencies:
     expo-dev-menu-interface: "npm:2.0.0"
   peerDependencies:
     expo: "*"
-  checksum: 10/ae9f3099e783c4eb603559878757312aa05aa346e5a0d8bacc55cb0bfa6a5399c8bea72e9d2d76d723779722875d2aa8781149a8228d0dc13f3ba7bfe32ecc8f
+  checksum: 10/f01a66b203db2b6fa73b8dc11502183d00e9e15904f9bd2b042973e5444d4b572ea2d547fb477b109100a5cb1b0a59404648d7bb98f39716b141f564f439878e
   languageName: node
   linkType: hard
 
@@ -5959,6 +5969,7 @@ __metadata:
     "@react-navigation/bottom-tabs": "npm:^7.4.0"
     "@react-navigation/elements": "npm:^2.6.3"
     "@react-navigation/native": "npm:^7.1.8"
+    "@shopify/checkout-sheet-kit": "npm:^3.4.0"
     "@types/fs-extra": "npm:^11"
     "@types/react": "npm:~19.1.0"
     eslint: "npm:^9.25.0"
@@ -5967,7 +5978,7 @@ __metadata:
     expo-camera: "npm:~17.0.8"
     expo-clipboard: "npm:8.0.7"
     expo-constants: "npm:~18.0.9"
-    expo-dev-client: "npm:~6.0.13"
+    expo-dev-client: "npm:~6.0.16"
     expo-font: "npm:~14.0.8"
     expo-haptics: "npm:~15.0.7"
     expo-image: "npm:~3.0.10"
