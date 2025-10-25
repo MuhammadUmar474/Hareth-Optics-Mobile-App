@@ -32,7 +32,7 @@ import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,

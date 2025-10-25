@@ -196,7 +196,17 @@ const StickyHeader = ({
         }
       />
       <LocationModal isVisible={isVisible} setIsVisible={setIsVisible} />
+      
 
+      <SuggestionTab
+          title="Reset"
+          isSelected={selectedCategories[0] === -2 ? true : false}
+          onPress={() => {
+            setHandle("");
+            handleCategoryPress(-2);
+          }}
+          containerStyle={[styles.suggestionTab,{alignSelf:"flex-end",marginVertical:3}]}
+        />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -210,7 +220,7 @@ const StickyHeader = ({
             handleCategoryPress(-1);
             setHandle("eyeglasses");
           }}
-          containerStyle={styles.suggestionTab}
+          containerStyle={[styles.suggestionTab]}
         />
         {categories.map((category, index) => (
           <SuggestionTab
@@ -224,17 +234,8 @@ const StickyHeader = ({
             containerStyle={styles.suggestionTab}
           />
         ))}
-        <SuggestionTab
-          title="Reset"
-          isSelected={selectedCategories[0] === -2 ? true : false}
-          onPress={() => {
-            setHandle("");
-            handleCategoryPress(-2);
-          }}
-          containerStyle={styles.suggestionTab}
-      
-        />
       </ScrollView>
+      
     </View>
   );
 };

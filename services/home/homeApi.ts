@@ -357,35 +357,67 @@ class HomeApi {
    * Convenience helper for your provided `GetLatestProducts` query.
    */
   async getLatestProducts(): Promise<LatestProductsResponse> {
-    const query = `
-      query GetLatestProducts {
-        products(first: 20, sortKey: CREATED_AT, reverse: true) {
-          edges {
-            node {
-              id
-              title
-              handle
-              description
-              createdAt
-              featuredImage { url altText }
-              images(first: 5) { edges { node { url altText } } }
-              priceRange { minVariantPrice { amount currencyCode } }
-              variants(first: 10) {
-                edges {
-                  node {
-                    title
-                    sku
-                    availableForSale
-                    selectedOptions { name value }
-                    price { amount currencyCode }
-                  }
+    const query = `query GetLatestProducts {
+    products(first: 20, sortKey: CREATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          title
+          handle
+          description
+          createdAt
+          featuredImage {
+            url
+            altText
+          }
+          images(first: 5) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          variants(first: 10) {
+            edges {
+              node {
+                title
+                sku
+                availableForSale
+                selectedOptions {
+                  name
+                  value
                 }
+                price {
+                  amount
+                  currencyCode
+                }
+                compareAtPrice {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+          collections(first: 1) {
+            edges {
+              node {
+                id
+                title
+                handle
               }
             }
           }
         }
       }
-    `;
+    }
+}`;
 
     return await this.executeQuery<LatestProductsResponse>(query);
   }
