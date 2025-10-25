@@ -9,11 +9,11 @@ import { useAuthStore } from "@/store/shopifyStore";
 import { Formik } from "formik";
 import React, { useEffect } from "react";
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    View,
 } from "react-native";
 import { useToast } from "react-native-toast-notifications";
 import * as Yup from "yup";

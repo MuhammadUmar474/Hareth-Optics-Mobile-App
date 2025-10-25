@@ -641,6 +641,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: ImageSource;
+  variantId?: string;
 }
 
 export interface CartSummary {

@@ -46,7 +46,6 @@ const StickyHeader = ({
 
   const { isRtl, t } = useLocal();
   const handleCategoryPress = (categoryId: number) => {
-    console.log("categoryId===========>>>>>>",categoryId)
     setSelectedCategories([categoryId]);
   };
 

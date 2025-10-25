@@ -3,7 +3,6 @@ import { useLocal } from "@/hooks/use-lang";
 import { prescriptionToCartAttributes, useCartStore } from "@/store/cartStore";
 import { useWishlistActions } from "@/utils/wishlist";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -196,22 +195,6 @@ export const AnimatedProductCard = ({ item, index }: any) => {
             contentFit="cover"
             onLoad={() => setImageLoaded(true)}
           />
-
-          {!imageLoaded && (
-            <LinearGradient
-              colors={["#f0f9ff", "#e0f2fe", "#bae6fd"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.productImagePlaceholder}
-            >
-              <Ionicons
-                name="glasses-outline"
-                size={moderateScale(40)}
-                color={COLORS.primary}
-                style={{ opacity: 0.3 }}
-              />
-            </LinearGradient>
-          )}
 
           <TouchableOpacity
             style={styles.favoriteButton}

@@ -7,11 +7,16 @@ import {
   savedCards,
 } from "@/constants/data";
 import { useLocal } from "@/hooks/use-lang";
+import { useCheckoutStore } from "@/store/checkoutStore";
+import { useAuthStore } from "@/store/shopifyStore";
 import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  AppState,
   ScrollView,
   StyleSheet,
   Switch,
@@ -19,13 +24,38 @@ import {
   View,
 } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
+let useShopifyCheckoutSheet = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const checkoutKit = require("@shopify/checkout-sheet-kit");
+  useShopifyCheckoutSheet = checkoutKit.useShopifyCheckoutSheet;
+} catch {
+  console.warn("useShopifyCheckoutSheet not available in Expo Go");
+  useShopifyCheckoutSheet = () => ({
+    present: (url: string) => {
+      console.warn("Checkout not available in Expo Go. URL:", url);
+    },
+  });
+}
 
 const Payment = () => {
   const { t, isRtl } = useLocal();
   const router = useRouter();
+  const checkout = useShopifyCheckoutSheet();
+  const { accessToken } = useAuthStore();
+  const {
+    checkout: checkoutData,
+    loading,
+    error,
+    clearError,
+    getCustomerOrders,
+    clearCheckoutState,
+  } = useCheckoutStore();
   const [cards, setCards] = useState<SavedCard[]>(savedCards);
   const [paymentMethods, setPaymentMethods] =
     useState<OtherPaymentMethod[]>(otherPaymentMethods);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [checkoutInProgress, setCheckoutInProgress] = useState(false);
 
   const dynamicStyles = useMemo(
     () =>
@@ -88,6 +118,131 @@ const Payment = () => {
 
     if (value) {
       setCards((prev) => prev.map((card) => ({ ...card, isSelected: false })));
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Error", error, [{ text: "OK", onPress: clearError }]);
+    }
+  }, [error, clearError]);
+
+  useEffect(() => {
+    if (!checkoutData) {
+      router.back();
+    }
+  }, [checkoutData, router]);
+
+  // Handle app state changes to detect when user returns from checkout
+  const handleAppStateChange = useCallback(
+    async (nextAppState: string) => {
+      if (checkoutInProgress && nextAppState === "active") {
+        setCheckoutInProgress(false);
+
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await getCustomerOrders();
+          await clearCheckoutState();
+          router.push("/order-confirmation");
+        } catch (error) {
+          console.error("Error getting orders after checkout:", error);
+          Alert.alert(
+            "Payment Status",
+            "Unable to verify payment status. Please check your orders or try again."
+          );
+        }
+      }
+    },
+    [checkoutInProgress, getCustomerOrders, clearCheckoutState, router]
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+    return () => subscription?.remove();
+  }, [handleAppStateChange]);
+
+  const handleProceedToPayment = async () => {
+    if (!checkoutData?.webUrl) {
+      Alert.alert("Error", "Checkout URL not available");
+      return;
+    }
+
+    if (!accessToken) {
+      Alert.alert("Error", "Authentication required for payment");
+      return;
+    }
+
+    try {
+      setIsProcessingPayment(true);
+
+      let checkoutUrl = checkoutData.webUrl;
+      const { shippingAddress } = useCheckoutStore.getState();
+
+      if (shippingAddress) {
+        const urlParams = new URLSearchParams();
+
+        // Add shipping address parameters to pre-fill the checkout
+        if (shippingAddress.firstName)
+          urlParams.append(
+            "checkout[shipping_address][first_name]",
+            shippingAddress.firstName
+          );
+        if (shippingAddress.lastName)
+          urlParams.append(
+            "checkout[shipping_address][last_name]",
+            shippingAddress.lastName
+          );
+        if (shippingAddress.address1)
+          urlParams.append(
+            "checkout[shipping_address][address1]",
+            shippingAddress.address1
+          );
+        if (shippingAddress.address2)
+          urlParams.append(
+            "checkout[shipping_address][address2]",
+            shippingAddress.address2
+          );
+        if (shippingAddress.city)
+          urlParams.append(
+            "checkout[shipping_address][city]",
+            shippingAddress.city
+          );
+        if (shippingAddress.province)
+          urlParams.append(
+            "checkout[shipping_address][province]",
+            shippingAddress.province
+          );
+        if (shippingAddress.country)
+          urlParams.append(
+            "checkout[shipping_address][country]",
+            shippingAddress.country
+          );
+        if (shippingAddress.zip)
+          urlParams.append(
+            "checkout[shipping_address][zip]",
+            shippingAddress.zip
+          );
+        if (shippingAddress.phone)
+          urlParams.append(
+            "checkout[shipping_address][phone]",
+            shippingAddress.phone
+          );
+
+        const separator = checkoutUrl.includes("?") ? "&" : "?";
+        checkoutUrl = `${checkoutUrl}${separator}${urlParams.toString()}`;
+      }
+
+      // Present Shopify's hosted checkout with pre-filled address
+      checkout.present(checkoutUrl);
+      setCheckoutInProgress(true);
+    } catch (error) {
+      console.error("Payment error:", error);
+      Alert.alert("Error", "Failed to open payment screen");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -231,15 +386,20 @@ const Payment = () => {
       <View style={styles.bottomSection}>
         <TouchableOpacity
           style={styles.addCardButton}
-          onPress={() => router.push("/order-summary")}
+          onPress={handleProceedToPayment}
+          disabled={loading || isProcessingPayment}
         >
-          <Typography
-            title={t("address.continue")}
-            fontSize={scale(16)}
-            color={COLORS.white}
-            fontFamily="Poppins-Bold"
-            style={[styles.addCardButtonText, dynamicStyles.textAlign]}
-          />
+          {loading || isProcessingPayment ? (
+            <ActivityIndicator size="small" color={COLORS.white} />
+          ) : (
+            <Typography
+              title="Proceed To Payment"
+              fontSize={scale(16)}
+              color={COLORS.white}
+              fontFamily="Poppins-Bold"
+              style={[styles.addCardButtonText, dynamicStyles.textAlign]}
+            />
+          )}
         </TouchableOpacity>
       </View>
     </View>
