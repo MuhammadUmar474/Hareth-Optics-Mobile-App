@@ -1,7 +1,8 @@
 import { COLORS } from "@/constants/colors";
+import { useLocal } from "@/hooks/use-lang";
 import { MenuItem } from "@/services/home/homeApi";
 import { router } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
 import { ProductsSkeleton } from "../skeletons";
@@ -21,6 +22,7 @@ const Products: React.FC<ProductsProps> = ({
   title,
   loading = false,
 }) => {
+  const {t,isRtl}=useLocal();
   if (loading) {
     return <ProductsSkeleton />;
     
@@ -31,8 +33,6 @@ const Products: React.FC<ProductsProps> = ({
   const renderProduct = ({ item }: { item: MenuItem }) => {
     // Handle cases where image might be null
     const imageUrl = item.resource?.image?.url ||   "https://cdn.shopify.com/s/files/1/0787/9088/5611/collections/i_75ea468f-ce10-4c28-b208-c569c2668456.webp?v=1760730001";    
-    console.log(imageUrl,".>");
-    
     return (
       <View>
         <TouchableOpacity
@@ -63,10 +63,20 @@ const Products: React.FC<ProductsProps> = ({
       params: { category: categoryTitle },
     });
   };
-
+ const dynStyles=useMemo(()=>
+  StyleSheet.create({
+    header: {
+      flexDirection:isRtl?"row-reverse":"row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: scale(16),
+      marginBottom: verticalScale(12),
+    },
+  })
+ ,[isRtl])
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={dynStyles.header}>
         <Typography
           title={title}
           fontSize={scale(17)}
@@ -76,7 +86,7 @@ const Products: React.FC<ProductsProps> = ({
         />
         <TouchableOpacity onPress={() => handleViewAllPress(title)}>
           <Typography
-            title="View All"
+            title={t("common.viewAll")}
             fontSize={scale(12)}
             color={COLORS.primary}
             fontFamily="Roboto-Bold"
@@ -86,6 +96,7 @@ const Products: React.FC<ProductsProps> = ({
 
       <FlatList
         data={productCategory}
+        inverted={isRtl}
         renderItem={renderProduct}
         keyExtractor={(item) => item.id}
         horizontal
@@ -101,13 +112,6 @@ export default Products;
 const styles = StyleSheet.create({
   container: {
     paddingVertical: verticalScale(16),
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: scale(16),
-    marginBottom: verticalScale(12),
   },
   listContainer: {
     paddingHorizontal: scale(22),

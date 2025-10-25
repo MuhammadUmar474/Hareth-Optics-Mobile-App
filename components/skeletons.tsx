@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/colors";
+import { useDynamicStyles } from "@/constants/dynamicStyles";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { scale, verticalScale } from "react-native-size-matters";
@@ -53,9 +54,10 @@ export const CardSkeleton: React.FC = () => {
 };
 
 export const ExploreCardSkeleton: React.FC = () => {
+  const commonStyles=useDynamicStyles();
   return (
     <View style={styles.container}>
-      <View style={styles.skeletonRow}>
+      <View style={[styles.skeletonRow,commonStyles.horizontal]}>
         <View style={styles.card}>
           <Skeleton style={styles.skeletonCard}>
             <Skeleton style={styles.skeletonImage} />
@@ -85,7 +87,7 @@ export const ExploreCardSkeleton: React.FC = () => {
         </View>
       </View>
 
-      <View style={styles.skeletonRow}>
+      <View style={[styles.skeletonRow,commonStyles.horizontal]}>
         <View style={styles.card}>
           <Skeleton style={styles.skeletonCard}>
             <Skeleton style={styles.skeletonImage} />
@@ -119,9 +121,10 @@ export const ExploreCardSkeleton: React.FC = () => {
 };
 
 export const ProductsSkeleton: React.FC = () => {
+  const commonStyles=useDynamicStyles();
   return (
     <View style={styles.productsContainer}>
-      <View style={styles.productsList}>
+      <View style={[styles.productsList,commonStyles.horizontal]}>
         {[1, 2, 3, 4, 5].map((index) => (
           <View key={index} style={styles.productItem}>
             <Skeleton style={styles.productImageSkeleton} />
@@ -134,9 +137,10 @@ export const ProductsSkeleton: React.FC = () => {
 };
 
 export const TrendingNowSkeleton: React.FC = () => {
+  const commonStyles=useDynamicStyles();
   return (
     <View style={styles.trendingContainer}>
-      <View style={styles.trendingList}>
+      <View style={[styles.trendingList,commonStyles.horizontal]}>
         {[1, 2, 3].map((index) => (
           <View key={index} style={styles.trendingCard}>
             <Skeleton style={styles.trendingCardImage} />
@@ -157,7 +161,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   skeletonRow: {
-    flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: verticalScale(16),
   },
@@ -240,7 +243,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grey4,
   },
   productsList: {
-    flexDirection: "row",
     paddingHorizontal: scale(22),
     gap: scale(20),
   },
@@ -273,7 +275,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.grey4,
   },
   trendingList: {
-    flexDirection: "row",
     gap: scale(12),
     paddingRight: scale(16),
   },

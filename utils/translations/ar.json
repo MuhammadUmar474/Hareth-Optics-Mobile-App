@@ -69,7 +69,9 @@
     "fromFactory": "من المصنع إليك مباشرة",
     "oneYearWarranty": "ضمان لمدة سنة واحدة",
     "premium": "مميز",
-    "onSale": "تخفيضات"
+    "onSale": "تخفيضات",
+    "trendingOptics":"الأكثر رواجًا في حارث أوتيكبس",
+    "bestSelling": "الأكثر مبيعًا"
   },
   "purchases": {
     "paymentMethods": "طرق الدفع",

@@ -8,6 +8,7 @@ import Typography from "@/components/ui/custom-typography";
 import { Header } from "@/components/ui/header";
 import { COLORS } from "@/constants/colors";
 import { handleLargerText } from "@/constants/helper";
+import { useLocal } from "@/hooks/use-lang";
 import { homeApi } from "@/services/home/homeApi";
 import { useCommonStore } from "@/store/commonStore";
 import { styles } from "@/styles/explore/explore";
@@ -36,7 +37,7 @@ const Explore = () => {
   const headerFadeAnim = useRef(new Animated.Value(0)).current;
   const categories = useCommonStore((state) => state.categories);
   const params = useLocalSearchParams<{ category?: string }>();
-
+  const {t}=useLocal();
   // Animate header on mount
   useEffect(() => {
     Animated.timing(headerFadeAnim, {
@@ -157,7 +158,7 @@ const Explore = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Explore" />
+      <Header title={t("bottomNavs.explore")} />
 
       <ScrollView
         horizontal
@@ -215,7 +216,7 @@ const Explore = () => {
                 }}
               >
                 <Typography
-                  title="No products found"
+                  title={t("common.noProduct")}
                   fontSize={scale(16)}
                   fontFamily="Roboto-Bold"
                   color={COLORS.gray3}

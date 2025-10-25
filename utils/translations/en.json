@@ -57,6 +57,7 @@
       "bestSellers":"Best Sellers",
       "bestSellingSunglasses":"Best Selling Sunglasses",
       "bestSellingEyeGlasses":"Best Selling Eyeglasses",
+      "bestSelling":"Best Selling",
       "latestGreatest":"Latest and Greatest",
       "dropAlert":"Drop Alert",
       "nearbyStores":"Nearby Stores",
@@ -70,7 +71,8 @@
       "fromFactory":"FROM THE FACTORY STRAIGHT TO YOU",
       "premium":"Premium",
       "classic":"Classic",
-      "onSale":"On Sale"
+      "onSale":"On Sale",
+      "trendingOptics":"#Trending at Hareth Oticps"
     },
     "purchases":{
       "paymentMethods":"Payment Methods",

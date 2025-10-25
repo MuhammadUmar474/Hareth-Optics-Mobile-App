@@ -1,6 +1,8 @@
 import { COLORS } from "@/constants/colors";
 import { TrendingCardData } from "@/constants/data";
+import { useDynamicStyles } from "@/constants/dynamicStyles";
 import { handleLargerText } from "@/constants/helper";
+import { useLocal } from "@/hooks/use-lang";
 import { executeHomeQuery } from "@/services/home/homeApi";
 import { useLoadingStore } from "@/store/loadingStore";
 import { Feather } from "@expo/vector-icons";
@@ -27,6 +29,8 @@ type ExploreProduct = {
 };
 
 const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
+  const {t,isRtl}=useLocal();
+  const commonStyles=useDynamicStyles();
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <SimpleOptimizedImage
@@ -37,33 +41,36 @@ const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
       />
       <View style={styles.textContainer}>
         <Typography
-          title={"Best Selling"}
+          title={t("home.bestSelling")}
           fontSize={scale(12)}
           fontFamily="Poppins-Bold"
           color={COLORS.orange}
           style={styles.title}
+          textAlign={commonStyles.textAlignment.textAlign}
         />
         <View style={styles.titleContainer}>
           <Typography
             title={handleLargerText(data.title, 22)}
             fontSize={scale(20)}
             color={COLORS.black}
+            textAlign={commonStyles.textAlignment.textAlign}
             style={styles.subtitle}
           />
         </View>
 
         <TouchableOpacity
-          style={styles.shopNowButton}
+          style={[styles.shopNowButton,commonStyles.horizontal,commonStyles.alignSelf]}
           onPress={() => router.push(`/(tabs)/(explore)`)}
         >
           <Typography
-            title="Shop Now"
+            title={t("home.showNow")}
             fontSize={scale(10)}
             color={COLORS.white}
             fontFamily="Roboto-Bold"
             style={styles.shopNowButtonText}
+            textAlign={commonStyles.textAlignment.textAlign}
           />
-          <Feather name="chevron-right" size={14} color={COLORS.white} />
+          <Feather name={isRtl ? "chevron-left" :"chevron-right"}  size={14} color={COLORS.white} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -71,6 +78,8 @@ const TrendingCard: React.FC<TrendingCardProps> = ({ data, onPress }) => {
 };
 
 const TrendingNow: React.FC = () => {
+  const {t,isRtl}=useLocal();
+  const commonStyles=useDynamicStyles();
   const [trendingProducts, setTrendingProducts] = useState<ExploreProduct[]>(
     []
   );
@@ -131,38 +140,51 @@ const TrendingNow: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Typography
-          title="#Trending at Hareth Oticps"
+          title={t("home.trendingOptics")}
           fontSize={scale(17)}
           fontFamily="Poppins-Bold"
           color={COLORS.black}
+          textAlign= {isRtl? "right":"left"}
           style={styles.headerTitle}
         />
       </View>
 
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-        style={styles.scrollView}
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={[
+    styles.scrollContainer,
+    commonStyles.horizontal
+  ]}
+  style={[
+    styles.scrollView,
+    commonStyles.flipHoriz
+  ]}
+>
+  {isLoadingTrending ? (
+    <View style={commonStyles.flipHoriz}>
+      <TrendingNowSkeleton />
+    </View>
+  ) : (
+    trendingProducts.map((card, index) => (
+      <View 
+        key={card.id}
+        style={commonStyles.flipHoriz} // Flip back the content
       >
-        {isLoadingTrending ? (
-          <TrendingNowSkeleton />
-        ) : (
-          trendingProducts.map((card, index) => (
-            <TrendingCard
-              key={card.id}
-              data={{
-                id: index + 1,
-                title: card.name,
-                subtitle: `$${card.price}`,
-                image: { uri: card.image },
-                filter: "trending",
-              }}
-              onPress={() => router.push(`/product-details?id=${card.id}&title=${encodeURIComponent(card.name)}`)}
-            />
-          ))
-        )}
-      </ScrollView>
+        <TrendingCard
+          data={{
+            id: index + 1,
+            title: card.name,
+            subtitle: `$${card.price}`,
+            image: { uri: card.image },
+            filter: "trending",
+          }}
+          onPress={() => router.push(`/product-details?id=${card.id}&title=${encodeURIComponent(card.name)}`)}
+        />
+      </View>
+    ))
+  )}
+</ScrollView>
     </View>
   );
 };
@@ -236,7 +258,6 @@ const styles = StyleSheet.create({
   },
   shopNowButton: {
     backgroundColor: COLORS.primary,
-    flexDirection: "row",
     alignItems: "center",
     gap: scale(4),
     paddingHorizontal: scale(10),

@@ -284,7 +284,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ searchQuery, onClose, onC
         <View style={styles.emptyContainer}>
           <Ionicons name="search" size={48} color={COLORS.grey4} />
           <Typography
-            title="No products found"
+            title={t("common.noProduct")}
             fontSize={scale(16)}
             fontFamily="Roboto-Bold"
             color={COLORS.grey10}

@@ -78,7 +78,7 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
         style={styles.title}
       />
 
-      <View style={[styles.promiseBox,dynStyles.promisBox]}>
+      <View style={[styles.promiseBox]}>
         {promises.map((promise, index) => (
          <TouchableOpacity
          key={promise.id}
@@ -87,9 +87,7 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
          activeOpacity={promise.onPress ? 0.7 : 1}
          disabled={!promise.onPress}
        >
-       
-            <View style={styles.iconContainer}>{renderIcon(promise)}</View>
-            {isRtl&& index < promises.length - 1 && <View style={styles.divider} />}
+         <View style={styles.iconContainer}>{renderIcon(promise)}</View>
 
             <Typography
               title={t(promise.name)}
@@ -98,7 +96,7 @@ const OurPromiseComponent: React.FC<OurPromiseProps> = ({
               fontFamily="Roboto-Bold"
               style={styles.promiseText}
             />
-            {!isRtl && index < promises.length - 1 && <View style={styles.divider} />}
+            { index < promises.length - 1 && <View style={styles.divider} />}
           </TouchableOpacity>
         ))}
       </View>
@@ -112,6 +110,7 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(16),
   },
   promiseBox: {
+    flexDirection:"row",
     backgroundColor: COLORS.white,
     borderRadius: scale(12),
     padding: scale(16),
